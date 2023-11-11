@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://entity/camera/CameraMovement.gd" type="Script" id=1]
+[ext_resource path="res://entity/camera/RaycastFollowPlayer.gd" type="Script" id=2]
+
+[node name="CameraRoot" type="Spatial"]
+
+[node name="CameraBody" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 5, 5 )
+
+[node name="Camera" type="Camera" parent="CameraBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+script = ExtResource( 1 )
+
+[node name="CursorRay" type="RayCast" parent="CameraBody/Camera"]
+enabled = true
+script = ExtResource( 2 )

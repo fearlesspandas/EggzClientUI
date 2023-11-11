@@ -1,0 +1,35 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://user_interface/MainGUI.gd" type="Script" id=1]
+[ext_resource path="res://world/Spawn.tscn" type="PackedScene" id=2]
+
+[node name="MainGame" type="Node"]
+script = ExtResource( 1 )
+spawnWorld = ExtResource( 2 )
+
+[node name="Control" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ColorRect" type="ColorRect" parent="Control"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -8.0
+margin_top = -8.5
+margin_right = 8.0
+margin_bottom = 8.5
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TextEdit" type="TextEdit" parent="Control"]
+margin_left = 9.0
+margin_top = 478.0
+margin_right = 322.0
+margin_bottom = 577.0
+text = "Commands go here"
