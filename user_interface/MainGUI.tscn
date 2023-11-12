@@ -1,22 +1,28 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://user_interface/MainGUI.gd" type="Script" id=1]
-[ext_resource path="res://world/client/SpawnBlock.tscn" type="PackedScene" id=2]
+[ext_resource path="res://entity/Player.tscn" type="PackedScene" id=2]
 [ext_resource path="res://user_interface/ServerConnectionIndicator.gd" type="Script" id=3]
 [ext_resource path="res://user_interface/SpawnServerEntities.gd" type="Script" id=4]
+[ext_resource path="res://world/SpawnBlockFrame.tscn" type="PackedScene" id=5]
+[ext_resource path="res://world/client/SpawnBlockNoPlayer.tscn" type="PackedScene" id=6]
+[ext_resource path="res://entity/server/ServerEntity.tscn" type="PackedScene" id=7]
 
 [node name="MainGame" type="Node"]
 script = ExtResource( 1 )
-spawnWorld = ExtResource( 2 )
+spawnWorld = ExtResource( 6 )
+serverWorld = ExtResource( 5 )
+maincharacter = ExtResource( 2 )
+servercharacter = ExtResource( 7 )
 
-[node name="Control" type="Control" parent="."]
+[node name="ClientControl" type="Control" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="ColorRect" type="ColorRect" parent="Control"]
+[node name="ColorRect" type="ColorRect" parent="ClientControl"]
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -29,7 +35,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="TextEdit" type="TextEdit" parent="Control"]
+[node name="TextEdit" type="TextEdit" parent="ClientControl"]
 margin_left = 9.0
 margin_top = 478.0
 margin_right = 322.0
@@ -39,14 +45,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="SpawnServerEntities" type="CheckButton" parent="Control"]
+[node name="SpawnServerEntities" type="CheckButton" parent="ClientControl"]
 margin_left = 730.0
 margin_top = 10.0
 margin_right = 806.0
 margin_bottom = 50.0
 script = ExtResource( 4 )
 
-[node name="ServerLabel" type="RichTextLabel" parent="Control"]
+[node name="ServerLabel" type="RichTextLabel" parent="ClientControl"]
 margin_left = 814.0
 margin_top = 16.0
 margin_right = 968.0
@@ -56,7 +62,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="ServerConnectionIndicator" type="ColorRect" parent="Control"]
+[node name="ServerConnectionIndicator" type="ColorRect" parent="ClientControl"]
 margin_left = 905.0
 margin_top = 15.0
 margin_right = 1015.0
@@ -74,4 +80,4 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[connection signal="toggled" from="Control/SpawnServerEntities" to="Control/SpawnServerEntities" method="_on_SpawnServerEntities_toggled"]
+[connection signal="toggled" from="ClientControl/SpawnServerEntities" to="ClientControl/SpawnServerEntities" method="_on_SpawnServerEntities_toggled"]

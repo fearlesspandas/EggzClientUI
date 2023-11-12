@@ -1,0 +1,30 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://world/client/SpawnBlock.gd" type="Script" id=2]
+[ext_resource path="res://world/SpawnBlockFrame.tscn" type="PackedScene" id=3]
+[ext_resource path="res://world/client/BlockTerrainShaded.tscn" type="PackedScene" id=4]
+
+[sub_resource type="CubeMesh" id=1]
+size = Vector3( 2000, 0.4, 2000 )
+
+[node name="RootScene" type="Spatial"]
+script = ExtResource( 2 )
+blockterrain = ExtResource( 4 )
+
+[node name="Scenery" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0 )
+
+[node name="SpawnBlockFrame" parent="Scenery" instance=ExtResource( 3 )]
+
+[node name="SpawnBlockGround" type="MeshInstance" parent="Scenery/SpawnBlockFrame"]
+mesh = SubResource( 1 )
+material/0 = null
+
+[node name="BlockTerrainShaded" parent="Scenery" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.43155, 13.8795 )
+
+[node name="BlockTerrainShaded2" parent="Scenery" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -21.9692, 3.85394, 9.63632 )
+
+[node name="BlockTerrainShaded3" parent="Scenery" instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 57.4247, 15.3461, 16.916 )

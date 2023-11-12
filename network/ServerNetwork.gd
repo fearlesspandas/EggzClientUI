@@ -11,6 +11,8 @@ var counter = 0
 func _init():
 	pass
 func _ready():
+	if connected:
+		pass
 	# Connect base signals to get notified of connection open, close, and errors.
 	_client.connect("connection_closed", self, "_closed")
 	_client.connect("connection_error", self, "_closed")
@@ -42,9 +44,7 @@ func _connected(proto = ""):
 	# You MUST always use get_peer(1).put_packet to send data to server,
 	# and not put_packet directly when not using the MultiplayerAPI.
 	_client.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
-	create_glob('1')
-	create_repair_egg('1','1')
-	get_blob('1')
+	
 var data = []
 func _on_data():
 	# Print the received packet, you MUST always use get_peer(1).get_packet
@@ -57,29 +57,44 @@ func _process(delta):
 	# emission will only happen when calling this function.
 	#create_repair_egg(str(counter),"1")
 	#start_egg(counter,"1")
+	if data.size() > 0:
+		print("Server:",data.pop_front())
 	_client.poll()
 
-func create_glob(id,location = [0.0]):
-	_client.get_peer(1).put_packet(JSON.print({'CREATE_GLOB':{'globId':id,'location':location}}).to_utf8())
-func create_repair_egg(eggId,globId):
+func create_glob(id:String,location:Vector3):
+	print("calling create glob")
+	_client.get_peer(1).put_packet(JSON.print({'CREATE_GLOB':{'globId':id,'location':[location.x,location.y,location.z]}}).to_utf8())
+
+func create_repair_egg(eggId:String,globId:String):
 	_client.get_peer(1).put_packet(JSON.print({'CREATE_REPAIR_EGG':{'eggId':eggId,'globId':globId}}).to_utf8())
-func get_blob(id):
+
+func get_blob(id:String):
 	_client.get_peer(1).put_packet(JSON.print({'GET_BLOB':{'id':id}}).to_utf8())
-func relate_eggs(id1,id2,globid):
+
+func relate_eggs(id1:String,id2:String,globid:String):
 	_client.get_peer(1).put_packet(JSON.print({'RELATE_EGGS':{'egg1':id1,'egg2':id2,'globId':globid}}).to_utf8())
+
 func tick_eggs():	
 	_client.get_peer(1).put_packet(JSON.print({'TICK_WORLD':{}}).to_utf8())
+
 func getAllGlobs():
 	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_GLOBS':{}}).to_utf8())
 
 func getAllEggs():
 	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_STATS':{}}).to_utf8())	
-func getGlobLocation(id):
+
+func getGlobLocation(id:String):
 	_client.get_peer(1).put_packet(JSON.print({'GET_GLOB_LOCATION':{'id':str(id)}}).to_utf8())	
-func setGlobLocation(id,location):
-	_client.get_peer(1).put_packet(JSON.print({'SET_GLOB_LOCATION':{'id':str(id),'location':location}}).to_utf8())	
+
+func setGlobLocation(id:String,location:Vector3):
+	print("setting location:" , id, location)
+	_client.get_peer(1).put_packet(JSON.print({'SET_GLOB_LOCATION':{'id':str(id),'location':[location.x,location.y,location.z]}}).to_utf8())	
+
 func setGlobRotation(id,rotation):
 	_client.get_peer(1).put_packet(JSON.print({'SET_GLOB_ROTATION':{'id':str(id),'rotation':rotation}}).to_utf8())	
 				
 func start_egg(eggId,globId):
 	_client.get_peer(1).put_packet(JSON.print({'START_EGG':{'eggId':str(eggId),'globId':str(globId)}}).to_utf8())	
+
+func getAllEntityIds():
+	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_ENTITY_IDS':{}}).to_utf8())	

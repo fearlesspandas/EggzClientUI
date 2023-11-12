@@ -19,6 +19,7 @@ config/icon="res://icon.png"
 ServerNetwork="*res://network/ServerNetwork.gd"
 HttpServerManager="*res://network/HttpServerManager.gd"
 EntityFactory="*res://entity/EntityFactory.gd"
+EntityManager="*res://entity/EntityManager.gd"
 
 [input]
 

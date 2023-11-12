@@ -4,8 +4,9 @@
 [ext_resource path="res://entity/server/PhysicalPlayerServerBody.tscn" type="PackedScene" id=2]
 [ext_resource path="res://network/MessageController.tscn" type="PackedScene" id=3]
 
-[node name="ServerEntity" type="Node"]
+[node name="ServerEntity" type="Spatial"]
 script = ExtResource( 1 )
 physical_entity = ExtResource( 2 )
+id = "1"
 
 [node name="MessageController" parent="." instance=ExtResource( 3 )]

@@ -1,14 +1,16 @@
-extends Node
+extends Spatial
 
 
 export var physical_entity:Resource
 onready var entity
 onready var message_controller = find_node("Message_controller")
-onready var physical_player_entity = entity.find_node("PhysicalPlayerEntity")
+onready var physical_player_entity
+#onready var physical_player_entity = find_node("PhysicalPlayerEntity")
 export var id: String
 
 func _ready():
 	entity = load(physical_entity.resource_path).instance()
+	physical_player_entity = entity.find_node("PhysicalPlayerEntity")
 	self.add_child(entity)
 	pass # Replace with function body.
 
