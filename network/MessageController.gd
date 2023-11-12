@@ -1,7 +1,8 @@
 extends Node
 
-onready var parent = get_parent().find_node("MessageHandler")
+onready var parent = get_parent()
 var queue = []
+var queue_out = [] #queue of events to be sent back to the server
 var delta_accum = 0
 func add_to_queue(elem):
 	queue.append(elem)
@@ -17,7 +18,8 @@ func handle_next_message(delta):
 			queue.push_front(msg)
 			print("no handler found on resource parent: define method _handle_method on this nodes parent to fix this")
 	else:
-		print("no messages in queue, waiting")
+		pass
+		#print("no messages in queue, waiting")
 		#todo potentially replace this delta with custom delta from last processed message
 func _physics_process(delta):
 	handle_next_message(delta)

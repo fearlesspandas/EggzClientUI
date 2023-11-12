@@ -5,36 +5,41 @@
 [sub_resource type="SpatialMaterial" id=2]
 albedo_color = Color( 1, 0.101961, 0.101961, 1 )
 
-[sub_resource type="CylinderMesh" id=3]
-top_radius = 0.99
-height = 0.5
-
 [sub_resource type="SphereMesh" id=4]
 radius = 0.3
 height = 0.6
+
+[sub_resource type="CylinderMesh" id=3]
+top_radius = 0.99
+height = 0.5
 
 [sub_resource type="CylinderMesh" id=5]
 top_radius = 0.99
 height = 0.5
 
-[node name="Node" type="Node"]
+[node name="Spatial" type="Spatial"]
 
 [node name="Skin" type="MeshInstance" parent="."]
 mesh = SubResource( 1 )
+skeleton = NodePath("")
 material/0 = SubResource( 2 )
 
-[node name="Belt" type="MeshInstance" parent="."]
-mesh = SubResource( 3 )
-material/0 = null
+[node name="orbitals" type="Spatial" parent="."]
 
-[node name="Spatial" type="Spatial" parent="."]
-
-[node name="MeshInstance" type="MeshInstance" parent="Spatial"]
+[node name="electron" type="MeshInstance" parent="orbitals"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0 )
 mesh = SubResource( 4 )
 material/0 = null
 
-[node name="MeshInstance2" type="MeshInstance" parent="Spatial"]
+[node name="Belt" type="Spatial" parent="."]
+
+[node name="BeltbandH" type="MeshInstance" parent="Belt"]
+mesh = SubResource( 3 )
+skeleton = NodePath("")
+material/0 = null
+
+[node name="BeltBandV" type="MeshInstance" parent="Belt"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0 )
 mesh = SubResource( 5 )
+skeleton = NodePath("../../orbitals")
 material/0 = null

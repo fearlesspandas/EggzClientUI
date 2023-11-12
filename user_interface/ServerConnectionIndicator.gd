@@ -1,17 +1,20 @@
-extends Node
+extends ColorRect
 
 
-onready var body = find_node("PhysicalPlayerEntity")
+# Declare member variables here. Examples:
+# var a = 2
+# var b = "text"
 
-export var id: String
-func _physics_process(delta):
-	ServerNetwork.setGlobLocation(id,body.global_transform.origin)
-	pass
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
 
-
+func _process(delta):
+	if ServerNetwork.connected:
+		self.color = Color.green
+	else:
+		self.color = Color.red
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass

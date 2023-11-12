@@ -1,0 +1,11 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://entity/server/ServerEntity.gd" type="Script" id=1]
+[ext_resource path="res://entity/server/PhysicalPlayerServerBody.tscn" type="PackedScene" id=2]
+[ext_resource path="res://network/MessageController.tscn" type="PackedScene" id=3]
+
+[node name="ServerEntity" type="Node"]
+script = ExtResource( 1 )
+physical_entity = ExtResource( 2 )
+
+[node name="MessageController" parent="." instance=ExtResource( 3 )]

@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://user_interface/MainGUI.gd" type="Script" id=1]
-[ext_resource path="res://world/Spawn.tscn" type="PackedScene" id=2]
+[ext_resource path="res://world/client/SpawnBlock.tscn" type="PackedScene" id=2]
+[ext_resource path="res://user_interface/ServerConnectionIndicator.gd" type="Script" id=3]
+[ext_resource path="res://user_interface/SpawnServerEntities.gd" type="Script" id=4]
 
 [node name="MainGame" type="Node"]
 script = ExtResource( 1 )
@@ -33,3 +35,43 @@ margin_top = 478.0
 margin_right = 322.0
 margin_bottom = 577.0
 text = "Commands go here"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SpawnServerEntities" type="CheckButton" parent="Control"]
+margin_left = 730.0
+margin_top = 10.0
+margin_right = 806.0
+margin_bottom = 50.0
+script = ExtResource( 4 )
+
+[node name="ServerLabel" type="RichTextLabel" parent="Control"]
+margin_left = 814.0
+margin_top = 16.0
+margin_right = 968.0
+margin_bottom = 47.0
+text = "Start Server"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ServerConnectionIndicator" type="ColorRect" parent="Control"]
+margin_left = 905.0
+margin_top = 15.0
+margin_right = 1015.0
+margin_bottom = 47.0
+color = Color( 0.411765, 0.0196078, 0.0196078, 1 )
+script = ExtResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ServerControl" type="Control" parent="."]
+margin_right = 217.0
+margin_bottom = 111.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="toggled" from="Control/SpawnServerEntities" to="Control/SpawnServerEntities" method="_on_SpawnServerEntities_toggled"]

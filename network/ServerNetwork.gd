@@ -1,11 +1,15 @@
 extends Node
 
 # The URL we will connect to
-export var websocket_url = "ws://192.168.50.27:8080/subscriptions"
+onready var websocket_url = "ws://192.168.50.27:8080/subscriptions"
 
 # Our WebSocketClient instance
-var _client = WebSocketClient.new()
+onready var _client = WebSocketClient.new()
+
+onready var connected = false
 var counter = 0
+func _init():
+	pass
 func _ready():
 	# Connect base signals to get notified of connection open, close, and errors.
 	_client.connect("connection_closed", self, "_closed")
@@ -18,7 +22,9 @@ func _ready():
 
 	# Initiate connection to the given URL.
 	var err = _client.connect_to_url(websocket_url)
+	connected = true
 	if err != OK:
+		connected = false
 		print("Unable to connect")
 		set_process(false)
 
@@ -26,6 +32,7 @@ func _closed(was_clean = false):
 	# was_clean will tell you if the disconnection was correctly notified
 	# by the remote peer before closing the socket.
 	print("Closed, clean: ", was_clean)
+	connected = false
 	set_process(false)
 
 func _connected(proto = ""):
@@ -50,17 +57,6 @@ func _process(delta):
 	# emission will only happen when calling this function.
 	#create_repair_egg(str(counter),"1")
 	#start_egg(counter,"1")
-	setGlobLocation("1",[counter,counter,counter])
-	getGlobLocation("1")
-	if counter > 50:
-		#relate_eggs(str(counter -1) ,str( counter), "1")
-		pass
-		#tick_eggs()
-	if counter % 100 == 0:
-		#getAllEggs()
-		print(data)
-		data = []
-	counter += 1
 	_client.poll()
 
 func create_glob(id,location = [0.0]):
