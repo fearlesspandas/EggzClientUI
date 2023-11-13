@@ -73,11 +73,21 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="Button" type="Button" parent="ClientControl"]
+margin_left = 750.0
+margin_top = 66.0
+margin_right = 972.0
+margin_bottom = 141.0
+text = "Spawn World and new character"
+
 [node name="ServerControl" type="Control" parent="."]
-margin_right = 217.0
-margin_bottom = 111.0
+margin_left = 9.0
+margin_top = 11.0
+margin_right = 226.0
+margin_bottom = 122.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [connection signal="toggled" from="ClientControl/SpawnServerEntities" to="ClientControl/SpawnServerEntities" method="_on_SpawnServerEntities_toggled"]
+[connection signal="button_up" from="ClientControl/Button" to="." method="_on_Button_button_up"]

@@ -1,7 +1,7 @@
 extends Node
 
 # The URL we will connect to
-onready var websocket_url = "ws://192.168.50.27:8080/subscriptions"
+onready var websocket_url = "ws://192.168.50.27:8080/connect/1"
 
 # Our WebSocketClient instance
 onready var _client = WebSocketClient.new()
@@ -23,7 +23,7 @@ func _ready():
 	_client.connect("data_received", self, "_on_data")
 
 	# Initiate connection to the given URL.
-	var err = _client.connect_to_url(websocket_url)
+	var err = _client.connect_to_url(websocket_url,['json'])
 	connected = true
 	if err != OK:
 		connected = false
@@ -50,7 +50,8 @@ func _on_data():
 	# Print the received packet, you MUST always use get_peer(1).get_packet
 	# to receive data from server, and not get_packet directly when not
 	# using the MultiplayerAPI.
-	data.append(_client.get_peer(1).get_packet().get_string_from_utf8())
+	var cmd = _client.get_peer(1).get_packet().get_string_from_utf8()
+	data.append(cmd)
 	pass
 func _process(delta):
 	# Call this in _process or _physics_process. Data transfer, and signals
@@ -58,11 +59,11 @@ func _process(delta):
 	#create_repair_egg(str(counter),"1")
 	#start_egg(counter,"1")
 	if data.size() > 0:
-		print("Server:",data.pop_front())
+		EntityRoutingManagerClient.route(data.pop_front(),delta)
 	_client.poll()
 
 func create_glob(id:String,location:Vector3):
-	print("calling create glob")
+	#print("calling create glob")
 	_client.get_peer(1).put_packet(JSON.print({'CREATE_GLOB':{'globId':id,'location':[location.x,location.y,location.z]}}).to_utf8())
 
 func create_repair_egg(eggId:String,globId:String):
@@ -87,7 +88,7 @@ func getGlobLocation(id:String):
 	_client.get_peer(1).put_packet(JSON.print({'GET_GLOB_LOCATION':{'id':str(id)}}).to_utf8())	
 
 func setGlobLocation(id:String,location:Vector3):
-	print("setting location:" , id, location)
+	#print("setting location:" , id, location)
 	_client.get_peer(1).put_packet(JSON.print({'SET_GLOB_LOCATION':{'id':str(id),'location':[location.x,location.y,location.z]}}).to_utf8())	
 
 func setGlobRotation(id,rotation):
@@ -98,3 +99,9 @@ func start_egg(eggId,globId):
 
 func getAllEntityIds():
 	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_ENTITY_IDS':{}}).to_utf8())	
+	
+func add_destination(globId:String,location:Vector3):
+	_client.get_peer(1).put_packet(JSON.print({'ADD_DESTINATION':{'id':globId,'location':[location.x,location.y,location.z]}}).to_utf8())	
+	
+func get_next_destination(globId:String):
+	_client.get_peer(1).put_packet(JSON.print({'GET_NEXT_DESTINATION':{'id':globId}}).to_utf8())	

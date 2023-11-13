@@ -26,7 +26,7 @@ func generate_random_vecs(n:int,minVec:Vector3,maxvec:Vector3):
 func _ready():
 	var block_resource =load(blockterrain.resource_path) 
 	
-	var vecs = generate_random_vecs(1000,Vector3(-500,0,-500),Vector3(500,30,500))
+	var vecs = generate_random_vecs(100,Vector3(-100,0,-100),Vector3(100,30,100))
 	for v in vecs:
 		var block = block_resource.instance()
 		self.add_child(block)

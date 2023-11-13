@@ -1,7 +1,8 @@
 extends Spatial
 
-#dddddddddddddddddddddddddddddddddddddddddddddddddddddexport var body_instance:Resource
+#export var body_instance:Resource
 onready var body = get_parent()
+var id
 func _ready():
 	#body = load(body_instance.resource_path).instance()
 	
@@ -11,5 +12,3 @@ func _ready():
 
 
 
-
-#physical player entity -> client/server entity

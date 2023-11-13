@@ -20,6 +20,7 @@ ServerNetwork="*res://network/ServerNetwork.gd"
 HttpServerManager="*res://network/HttpServerManager.gd"
 EntityFactory="*res://entity/EntityFactory.gd"
 EntityManager="*res://entity/EntityManager.gd"
+EntityRoutingManagerClient="*res://entity/EntityRoutingManagerClient.gd"
 
 [input]
 
