@@ -15,6 +15,16 @@ func route(cmd,delta):
 		match json:
 			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
 				EntityFactory.handle_message(cmd,delta)
+			{"NextDestination":{"id": var id, "location": [var x, var y , var z]}}:
+				var s = EntityManager.server_entities[id]
+				if s != null:
+					var formatted = {"NextDestination":{"id":  id, "location": [ x, y , z]}}
+					s.message_controller.add_to_queue(formatted)
+			{"Location":{"id":var id, "location": [var x , var y , var z]}}:
+				var s = EntityManager.client_entities[id]
+				if s != null:
+					var formatted = {"Location":{"id":id, "location": [ x , y , z]}}
+					s.message_controller.add_to_queue(formatted)
 			{"SET_GLOB_LOCATION":{"id":var id,"location":[var x, var y, var z]}}:
 				var c = EntityManager.client_entities[id]
 				if c != null:

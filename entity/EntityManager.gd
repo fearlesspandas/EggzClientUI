@@ -36,6 +36,3 @@ func spawn_entity(id:String,location:Vector3,parent:Node,resource:Resource,creat
 	res.global_transform.origin = location
 	return res
 	
-func _process(delta):
-	print("server entities:",server_entities)
-	print("client entities:",client_entities)

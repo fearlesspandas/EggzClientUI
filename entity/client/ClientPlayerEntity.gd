@@ -18,15 +18,14 @@ func _physics_process(delta):
 	#for clientPlayerEntities we only want to react to serverside data
 	#only players produce messages, generically we don't want to do this
 	self.global_transform.origin = entity.global_transform.origin
+	ServerNetwork.getGlobLocation(body.id)
 	#entity.move_and_collide(-dir)	
 
 func _handle_message(msg,delta_accum):
-	print("entered client message handler")
 	match msg:
-		{'SET_GLOB_LOCATION':{'id':body.id,'location':var location}}:
+		{'Location':{'id':body.id,'location':[var x , var y , var z]}}:
 			print("setting clientside location")
-			body.body.global_transform.origin = location
+			body.body.global_transform.origin = Vector3(x,y,z)
 			pass
 		_ :
 			pass
-	print("mesasge has been handled yall we got it")
