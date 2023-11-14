@@ -40,7 +40,7 @@ func _physics_process(delta):
 		var diff = destination - body.global_transform.origin
 		if diff.length() > epsilon:	
 			movement.move(delta,destination,body)
-			print("active destination",destination)
+			#print("active destination",destination)
 		
 	#produce physics events such as location change
 	
