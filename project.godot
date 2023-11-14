@@ -8,6 +8,40 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "PhysicalPlayerEntity",
+"class": "ClientPlayerEntity",
+"language": "GDScript",
+"path": "res://entity/client/ClientPlayerEntity.gd"
+}, {
+"base": "Node",
+"class": "MessageController",
+"language": "GDScript",
+"path": "res://network/MessageController.gd"
+}, {
+"base": "Spatial",
+"class": "PhysicalPlayerEntity",
+"language": "GDScript",
+"path": "res://entity/PhysicalPlayerEntity.gd"
+}, {
+"base": "PhysicalPlayerEntity",
+"class": "ServerEntity",
+"language": "GDScript",
+"path": "res://entity/server/ServerEntity.gd"
+}, {
+"base": "Node",
+"class": "ServerKinematicMovement",
+"language": "GDScript",
+"path": "res://entity/movement/ServerKinematicMovement.gd"
+} ]
+_global_script_class_icons={
+"ClientPlayerEntity": "",
+"MessageController": "",
+"PhysicalPlayerEntity": "",
+"ServerEntity": "",
+"ServerKinematicMovement": ""
+}
+
 [application]
 
 config/name="EggzClientUI"
@@ -21,6 +55,7 @@ HttpServerManager="*res://network/HttpServerManager.gd"
 EntityFactory="*res://entity/EntityFactory.gd"
 EntityManager="*res://entity/EntityManager.gd"
 EntityRoutingManagerClient="*res://entity/EntityRoutingManagerClient.gd"
+Controller="*res://network/Controller.gd"
 
 [input]
 

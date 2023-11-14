@@ -2,11 +2,7 @@ extends Node
 
 
 
-var entities = {}
-
-
-func route(cmd,delta):
-	
+func parseJsonCmd(cmd,delta):
 	var parsed = JSON.parse(cmd)
 	print("errors:",parsed.error_string)
 	if parsed.result != null:
@@ -43,6 +39,11 @@ func route(cmd,delta):
 				print('No route specified for response:',cmd)
 	else:
 		print("Could not parse msg:",cmd)
+
+func route(cmd,delta):
+	parseJsonCmd(cmd,delta)
+	
+	
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.

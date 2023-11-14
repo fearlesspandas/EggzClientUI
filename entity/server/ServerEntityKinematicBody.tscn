@@ -1,10 +1,10 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://entity/server/PhysicalPlayerServerBody.gd" type="Script" id=2]
+[ext_resource path="res://entity/server/ServerEntityKinematicBody.gd" type="Script" id=2]
 
 [sub_resource type="SphereShape" id=1]
 
-[node name="PhysicalPlayerServerBody" type="RigidBody"]
+[node name="ServerEntityKinematicBody" type="KinematicBody"]
 script = ExtResource( 2 )
 
 [node name="CollisionShape" type="CollisionShape" parent="."]

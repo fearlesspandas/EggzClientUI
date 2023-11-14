@@ -1,5 +1,6 @@
 extends Node
 
+class_name MessageController
 onready var parent = get_parent()
 var queue = []
 var queue_out = [] #queue of events to be sent back to the server
@@ -11,7 +12,6 @@ func handle_next_message(delta):
 		delta_accum += delta
 		var msg = queue.pop_front()
 		if parent.has_method("_handle_message"):
-			
 			parent._handle_message(msg,delta_accum)
 			delta_accum = 0
 		else:
@@ -23,7 +23,6 @@ func handle_next_message(delta):
 		#todo potentially replace this delta with custom delta from last processed message
 func _physics_process(delta):
 	handle_next_message(delta)
-
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
