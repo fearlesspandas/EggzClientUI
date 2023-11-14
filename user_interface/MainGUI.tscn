@@ -51,6 +51,9 @@ margin_top = 10.0
 margin_right = 806.0
 margin_bottom = 50.0
 script = ExtResource( 4 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="ServerLabel" type="RichTextLabel" parent="ClientControl"]
 margin_left = 814.0

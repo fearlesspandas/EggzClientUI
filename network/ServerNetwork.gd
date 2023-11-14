@@ -46,11 +46,13 @@ func _connected(proto = ""):
 	_client.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
 	
 var data = []
+var delta_x = 0
 func _on_data():
 	# Print the received packet, you MUST always use get_peer(1).get_packet
 	# to receive data from server, and not get_packet directly when not
 	# using the MultiplayerAPI.
 	var cmd = _client.get_peer(1).get_packet().get_string_from_utf8()
+	EntityRoutingManagerClient.route(cmd,delta_x)
 	data.append(cmd)
 	pass
 func _process(delta):
@@ -58,8 +60,7 @@ func _process(delta):
 	# emission will only happen when calling this function.
 	#create_repair_egg(str(counter),"1")
 	#start_egg(counter,"1")
-	if data.size() > 0:
-		EntityRoutingManagerClient.route(data.pop_front(),delta)
+	delta_x = delta 
 	_client.poll()
 
 func create_glob(id:String,location:Vector3):

@@ -3,8 +3,9 @@ extends Node
 
 
 func parseJsonCmd(cmd,delta):
+	#print("raw comand:",cmd)
 	var parsed = JSON.parse(cmd)
-	print("errors:",parsed.error_string)
+	#print("errors:",parsed.error_string)
 	if parsed.result != null:
 		var json:Dictionary = parsed.result
 		
@@ -38,7 +39,8 @@ func parseJsonCmd(cmd,delta):
 			_:
 				print('No route specified for response:',cmd)
 	else:
-		print("Could not parse msg:",cmd)
+		pass
+		#print("Could not parse msg:",cmd)
 
 func route(cmd,delta):
 	parseJsonCmd(cmd,delta)

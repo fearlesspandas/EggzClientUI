@@ -9,10 +9,20 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Node",
+"class": "ClientKinematicMovement",
+"language": "GDScript",
+"path": "res://entity/movement/client/ClientKinematicMovement.gd"
+}, {
 "base": "PhysicalPlayerEntity",
 "class": "ClientPlayerEntity",
 "language": "GDScript",
 "path": "res://entity/client/ClientPlayerEntity.gd"
+}, {
+"base": "Node",
+"class": "MainGame",
+"language": "GDScript",
+"path": "res://user_interface/MainGUI.gd"
 }, {
 "base": "Node",
 "class": "MessageController",
@@ -32,10 +42,12 @@ _global_script_classes=[ {
 "base": "Node",
 "class": "ServerKinematicMovement",
 "language": "GDScript",
-"path": "res://entity/movement/ServerKinematicMovement.gd"
+"path": "res://entity/movement/server/ServerKinematicMovement.gd"
 } ]
 _global_script_class_icons={
+"ClientKinematicMovement": "",
 "ClientPlayerEntity": "",
+"MainGame": "",
 "MessageController": "",
 "PhysicalPlayerEntity": "",
 "ServerEntity": "",
