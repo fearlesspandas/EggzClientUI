@@ -2,7 +2,6 @@ extends PhysicalPlayerEntity
 class_name ServerEntity
 
 onready var message_controller:MessageController = MessageController.new()
-onready var movement : ServerKinematicMovement = ServerKinematicMovement.new()
 onready var spawn
 var requested_dest = false
 var timeout = 10
@@ -39,7 +38,7 @@ func _physics_process(delta):
 	if(destination != null ):
 		var diff = destination - body.global_transform.origin
 		if diff.length() > epsilon:	
-			movement.move(delta,destination,body)
+			movement.entity_move(delta,destination,body)
 			#print("active destination",destination)
 		else:
 			destination = null

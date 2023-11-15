@@ -34,9 +34,6 @@ func create_character_entity_server():
 func _on_Button_button_up():
 	if ServerNetwork.socket.connected:
 		spawn_client_world()
-	#spawn_server_world()
-	
-	#create_character_entity_server()
 		create_character_entity_client()
 	else:
 		print("Server is not connected")

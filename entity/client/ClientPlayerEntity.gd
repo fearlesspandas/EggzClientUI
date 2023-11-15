@@ -5,7 +5,7 @@ class_name ClientPlayerEntity
 #a child node PhysicalPlayerEntity which will contain a physics body depending on implemenmtation
 
 onready var message_controller:MessageController = MessageController.new()
-onready var movement:ClientKinematicMovement = ClientKinematicMovement.new()
+
 func _ready():
 	self.add_child(message_controller)
 	pass # Replace with function entity.
@@ -24,7 +24,7 @@ func _handle_message(msg,delta_accum):
 			#print("setting clientside location:",loc)
 			var diff:Vector3 = body.global_transform.origin - loc
 			
-			movement.move(delta_accum,loc,body)
+			movement.entity_move(delta_accum,loc,body)
 			pass
 		_ :
 			pass

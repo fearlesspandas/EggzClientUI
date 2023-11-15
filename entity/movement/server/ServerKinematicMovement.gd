@@ -1,4 +1,4 @@
-extends Node
+extends Movement
 
 class_name ServerKinematicMovement
 
