@@ -39,8 +39,8 @@ func parseJsonCmd(cmd,delta):
 			_:
 				print('No route specified for response:',cmd)
 	else:
-		pass
-		#print("Could not parse msg:",cmd)
+		#pass
+		print("Could not parse msg:",cmd)
 
 func route(cmd,delta):
 	parseJsonCmd(cmd,delta)

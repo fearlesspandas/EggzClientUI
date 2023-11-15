@@ -11,5 +11,10 @@ func init(id,secret):
 	socket =  ClientWebSocket.new()
 	socket.client_id = id
 	socket.secret = secret
+	socket.connect("server_connected",self,"start_data_transfer")
 	self.add_child(socket)
+	
+	#get server entities on startup
 
+func start_data_transfer():
+	socket.getAllEggs()

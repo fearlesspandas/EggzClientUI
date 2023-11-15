@@ -1,0 +1,24 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://user_interface/PlayerProfileUI.gd" type="Script" id=1]
+
+[node name="PlayerProfileUI" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="LabelFileLocation" type="RichTextLabel" parent="."]
+margin_left = 325.0
+margin_top = 59.0
+margin_right = 415.0
+margin_bottom = 77.0
+text = "File Location:"
+
+[node name="FileLocation" type="RichTextLabel" parent="."]
+margin_left = 414.0
+margin_top = 53.0
+margin_right = 633.0
+margin_bottom = 83.0

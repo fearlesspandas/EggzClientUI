@@ -1,8 +1,9 @@
 extends Node
 
 
-class_name ClientWebSocket
+signal server_connected
 
+class_name ClientWebSocket
 
 # Our WebSocketClient instance
 onready var _client = WebSocketClient.new()
@@ -51,11 +52,13 @@ func _connected(proto = ""):
 	# This is called on connection, "proto" will be the selected WebSocket
 	# sub-protocol (which is optional)
 	print("Connected with protocol: ", proto)
+	connected = true
 	# You MUST always use get_peer(1).put_packet to send data to server,
 	# and not put_packet directly when not using the MultiplayerAPI.
 	_client.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
 	_client.get_peer(1).put_packet(JSON.print({'BasicSession':{'id':"1","secret":secret}}).to_utf8())
 	print("sent session")
+	emit_signal("server_connected")
 	
 var data = []
 var delta_x = 0
@@ -85,8 +88,10 @@ func create_repair_egg(eggId:String,globId:String):
 func get_blob(id:String):
 	_client.get_peer(1).put_packet(JSON.print({'GET_BLOB':{'id':id}}).to_utf8())
 
-func relate_eggs(id1:String,id2:String,globid:String):
-	_client.get_peer(1).put_packet(JSON.print({'RELATE_EGGS':{'egg1':id1,'egg2':id2,'globId':globid}}).to_utf8())
+func relate_eggs(id1:String,id2:String,globid:String,bidirectional:bool):
+	_client.get_peer(1).put_packet(JSON.print({'RELATE_EGGS':{'egg1':id1,'egg2':id2,'globId':globid,'bidirectional':bidirectional}}).to_utf8())
+func unrelate_eggs(id1:String,id2:String,globid:String,bidirectional:bool):
+	_client.get_peer(1).put_packet(JSON.print({'UNRELATE_EGGS':{'egg1':id1,'egg2':id2,'globId':globid,'bidirectional':bidirectional}}).to_utf8())
 
 func tick_eggs():	
 	_client.get_peer(1).put_packet(JSON.print({'TICK_WORLD':{}}).to_utf8())
@@ -95,7 +100,7 @@ func getAllGlobs():
 	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_GLOBS':{}}).to_utf8())
 
 func getAllEggs():
-	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_STATS':{}}).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_EGGZ':{}}).to_utf8())	
 
 func getGlobLocation(id:String):
 	_client.get_peer(1).put_packet(JSON.print({'GET_GLOB_LOCATION':{'id':str(id)}}).to_utf8())	

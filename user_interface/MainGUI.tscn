@@ -19,6 +19,10 @@ servercharacter = ExtResource( 7 )
 [node name="ClientControl" type="Control" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
+margin_left = -2.0
+margin_top = 11.0
+margin_right = -2.0
+margin_bottom = 11.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -28,10 +32,11 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-margin_left = -8.0
-margin_top = -8.5
-margin_right = 8.0
-margin_bottom = 8.5
+margin_left = -1.5
+margin_top = -1.5
+margin_right = 1.5
+margin_bottom = 1.5
+color = Color( 0.72549, 0.32549, 0.32549, 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -78,10 +83,10 @@ __meta__ = {
 }
 
 [node name="Button" type="Button" parent="ClientControl"]
-margin_left = 750.0
+margin_left = 758.0
 margin_top = 66.0
 margin_right = 972.0
-margin_bottom = 141.0
+margin_bottom = 124.0
 text = "Spawn World and new character"
 __meta__ = {
 "_edit_use_anchors_": false

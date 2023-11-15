@@ -3,9 +3,11 @@ export var spawnWorld :Resource
 export var serverWorld: Resource
 export var maincharacter:Resource
 export var servercharacter:Resource
-onready var clientControl = find_node("ClientControl")
-onready var serverControl = find_node("ServerControl")
+onready var clientControl:Control = find_node("ClientControl")
+onready var serverControl:Control = find_node("ServerControl")
 onready var authrequest = find_node("AuthenticationRequest")
+onready var file_manager:GameFileManager = GameFileManager.new()
+onready var profiles:Profiles = Profiles.new()
 onready var spawn
 onready var serverSpawn
 
@@ -15,6 +17,13 @@ class_name MainGame
 #similarly starting a client is just instantiating spawn map currenly
 func _ready():
 	print("readying main")
+	self.add_child(file_manager)
+	file_manager.connect("profile_created",profiles,"create_profile_ui")
+	profiles.tab_align = TabContainer.ALIGN_CENTER
+	profiles.set_global_position(clientControl.rect_size / 2)
+	profiles.set_size(clientControl.rect_size/8)
+	#profiles.rect_size = clientControl.rect_size
+	self.add_child(profiles)
 	pass
 
 func spawn_client_world():
