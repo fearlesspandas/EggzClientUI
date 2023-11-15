@@ -13,7 +13,7 @@ func _input(event):
 		var dest = Vector3(x,y,z)
 		if id != null:
 			#print("entity id is not null")
-			ServerNetwork.add_destination(id,dest)
+			ServerNetwork.socket.add_destination(id,dest)
 func _physics_process(delta):
 	#aligns player space with kinematic body present clientplayerentity
 	#because cameraroot is a sub node it also follows the player body automatically

@@ -33,14 +33,16 @@ func freeze():
 func _physics_process(delta):
 	#freeze()
 	self.global_transform.origin = body.global_transform.origin
-	ServerNetwork.setGlobLocation(id,body.global_transform.origin)
+	ServerNetwork.socket.setGlobLocation(id,body.global_transform.origin)
 	
-	ServerNetwork.get_next_destination(id)
+	ServerNetwork.socket.get_next_destination(id)
 	if(destination != null ):
 		var diff = destination - body.global_transform.origin
 		if diff.length() > epsilon:	
 			movement.move(delta,destination,body)
 			#print("active destination",destination)
+		else:
+			destination = null
 		
 	#produce physics events such as location change
 	

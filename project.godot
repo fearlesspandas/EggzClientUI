@@ -20,6 +20,16 @@ _global_script_classes=[ {
 "path": "res://entity/client/ClientPlayerEntity.gd"
 }, {
 "base": "Node",
+"class": "ClientWebSocket",
+"language": "GDScript",
+"path": "res://network/ClientWebsocket.gd"
+}, {
+"base": "Spatial",
+"class": "Destination",
+"language": "GDScript",
+"path": "res://entity/client/destination/Destination.gd"
+}, {
+"base": "Node",
 "class": "MainGame",
 "language": "GDScript",
 "path": "res://user_interface/MainGUI.gd"
@@ -47,6 +57,8 @@ _global_script_classes=[ {
 _global_script_class_icons={
 "ClientKinematicMovement": "",
 "ClientPlayerEntity": "",
+"ClientWebSocket": "",
+"Destination": "",
 "MainGame": "",
 "MessageController": "",
 "PhysicalPlayerEntity": "",
@@ -68,6 +80,7 @@ EntityFactory="*res://entity/EntityFactory.gd"
 EntityManager="*res://entity/EntityManager.gd"
 EntityRoutingManagerClient="*res://entity/EntityRoutingManagerClient.gd"
 Controller="*res://network/Controller.gd"
+NetworkConfig="*res://user_interface/NetworkConfig.gd"
 
 [input]
 

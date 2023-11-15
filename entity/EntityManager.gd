@@ -13,7 +13,7 @@ func create_entity(id:String,location:Vector3,parent:Node,resource:Resource,crea
 		server_entities[id] = res
 	else:
 		client_entities[id] = res
-	ServerNetwork.create_glob(id,location)
+	ServerNetwork.socket.create_glob(id,location)
 	#ServerNetwork.setGlobLocation(id,location)
 	parent.add_child(res)
 	if res.has_method("init_with_id"):
@@ -21,7 +21,6 @@ func create_entity(id:String,location:Vector3,parent:Node,resource:Resource,crea
 	res.global_transform.origin = location
 	
 func _ready():
-	ServerNetwork._ready()
 	pass # Replace with function body.
 #does not request a new entity be created serverside, whereas create_entity requests
 #that a new entity is also spawned on the server

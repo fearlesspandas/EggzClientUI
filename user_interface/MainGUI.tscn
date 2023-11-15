@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://user_interface/MainGUI.gd" type="Script" id=1]
 [ext_resource path="res://entity/Player.tscn" type="PackedScene" id=2]
@@ -7,6 +7,7 @@
 [ext_resource path="res://world/SpawnBlockFrame.tscn" type="PackedScene" id=5]
 [ext_resource path="res://world/client/SpawnBlockNoPlayer.tscn" type="PackedScene" id=6]
 [ext_resource path="res://entity/server/ServerEntity.tscn" type="PackedScene" id=7]
+[ext_resource path="res://user_interface/AuthenticationRequest.gd" type="Script" id=8]
 
 [node name="MainGame" type="Node"]
 script = ExtResource( 1 )
@@ -82,6 +83,16 @@ margin_top = 66.0
 margin_right = 972.0
 margin_bottom = 141.0
 text = "Spawn World and new character"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="authbutton" type="Button" parent="ClientControl"]
+margin_left = 788.0
+margin_top = 153.0
+margin_right = 935.0
+margin_bottom = 210.0
+text = "auth request"
 
 [node name="ServerControl" type="Control" parent="."]
 margin_left = 9.0
@@ -92,5 +103,9 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="AuthenticationRequest" type="HTTPRequest" parent="."]
+script = ExtResource( 8 )
+
 [connection signal="toggled" from="ClientControl/SpawnServerEntities" to="ClientControl/SpawnServerEntities" method="_on_SpawnServerEntities_toggled"]
 [connection signal="button_up" from="ClientControl/Button" to="." method="_on_Button_button_up"]
+[connection signal="button_up" from="ClientControl/authbutton" to="." method="_on_authbutton_button_up"]

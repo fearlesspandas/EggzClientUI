@@ -11,7 +11,7 @@ func _ready():
 	pass # Replace with function body.
 
 func _process(delta):
-	if ServerNetwork.connected:
+	if ServerNetwork.socket != null and ServerNetwork.socket.connected:
 		self.color = Color.green
 	else:
 		self.color = Color.red
