@@ -16,21 +16,20 @@ func _ready():
 	profile.id = "1"
 	profile.secret = "SECRET"
 	profile.file_location = ""
-	
+
 	
 	viewport_container.set_size(self.rect_size)
 	viewport.set_size_override(true,self.rect_size)
 	self.add_child(viewport_container)
 	viewport_container.add_child(viewport)
 
-	entity_management.socket = clientWebSocket
 	entity_management.client_id = profile.id
 	self.add_child(entity_management)
-	entity_management.start_socket(profile.secret)
+	ServerNetwork.init(profile.id,profile.secret,entity_management,"_on_data")
 	
 	connection_indicator.set_size(Vector2(connection_ind_size,connection_ind_size))
 	connection_indicator.set_global_position(Vector2(connection_ind_size,connection_ind_size))
-	connection_indicator.socket = entity_management.socket
+	connection_indicator.client_id = entity_management.client_id
 	self.add_child(connection_indicator)
 	
 	entity_management.spawn_client_world(self,Vector3(0,0,0))

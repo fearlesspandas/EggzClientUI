@@ -3,7 +3,7 @@ extends Node
 class_name EntityManagement
 signal entity_created(entity,parent,server_entity) #Node,Node,bool
 signal terrain_created(entity,parent,server_entity) #Node,Node,bool
-onready var socket:ClientWebSocket
+var client_id:String
 var client_entities = {}
 var server_entities = {}
 
@@ -13,14 +13,12 @@ func create_entity(id:String,location:Vector3,parent:Node,resource:Resource,crea
 		server_entities[id] = res
 	else:
 		client_entities[id] = res
-	socket.create_glob(id,location)
-	socket.setGlobLocation(id,location)
+	ServerNetwork.sockets[client_id].create_glob(id,location)
+	ServerNetwork.sockets[client_id].setGlobLocation(id,location)
 	parent.add_child(res)
 	if res.has_method("init_with_id"):
 		res.init_with_id(id)
 	res.global_transform.origin = location
-	if res.message_controller != null:
-			res.message_controller.socket = socket
 	emit_signal("entity_created",res,parent,create_as_server_entity)
 	
 func _ready():
@@ -38,8 +36,6 @@ func spawn_entity(id:String,location:Vector3,parent:Node,resource:Resource,creat
 	res.global_transform.origin = location
 	
 	emit_signal("terrain_created",res,parent,create_as_server_entity)
-	if res.message_controller != null:
-			res.message_controller.socket = socket
 	return res
 #terrain does not have message controlers associated with it
 func spawn_terrain(id:String,location:Vector3,parent:Node,resource:Resource,create_as_server_entity:bool):

@@ -34,8 +34,8 @@ func _ready():
 	# This signal is emitted when not using the Multiplayer API every time
 	# a full packet is received.
 	# Alternatively, you could check get_peer(1).get_available_packets() in a loop.
-	#_client.connect("data_received", self, "_on_data")
-	print("removed old data received in ClientWebSocket")
+	
+	#print("removed old data received in ClientWebSocket")
 	# Initiate connection to the given URL.
 	
 
@@ -81,7 +81,7 @@ func _process(delta):
 	_client.poll()
 
 func get_packet():
-	_client.get_peer(1).get_packet().get_string_from_utf8()
+	return _client.get_peer(1).get_packet().get_string_from_utf8()
 func create_glob(id:String,location:Vector3):
 	#print("calling create glob")
 	_client.get_peer(1).put_packet(JSON.print({'CREATE_GLOB':{'globId':id,'location':[location.x,location.y,location.z]}}).to_utf8())
@@ -110,7 +110,6 @@ func getGlobLocation(id:String):
 	_client.get_peer(1).put_packet(JSON.print({'GET_GLOB_LOCATION':{'id':str(id)}}).to_utf8())	
 
 func setGlobLocation(id:String,location:Vector3):
-	#print("setting location:" , id, location)
 	_client.get_peer(1).put_packet(JSON.print({'SET_GLOB_LOCATION':{'id':str(id),'location':[location.x,location.y,location.z]}}).to_utf8())	
 
 func setGlobRotation(id,rotation):

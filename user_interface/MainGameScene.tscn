@@ -4,3 +4,4 @@
 
 [node name="MainGameScene" type="Node"]
 script = ExtResource( 1 )
+isclient = true

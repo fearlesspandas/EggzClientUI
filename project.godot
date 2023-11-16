@@ -147,7 +147,7 @@ _global_script_class_icons={
 [application]
 
 config/name="EggzClientUI"
-run/main_scene="res://user_interface/MainGUI.tscn"
+run/main_scene="res://user_interface/MainGameScene.tscn"
 config/icon="res://icon.png"
 
 [autoload]

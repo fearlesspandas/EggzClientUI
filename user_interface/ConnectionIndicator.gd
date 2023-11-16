@@ -2,14 +2,14 @@ extends ColorRect
 
 class_name ConnectionIndicator
 
-var socket:ClientWebSocket
+var client_id
 func _ready():
 	pass # Replace with function body.
 
 func _process(delta):
-	if socket == null:
+	if ServerNetwork.sockets[client_id] == null:
 		self.color = Color.red
-	elif socket.connected:
+	elif ServerNetwork.sockets[client_id].connected:
 		self.color = Color.green
 	else:
 		self.color = Color.red

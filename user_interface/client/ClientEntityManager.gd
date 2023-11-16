@@ -3,10 +3,7 @@ extends EntityManagement
 class_name ClientEntityManager
 
 
-export var clientSpawnWorld:Resource
-export var maincharacter:Resource
 onready var message_controller : MessageController = MessageController.new()
-onready var client_id
 var spawn
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -15,17 +12,8 @@ func _ready():
 	self.add_child(message_controller)
 	pass # Replace with function body.
 
-func start_socket(secret:String):
-	socket.client_id = client_id 
-	socket.secret = secret
-	self.add_child(self.socket)
-	self.socket._client.connect("data_received", self, "_on_data")
-	self.socket.connect_to_server()
-	message_controller.socket = self.socket
-	
 func _handle_message(msg,delta_accum):
 	route(msg,delta_accum)
-	print("Client entity manager received message")
 	
 func spawn_client_world(parent:Node,location:Vector3):
 	print("spawned client world")
@@ -42,7 +30,7 @@ func create_character_entity_client(id:String):
 		print("no spawn set for client entity manager")
 		
 func _on_data():
-	var cmd = socket.get_packet()
+	var cmd = ServerNetwork.sockets[client_id].get_packet()
 	message_controller.add_to_queue(cmd)
 
 

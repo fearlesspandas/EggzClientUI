@@ -14,8 +14,8 @@ func _physics_process(delta):
 	#for clientPlayerEntities we only want to react to serverside data
 	#only players produce messages, generically we don't want to do this
 	#self.global_transform.origin = body.global_transform.origin
-	if message_controller.socket != null:
-		message_controller.socket.getGlobLocation(id)
+	if ServerNetwork.sockets[id] != null:
+		ServerNetwork.sockets[id].getGlobLocation(id)
 	#entity.move_and_collide(-dir)	
 
 func _handle_message(msg,delta_accum):
