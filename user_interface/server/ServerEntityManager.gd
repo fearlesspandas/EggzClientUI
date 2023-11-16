@@ -22,17 +22,17 @@ func start_socket(secret:String):
 	self.add_child(self.socket)
 	self.socket._client.connect("data_received", self, "_on_data")
 	self.socket.connect_to_server()
-	
+	message_controller.socket = self.socket
 func _handle_message(msg,delta_accum):
-	parseJsonCmd(msg,delta_accum)
-	print("Client entity manager received message")
+	route(msg,delta_accum)
+	print("Server entity manager received message")
 	
-func spawn_client_world(parent:Node,location:Vector3):
+func spawn_server_world(parent:Node,location:Vector3):
 	print("spawned client world")
 	var resource = AssetMapper.matchAsset(AssetMapper.server_spawn)
-	spawn = spawn_entity("0",location,parent,resource,false)
+	spawn = spawn_terrain("0",location,parent,resource,false)
 
-func create_character_entity_client(id:String):
+func create_character_entity_server(id:String):
 	print("spawnging client character")
 	var location = Vector3(0,10,0) 
 	if spawn != null:
@@ -69,5 +69,6 @@ func parseJsonCmd(cmd,delta):
 		print("Could not parse msg:",cmd)
 
 func route(cmd,delta):
-	parseJsonCmd(cmd,delta)
+	if cmd != null:
+		parseJsonCmd(cmd,delta)
 	

@@ -32,9 +32,9 @@ func freeze():
 func _physics_process(delta):
 	#freeze()
 	self.global_transform.origin = body.global_transform.origin
-	ServerNetwork.socket.setGlobLocation(id,body.global_transform.origin)
-	
-	ServerNetwork.socket.get_next_destination(id)
+	if message_controller.socket != null:
+		message_controller.socket.setGlobLocation(id,body.global_transform.origin)
+		message_controller.socket.get_next_destination(id)
 	if(destination != null ):
 		var diff = destination - body.global_transform.origin
 		if diff.length() > epsilon:	

@@ -24,7 +24,7 @@ func prep_server():
 	serverControl.set_global_position(client_dims)
 	#clientControl.set_size(dims.size)
 	serverControl.set_global_position(Vector2(0,0))
-	self.add_child(clientControl)
+	self.add_child(serverControl)
 func _ready():
 	if isclient:
 		prep_client()

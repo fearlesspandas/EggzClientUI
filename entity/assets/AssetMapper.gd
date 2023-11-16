@@ -2,7 +2,7 @@ extends Node
 
 var assets = {
 	0 : preload("res://entity/Player.tscn"),
-	1 : preload("res://entity/server/ServerEntityKinematicBody.tscn"),
+	1 : preload("res://entity/server/ServerEntity.tscn"),
 	2 : preload("res://world/SpawnBlockFrame.tscn"),
 	3 : preload("res://world/client/SpawnBlockNoPlayer.tscn")
 }
