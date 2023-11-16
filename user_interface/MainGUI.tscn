@@ -7,7 +7,7 @@
 [ext_resource path="res://world/SpawnBlockFrame.tscn" type="PackedScene" id=5]
 [ext_resource path="res://world/client/SpawnBlockNoPlayer.tscn" type="PackedScene" id=6]
 [ext_resource path="res://entity/server/ServerEntity.tscn" type="PackedScene" id=7]
-[ext_resource path="res://user_interface/AuthenticationRequest.gd" type="Script" id=8]
+[ext_resource path="res://network/AuthenticationRequest.gd" type="Script" id=8]
 [ext_resource path="res://user_interface/CreateNewProfile.gd" type="Script" id=9]
 [ext_resource path="res://user_interface/AuthButton.gd" type="Script" id=10]
 

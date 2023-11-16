@@ -3,8 +3,9 @@ extends Node
 export var isclient:bool
 onready var clientControl:ClientControl = ClientControl.new()
 onready var serverControl:ServerControl = ServerControl.new()
-
+onready var authrequest:AuthenticationRequest = AuthenticationRequest.new()
 var client_dims:Vector2
+var client_id
 class_name MainGameScene
 #starting server means loading server entities which will automatically
 #start updating with message traffic
@@ -26,6 +27,7 @@ func prep_server():
 	serverControl.set_global_position(Vector2(0,0))
 	self.add_child(serverControl)
 func _ready():
+	authrequest._initiate_auth_request(client_id)
 	if isclient:
 		prep_client()
 	else:

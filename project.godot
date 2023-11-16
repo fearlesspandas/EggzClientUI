@@ -12,7 +12,7 @@ _global_script_classes=[ {
 "base": "HTTPRequest",
 "class": "AuthenticationRequest",
 "language": "GDScript",
-"path": "res://user_interface/AuthenticationRequest.gd"
+"path": "res://network/AuthenticationRequest.gd"
 }, {
 "base": "Control",
 "class": "ClientControl",

@@ -8,16 +8,18 @@ onready var viewport_container:ViewportContainer = ViewportContainer.new()
 onready var viewport:Viewport = Viewport.new()
 onready var clientWebSocket:ClientWebSocket = ClientWebSocket.new()
 onready var entity_management:ClientEntityManager = ClientEntityManager.new()
-var profile:PlayerProfile = PlayerProfile.new()
+onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
+var profile:PlayerProfile
 var connection_ind_size = 30
 
 func _ready():
-	print("entering ClientControl")
-	profile.id = "1"
-	profile.secret = "SECRET"
-	profile.file_location = ""
-
+	#starts auth request that retrieves server secret to be sent on socket startup
+	auth_request.connect("session_created",self,"load_scene")
+	auth_request._initiate_auth_request(profile.id)
 	
+func load_scene(id,secret):
+	profile.secret = secret
+	print("entering ClientControl")
 	viewport_container.set_size(self.rect_size)
 	viewport.set_size_override(true,self.rect_size)
 	self.add_child(viewport_container)

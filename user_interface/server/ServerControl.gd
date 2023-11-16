@@ -5,15 +5,16 @@ class_name ServerControl
 
 onready var connection_indicator:ConnectionIndicator = ConnectionIndicator.new()
 onready var entity_management:ServerEntityManager = ServerEntityManager.new()
-var profile:PlayerProfile = PlayerProfile.new()
+onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
+var profile:PlayerProfile
 var connection_ind_size = 30
 
 func _ready():
+	auth_request.connect("session_created",self,"load_scene")
+	auth_request._initiate_auth_request(profile.id)
+func load_scene(id,secret):
+	profile.secret = secret
 	print("entering control")
-	profile.id = "1"
-	profile.secret = "SECRET"
-	profile.file_location = ""
-	
 	
 	entity_management.client_id = profile.id
 	self.add_child(entity_management)
