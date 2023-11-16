@@ -19,26 +19,22 @@ func _handle_message(msg,delta_accum):
 	route(msg,delta_accum)
 	
 func spawn_server_world(parent:Node,location:Vector3):
-	print("spawned client world")
+	print("spawned server world")
 	var resource = AssetMapper.matchAsset(AssetMapper.server_spawn)
 	spawn = spawn_terrain("0",location,parent,resource,true)
 
 func create_character_entity_server(id:String):
-	print("spawnging client character")
+	print("spawning server character")
 	var location = Vector3(0,10,0) 
 	if spawn != null:
 		var resource = AssetMapper.matchAsset(AssetMapper.server_player_model)
 		create_entity(id,location,spawn,resource,true)
 	else:
-		print("no spawn set for client entity manager")
+		print("no spawn set for server entity manager")
 		
 func _on_data():
 	var cmd = ServerNetwork.sockets[client_id].get_packet()
 	message_controller.add_to_queue(cmd)
-
-
-
-
 
 func parseJsonCmd(cmd,delta):
 	#print("raw comand:",cmd)
@@ -62,6 +58,5 @@ func parseJsonCmd(cmd,delta):
 func route(cmd,delta):
 	#print("cmd serverentitymanager:",cmd)
 	if cmd != null:
-		
 		parseJsonCmd(cmd,delta)
 	

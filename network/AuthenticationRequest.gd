@@ -21,9 +21,10 @@ func _initiate_auth_request(id:String):
 
 func _on_request_completed(result,responseCode,headers,body):
 	var res = JSON.parse(body.get_string_from_utf8())
+	print("request has somewhat resolved")
 	match res.result:
 		{"BasicSession":{"id":var id, "secret" : var secret}}:
-			emit_signal("request_completed",id,secret)
+			emit_signal("session_created",id,secret)
 			print("HttpAuthResult:",res.result)
 		_:
 			print("Authentication Http Requst could not find a handler for the result:",res.result)

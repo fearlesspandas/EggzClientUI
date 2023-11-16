@@ -1,18 +1,18 @@
 extends Control
 
 
-class_name ServerControl
+class_name AuthenticatedControl
 
 onready var connection_indicator:ConnectionIndicator = ConnectionIndicator.new()
-onready var entity_management:ServerEntityManager = ServerEntityManager.new()
+
 onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
 var profile:PlayerProfile # i could remove secret from profile potentially
 var connection_ind_size = 30
-
+onready var entity_management:EntityManagement
 func _ready():
 	auth_request.connect("session_created",self,"load_scene")
-	self.add_child(auth_request)
 	auth_request._initiate_auth_request(profile.id)
+	
 func load_scene(id,secret):
 	profile.secret = secret
 	print("entering control")

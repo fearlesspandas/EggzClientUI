@@ -20,12 +20,13 @@ func spawn_client_world(parent:Node,location:Vector3):
 	var resource = AssetMapper.matchAsset(AssetMapper.client_spawn)
 	spawn = spawn_terrain("0",location,parent,resource,false)
 
-func create_character_entity_client(id:String):
+func create_character_entity_client(id:String, parent = spawn):
 	print("spawnging client character")
 	var location = Vector3(0,10,0) 
 	if spawn != null:
 		var resource = AssetMapper.matchAsset(AssetMapper.player_model)
-		create_entity(id,location,spawn,resource,false)
+		#create_entity(id,location,parent,resource,false)
+		spawn_player_client(id,location,parent)
 	else:
 		print("no spawn set for client entity manager")
 		
