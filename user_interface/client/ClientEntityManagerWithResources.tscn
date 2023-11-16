@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://user_interface/client/ClientEntityManager.gd" type="Script" id=1]
+[ext_resource path="res://world/client/SpawnBlockNoPlayer.tscn" type="PackedScene" id=2]
+[ext_resource path="res://entity/Player.tscn" type="PackedScene" id=3]
+
+[node name="ClientEntityManagerWithResources" type="Node"]
+script = ExtResource( 1 )
+clientSpawnWorld = ExtResource( 2 )
+maincharacter = ExtResource( 3 )

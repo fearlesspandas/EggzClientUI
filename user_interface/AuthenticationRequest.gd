@@ -1,9 +1,7 @@
 extends HTTPRequest
 
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
+class_name AuthenticationRequest
 
 onready var main_game:MainGame = find_parent("MainGame")
 # Called when the node enters the scene tree for the first time.
@@ -25,7 +23,8 @@ func _on_request_completed(result,responseCode,headers,body):
 	var res = JSON.parse(body.get_string_from_utf8())
 	match res.result:
 		{"BasicSession":{"id":var id, "secret" : var secret}}:
+			print(res.result)
 			ServerNetwork.init(id,secret)
 			main_game.file_manager.new_player_profile(id,secret,"myfilelocation")
 		_:
-			print("Authentication Http Requst could not find a handler for the result")
+			print("Authentication Http Requst could not find a handler for the result:",res.result)

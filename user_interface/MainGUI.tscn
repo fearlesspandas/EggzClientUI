@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://user_interface/MainGUI.gd" type="Script" id=1]
 [ext_resource path="res://entity/Player.tscn" type="PackedScene" id=2]
@@ -8,6 +8,8 @@
 [ext_resource path="res://world/client/SpawnBlockNoPlayer.tscn" type="PackedScene" id=6]
 [ext_resource path="res://entity/server/ServerEntity.tscn" type="PackedScene" id=7]
 [ext_resource path="res://user_interface/AuthenticationRequest.gd" type="Script" id=8]
+[ext_resource path="res://user_interface/CreateNewProfile.gd" type="Script" id=9]
+[ext_resource path="res://user_interface/AuthButton.gd" type="Script" id=10]
 
 [node name="MainGame" type="Node"]
 script = ExtResource( 1 )
@@ -41,12 +43,12 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="TextEdit" type="TextEdit" parent="ClientControl"]
-margin_left = 9.0
-margin_top = 478.0
-margin_right = 322.0
-margin_bottom = 577.0
-text = "Commands go here"
+[node name="NewProfileID" type="TextEdit" parent="ClientControl"]
+margin_left = 13.0
+margin_top = 65.0
+margin_right = 326.0
+margin_bottom = 164.0
+text = "newprofileid"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -82,7 +84,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Button" type="Button" parent="ClientControl"]
+[node name="SpawnWorld" type="Button" parent="ClientControl"]
 margin_left = 758.0
 margin_top = 66.0
 margin_right = 972.0
@@ -98,19 +100,25 @@ margin_top = 153.0
 margin_right = 935.0
 margin_bottom = 210.0
 text = "auth request"
+script = ExtResource( 10 )
+
+[node name="CreateNewProfile" type="Button" parent="ClientControl"]
+margin_right = 415.0
+margin_bottom = 41.0
+text = "Create New Profile"
+script = ExtResource( 9 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="ServerControl" type="Control" parent="."]
-margin_left = 9.0
-margin_top = 11.0
-margin_right = 226.0
-margin_bottom = 122.0
+margin_left = 991.0
+margin_top = 8.0
+margin_right = 1014.0
+margin_bottom = 21.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="AuthenticationRequest" type="HTTPRequest" parent="."]
 script = ExtResource( 8 )
-
-[connection signal="toggled" from="ClientControl/SpawnServerEntities" to="ClientControl/SpawnServerEntities" method="_on_SpawnServerEntities_toggled"]
-[connection signal="button_up" from="ClientControl/Button" to="." method="_on_Button_button_up"]
-[connection signal="button_up" from="ClientControl/authbutton" to="." method="_on_authbutton_button_up"]

@@ -9,6 +9,21 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "HTTPRequest",
+"class": "AuthenticationRequest",
+"language": "GDScript",
+"path": "res://user_interface/AuthenticationRequest.gd"
+}, {
+"base": "Control",
+"class": "ClientControl",
+"language": "GDScript",
+"path": "res://user_interface/client/ClientControl.gd"
+}, {
+"base": "EntityManagement",
+"class": "ClientEntityManager",
+"language": "GDScript",
+"path": "res://user_interface/client/ClientEntityManager.gd"
+}, {
 "base": "Movement",
 "class": "ClientKinematicMovement",
 "language": "GDScript",
@@ -24,10 +39,20 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://network/ClientWebsocket.gd"
 }, {
+"base": "ColorRect",
+"class": "ConnectionIndicator",
+"language": "GDScript",
+"path": "res://user_interface/ConnectionIndicator.gd"
+}, {
 "base": "Spatial",
 "class": "Destination",
 "language": "GDScript",
 "path": "res://entity/client/destination/Destination.gd"
+}, {
+"base": "Node",
+"class": "EntityManagement",
+"language": "GDScript",
+"path": "res://entity/EntityManagement.gd"
 }, {
 "base": "Node",
 "class": "GameFileManager",
@@ -38,6 +63,11 @@ _global_script_classes=[ {
 "class": "MainGame",
 "language": "GDScript",
 "path": "res://user_interface/MainGUI.gd"
+}, {
+"base": "Node",
+"class": "MainGameScene",
+"language": "GDScript",
+"path": "res://user_interface/MainGameScene.gd"
 }, {
 "base": "Node",
 "class": "MessageController",
@@ -69,10 +99,20 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/Profiles.gd"
 }, {
+"base": "Control",
+"class": "ServerControl",
+"language": "GDScript",
+"path": "res://user_interface/server/ServerControl.gd"
+}, {
 "base": "PhysicalPlayerEntity",
 "class": "ServerEntity",
 "language": "GDScript",
 "path": "res://entity/server/ServerEntity.gd"
+}, {
+"base": "EntityManagement",
+"class": "ServerEntityManager",
+"language": "GDScript",
+"path": "res://user_interface/server/ServerEntityManager.gd"
 }, {
 "base": "Movement",
 "class": "ServerKinematicMovement",
@@ -80,19 +120,27 @@ _global_script_classes=[ {
 "path": "res://entity/movement/server/ServerKinematicMovement.gd"
 } ]
 _global_script_class_icons={
+"AuthenticationRequest": "",
+"ClientControl": "",
+"ClientEntityManager": "",
 "ClientKinematicMovement": "",
 "ClientPlayerEntity": "",
 "ClientWebSocket": "",
+"ConnectionIndicator": "",
 "Destination": "",
+"EntityManagement": "",
 "GameFileManager": "",
 "MainGame": "",
+"MainGameScene": "",
 "MessageController": "",
 "Movement": "",
 "PhysicalPlayerEntity": "",
 "PlayerProfile": "",
 "PlayerProfileUI": "",
 "Profiles": "",
+"ServerControl": "",
 "ServerEntity": "",
+"ServerEntityManager": "",
 "ServerKinematicMovement": ""
 }
 
@@ -111,6 +159,7 @@ EntityManager="*res://entity/EntityManager.gd"
 EntityRoutingManagerClient="*res://entity/EntityRoutingManagerClient.gd"
 Controller="*res://network/Controller.gd"
 NetworkConfig="*res://user_interface/NetworkConfig.gd"
+AssetMapper="*res://entity/assets/AssetMapper.gd"
 
 [input]
 

@@ -22,3 +22,14 @@ margin_left = 414.0
 margin_top = 53.0
 margin_right = 633.0
 margin_bottom = 83.0
+
+[node name="Button" type="Button" parent="."]
+margin_left = 194.0
+margin_top = 165.0
+margin_right = 373.0
+margin_bottom = 275.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[connection signal="button_up" from="Button" to="." method="_on_Button_button_up"]

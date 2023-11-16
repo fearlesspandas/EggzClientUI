@@ -14,10 +14,17 @@ var client_id
 var secret
 func _init():
 	pass
-	
+
+func connect_to_server():
+	var err = _client.connect_to_url(get_websocket_url(),['json'])
+	connected = true
+	if err != OK:
+		connected = false
+		print("Unable to connect")
+		set_process(false)
 func _ready():
-	print("client id:", client_id)
-	print("secret:",secret)
+	print("websocket client id: ", client_id)
+	print("websocket secret: ",secret)
 	if connected:
 		pass
 	# Connect base signals to get notified of connection open, close, and errors.
@@ -27,15 +34,10 @@ func _ready():
 	# This signal is emitted when not using the Multiplayer API every time
 	# a full packet is received.
 	# Alternatively, you could check get_peer(1).get_available_packets() in a loop.
-	_client.connect("data_received", self, "_on_data")
-	
+	#_client.connect("data_received", self, "_on_data")
+	print("removed old data received in ClientWebSocket")
 	# Initiate connection to the given URL.
-	var err = _client.connect_to_url(get_websocket_url(),['json'])
-	connected = true
-	if err != OK:
-		connected = false
-		print("Unable to connect")
-		set_process(false)
+	
 
 func get_websocket_url():
 	return NetworkConfig.get_websocket_url(client_id)
@@ -56,7 +58,7 @@ func _connected(proto = ""):
 	# You MUST always use get_peer(1).put_packet to send data to server,
 	# and not put_packet directly when not using the MultiplayerAPI.
 	_client.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
-	_client.get_peer(1).put_packet(JSON.print({'BasicSession':{'id':"1","secret":secret}}).to_utf8())
+	_client.get_peer(1).put_packet(JSON.print({'BasicSession':{'id':client_id,"secret":secret}}).to_utf8())
 	print("sent session")
 	emit_signal("server_connected")
 	
@@ -78,6 +80,8 @@ func _process(delta):
 	delta_x = delta 
 	_client.poll()
 
+func get_packet():
+	_client.get_peer(1).get_packet().get_string_from_utf8()
 func create_glob(id:String,location:Vector3):
 	#print("calling create glob")
 	_client.get_peer(1).put_packet(JSON.print({'CREATE_GLOB':{'globId':id,'location':[location.x,location.y,location.z]}}).to_utf8())

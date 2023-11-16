@@ -51,7 +51,7 @@ func _physics_process(delta):
 	pass
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	OS.window_fullscreen = true
+	OS.window_fullscreen = false
 	pass # Replace with function body.
 
 

@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://entity/server/ServerEntity.tscn" type="PackedScene" id=1]
+[ext_resource path="res://user_interface/server/ServerEntityManager.gd" type="Script" id=2]
+[ext_resource path="res://world/SpawnBlockFrame.tscn" type="PackedScene" id=3]
+
+[node name="Node" type="Node"]
+script = ExtResource( 2 )
+serverSpawnWorld = ExtResource( 3 )
+servercharacter = ExtResource( 1 )

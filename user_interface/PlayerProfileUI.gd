@@ -2,8 +2,11 @@ extends Control
 class_name PlayerProfileUI
 onready var profile:PlayerProfile
 onready var file_location:RichTextLabel = find_node("FileLocation")
+onready var game:MainGameScene = MainGameScene.new()
 # Called when the node enters the scene tree for the first time.
+
 func _ready():
+	self.add_child(game)
 	pass # Replace with function body.
 
 func _process(delta):
@@ -13,6 +16,8 @@ func _process(delta):
 		if profile.id != null:
 			self
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+
+
+func _on_Button_button_up():
+	print("pressed button")
+	game.spawn_client_world()
