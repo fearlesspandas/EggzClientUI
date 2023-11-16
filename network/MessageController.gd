@@ -2,6 +2,7 @@ extends Node
 
 class_name MessageController
 onready var parent = get_parent()
+var socket:ClientWebSocket # change client socket logic from entity controller to here, entitycontroller no longer needs to create an entity
 var queue = []
 var queue_out = [] #queue of events to be sent back to the server
 var delta_accum = 0

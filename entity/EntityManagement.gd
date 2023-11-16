@@ -13,12 +13,14 @@ func create_entity(id:String,location:Vector3,parent:Node,resource:Resource,crea
 		server_entities[id] = res
 	else:
 		client_entities[id] = res
-		socket.create_glob(id,location)
-	#ServerNetwork.setGlobLocation(id,location)
+	socket.create_glob(id,location)
+	socket.setGlobLocation(id,location)
 	parent.add_child(res)
 	if res.has_method("init_with_id"):
 		res.init_with_id(id)
 	res.global_transform.origin = location
+	if res.message_controller != null:
+			res.message_controller.socket = socket
 	emit_signal("entity_created",res,parent,create_as_server_entity)
 	
 func _ready():
@@ -34,6 +36,22 @@ func spawn_entity(id:String,location:Vector3,parent:Node,resource:Resource,creat
 	#ServerNetwork.setGlobLocation(id,location)
 	parent.add_child(res)
 	res.global_transform.origin = location
+	
+	emit_signal("terrain_created",res,parent,create_as_server_entity)
+	if res.message_controller != null:
+			res.message_controller.socket = socket
+	return res
+#terrain does not have message controlers associated with it
+func spawn_terrain(id:String,location:Vector3,parent:Node,resource:Resource,create_as_server_entity:bool):
+	var res = load(resource.resource_path).instance()
+	if create_as_server_entity:
+		server_entities[id] = res
+	else:
+		client_entities[id] = res
+	#ServerNetwork.setGlobLocation(id,location)
+	parent.add_child(res)
+	res.global_transform.origin = location
+	
 	emit_signal("terrain_created",res,parent,create_as_server_entity)
 	return res
 	
