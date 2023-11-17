@@ -65,16 +65,6 @@ _global_script_classes=[ {
 "path": "res://user_interface/GameFileManager.gd"
 }, {
 "base": "Node",
-"class": "MainGame",
-"language": "GDScript",
-"path": "res://user_interface/MainGUI.gd"
-}, {
-"base": "Control",
-"class": "MainGameScene",
-"language": "GDScript",
-"path": "res://user_interface/MainGameScene.gd"
-}, {
-"base": "Node",
 "class": "MessageController",
 "language": "GDScript",
 "path": "res://network/MessageController.gd"
@@ -98,11 +88,6 @@ _global_script_classes=[ {
 "class": "PlayerProfile",
 "language": "GDScript",
 "path": "res://user_interface/PlayerProfile.gd"
-}, {
-"base": "Control",
-"class": "PlayerProfileUI",
-"language": "GDScript",
-"path": "res://user_interface/PlayerProfileUI.gd"
 }, {
 "base": "TabContainer",
 "class": "Profiles",
@@ -141,14 +126,11 @@ _global_script_class_icons={
 "Destination": "",
 "EntityManagement": "",
 "GameFileManager": "",
-"MainGame": "",
-"MainGameScene": "",
 "MessageController": "",
 "Movement": "",
 "NewProfileTab": "",
 "PhysicalPlayerEntity": "",
 "PlayerProfile": "",
-"PlayerProfileUI": "",
 "Profiles": "",
 "ServerControl": "",
 "ServerEntity": "",
@@ -159,7 +141,6 @@ _global_script_class_icons={
 [application]
 
 config/name="EggzClientUI"
-run/main_scene="res://user_interface/MainGameScene.tscn"
 config/icon="res://icon.png"
 
 [autoload]

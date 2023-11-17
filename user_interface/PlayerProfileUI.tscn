@@ -1,11 +1,35 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://user_interface/PlayerProfileUI.gd" type="Script" id=1]
+[sub_resource type="GDScript" id=1]
+script/source = "extends Control
+class_name PlayerProfileUI
+onready var profile:PlayerProfile
+onready var file_location:RichTextLabel = find_node(\"FileLocation\")
+onready var game:MainGameScene = MainGameScene.new()
+# Called when the node enters the scene tree for the first time.
+
+func _ready():
+	self.add_child(game)
+	pass # Replace with function body.
+
+func _process(delta):
+	if profile != null and file_location != null:
+		if profile.file_location != null:
+			file_location.text = profile.file_location
+		if profile.id != null:
+			self
+
+
+
+func _on_Button_button_up():
+	print(\"pressed button\")
+	game.spawn_client_world()
+"
 
 [node name="PlayerProfileUI" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-script = ExtResource( 1 )
+script = SubResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
