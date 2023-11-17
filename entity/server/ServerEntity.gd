@@ -14,6 +14,7 @@ func _ready():
 	pass # Replace with function body.
 
 func _handle_message(msg,delta_accum):
+	print("server character received msg:",msg)
 	#handle server messages, starting with movement
 	#most of these will be actions (add new destination, change velocity etc..)
 	match msg:
@@ -23,6 +24,7 @@ func _handle_message(msg,delta_accum):
 			#print("destination added serverside", [x,y,z])
 			requested_dest = false
 			destination = Vector3(x,y,z)
+			print("set destination successfully")
 		_:
 			print("No server entity handler for " , msg)
 			pass
@@ -32,9 +34,10 @@ func freeze():
 func _physics_process(delta):
 	#freeze()
 	self.global_transform.origin = body.global_transform.origin
-	if ServerNetwork.sockets[id] != null:
-		ServerNetwork.sockets[id].setGlobLocation(id,body.global_transform.origin)
-		ServerNetwork.sockets[id].get_next_destination(id)
+	var socket = ServerNetwork.get(id,false)
+	if socket != null:
+		socket.setGlobLocation(id,body.global_transform.origin)
+		socket.get_next_destination(id)
 	if(destination != null ):
 		var diff = destination - body.global_transform.origin
 		if diff.length() > epsilon:	

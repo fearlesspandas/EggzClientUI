@@ -26,12 +26,12 @@ func create_character_entity_client(id:String, parent = spawn):
 	if spawn != null:
 		var resource = AssetMapper.matchAsset(AssetMapper.player_model)
 		#create_entity(id,location,parent,resource,false)
-		spawn_player_client(id,location,parent)
+		return spawn_player_client(id,location,parent)
 	else:
 		print("no spawn set for client entity manager")
 		
 func _on_data():
-	var cmd = ServerNetwork.sockets[client_id].get_packet()
+	var cmd = ServerNetwork.get(client_id).get_packet()
 	message_controller.add_to_queue(cmd)
 
 
@@ -58,6 +58,7 @@ func parseJsonCmd(cmd,delta):
 		print("Could not parse msg:",cmd)
 
 func route(cmd,delta):
+	#print("client entity manager received cmd:", cmd)
 	if cmd != null:
 		parseJsonCmd(cmd,delta)
 	

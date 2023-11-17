@@ -23,17 +23,24 @@ func spawn_server_world(parent:Node,location:Vector3):
 	var resource = AssetMapper.matchAsset(AssetMapper.server_spawn)
 	spawn = spawn_terrain("0",location,parent,resource,true)
 
-func create_character_entity_server(id:String):
+func create_character_entity_server(id:String, location:Vector3):
 	print("spawning server character")
-	var location = Vector3(0,10,0) 
 	if spawn != null:
 		var resource = AssetMapper.matchAsset(AssetMapper.server_player_model)
 		create_entity(id,location,spawn,resource,true)
 	else:
 		print("no spawn set for server entity manager")
 		
+func spawn_character_entity_server(id:String, location:Vector3):
+	print("spawning server character")
+	if spawn != null:
+		var resource = AssetMapper.matchAsset(AssetMapper.server_player_model)
+		return spawn_entity(id,location,spawn,resource,true)
+	else:
+		print("no spawn set for server entity manager")
+		
 func _on_data():
-	var cmd = ServerNetwork.sockets[client_id].get_packet()
+	var cmd = ServerNetwork.get(client_id,false).get_packet()
 	message_controller.add_to_queue(cmd)
 
 func parseJsonCmd(cmd,delta):
@@ -44,6 +51,15 @@ func parseJsonCmd(cmd,delta):
 		var json:Dictionary = parsed.result
 		
 		match json:
+			{"GlobSet":{"globs":var globs}}:
+				for glob in globs:
+					match glob:
+						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
+							ServerNetwork.bind(client_id,id,false)
+							spawn_character_entity_server(id,Vector3(x,y,z))
+						_:
+							print("ServerEntityManager could not parse glob type ", glob)
+				
 			{"NextDestination":{"id": var id, "location": [var x, var y , var z]}}:
 				var s = server_entities[id]
 				if s != null:
@@ -51,12 +67,14 @@ func parseJsonCmd(cmd,delta):
 					s.message_controller.add_to_queue(formatted)
 			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
 				pass
+			_:
+				print("no matching command in ServerEntityManager for ", cmd)
 	else:
 		#pass
 		print("Could not parse msg:",cmd)
 
 func route(cmd,delta):
-	#print("cmd serverentitymanager:",cmd)
+	print("cmd serverentitymanager:",cmd)
 	if cmd != null:
 		parseJsonCmd(cmd,delta)
 	

@@ -1,6 +1,6 @@
 extends Control
 
-
+signal is_active(active)
 class_name ClientControl
 
 onready var connection_indicator:ConnectionIndicator = ConnectionIndicator.new()
@@ -23,7 +23,7 @@ func load_scene(id,secret):
 	viewport_container.set_size(self.rect_size)
 	viewport_container.stretch = true
 	
-	viewport_container.set_global_position(Vector2(0,0))
+	viewport_container.set_position(Vector2(0,0))
 	#viewport.size_override_stretch(true)
 	viewport_container.add_child(viewport)
 	viewport.size = viewport_container.rect_size
@@ -43,12 +43,14 @@ func load_scene(id,secret):
 	self.add_child(connection_indicator)
 	
 	entity_management.spawn_client_world(viewport,Vector3(0,0,0))
-	entity_management.create_character_entity_client(profile.id,viewport)
-
+	var player = entity_management.create_character_entity_client(profile.id,viewport)
+	self.connect("is_active",player,"set_active")
 func handle_new_entity(entity,parent,server_entity):
 	print("new entity in clientControl")
 	pass
 
-
+func set_active(active: bool):
+	print("setting is active for control:",active)
+	emit_signal("is_active",active)
 
 	

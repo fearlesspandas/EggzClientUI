@@ -10,6 +10,8 @@ var to = null
 var intersect_position = null
 var intersect_object = null
 func _input(event):
+	var viewport = get_viewport()
+
 	if event is InputEventMouseButton and event.pressed and event.button_index == 1:
 		from = camera.project_ray_origin(event.position)
 		to = from + camera.project_ray_normal(event.position) * 1000

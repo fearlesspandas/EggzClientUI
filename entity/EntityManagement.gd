@@ -13,8 +13,8 @@ func create_entity(id:String,location:Vector3,parent:Node,resource:Resource,crea
 		server_entities[id] = res
 	else:
 		client_entities[id] = res
-	ServerNetwork.sockets[client_id].create_glob(id,location)
-	ServerNetwork.sockets[client_id].setGlobLocation(id,location)
+	ServerNetwork.get(client_id,false).create_glob(id,location)
+	ServerNetwork.get(client_id,false).setGlobLocation(id,location)
 	parent.add_child(res)
 	if res.has_method("init_with_id"):
 		res.init_with_id(id)
