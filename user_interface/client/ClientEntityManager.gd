@@ -53,6 +53,17 @@ func parseJsonCmd(cmd,delta):
 				if s != null:
 					var formatted = {"Location":{"id":id, "location": [ x , y , z]}}
 					s.message_controller.add_to_queue(formatted)
+			{"GlobSet":{"globs":var globs}}:
+				for glob in globs:
+					match glob:
+						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
+							if !client_entities.has(id):
+								ServerNetwork.bind(client_id,id,false)
+								spawn_entity(id,Vector3(x,y,z),spawn,AssetMapper.matchAsset(AssetMapper.npc_model),false)
+						_:
+							print("ClientEntityManager could not parse glob type ", glob)
+			_:
+				print("no handler found in ClientEntityManager for msg:", cmd)
 	else:
 		#pass
 		print("Could not parse msg:",cmd)

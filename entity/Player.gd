@@ -13,7 +13,7 @@ func _input(event):
 		var z = curserRay.intersect_position.z
 		var dest = Vector3(x,y,z)
 		if id != null:
-			print("setting destination for player:",dest)
+			#print("setting destination for player:",dest)
 			ServerNetwork.get(id).add_destination(id,dest)
 func _physics_process(delta):
 	#aligns player space with kinematic body present clientplayerentity
@@ -22,7 +22,7 @@ func _physics_process(delta):
 	pass
 	
 func set_active(active:bool):
-	print("player active:",active)
+	print("player active:",id,active)
 	is_active = active
 	camera.set_active(active)
 func _ready():

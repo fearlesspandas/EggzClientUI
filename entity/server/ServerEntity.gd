@@ -14,7 +14,6 @@ func _ready():
 	pass # Replace with function body.
 
 func _handle_message(msg,delta_accum):
-	print("server character received msg:",msg)
 	#handle server messages, starting with movement
 	#most of these will be actions (add new destination, change velocity etc..)
 	match msg:
@@ -24,7 +23,7 @@ func _handle_message(msg,delta_accum):
 			#print("destination added serverside", [x,y,z])
 			requested_dest = false
 			destination = Vector3(x,y,z)
-			print("set destination successfully")
+			#print("set destination successfully")
 		_:
 			print("No server entity handler for " , msg)
 			pass

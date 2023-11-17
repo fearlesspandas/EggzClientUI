@@ -55,8 +55,10 @@ func parseJsonCmd(cmd,delta):
 				for glob in globs:
 					match glob:
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
-							ServerNetwork.bind(client_id,id,false)
-							spawn_character_entity_server(id,Vector3(x,y,z))
+							if !server_entities.has(id):
+								print("ServerEntityManager: creating entity , ", id)
+								ServerNetwork.bind(client_id,id,false)
+								spawn_character_entity_server(id,Vector3(x,y,z))
 						_:
 							print("ServerEntityManager could not parse glob type ", glob)
 				
@@ -74,7 +76,7 @@ func parseJsonCmd(cmd,delta):
 		print("Could not parse msg:",cmd)
 
 func route(cmd,delta):
-	print("cmd serverentitymanager:",cmd)
+	#print("cmd serverentitymanager:",cmd)
 	if cmd != null:
 		parseJsonCmd(cmd,delta)
 	
