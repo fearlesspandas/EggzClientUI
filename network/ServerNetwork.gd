@@ -30,12 +30,6 @@ func bind(source,target,isClient:bool = true):
 		
 func get(id,isClient:bool = true) -> ClientWebSocket:
 	if isClient:
-		if !client_binds.has(id):
-			return client_sockets[id]
-		else:
-			return client_sockets[client_binds[id]]
+		return client_sockets[id]
 	else:
-		if !server_binds.has(id):
-				return server_sockets[id]
-		else:
-			return server_sockets[server_binds[id]]
+		return server_sockets[id]

@@ -17,7 +17,7 @@ func create_entity(id:String,location:Vector3,parent:Node,resource:Resource,crea
 	ServerNetwork.get(client_id,false).setGlobLocation(id,location)
 	parent.add_child(res)
 	if res.has_method("init_with_id"):
-		res.init_with_id(id)
+		res.init_with_id(id,client_id)
 	res.global_transform.origin = location
 	emit_signal("entity_created",res,parent,create_as_server_entity)
 	
@@ -33,7 +33,7 @@ func spawn_entity(id:String,location:Vector3,parent:Node,resource:Resource,creat
 		client_entities[id] = res
 	#ServerNetwork.setGlobLocation(id,location)
 	if res.has_method("init_with_id"):
-		res.init_with_id(id)
+		res.init_with_id(id,client_id)
 	parent.add_child(res)
 	res.global_transform.origin = location
 	emit_signal("terrain_created",res,parent,create_as_server_entity)
@@ -56,7 +56,7 @@ func spawn_player_client(id:String,location:Vector3,parent:Node):
 	var res = load(AssetMapper.assets[AssetMapper.player_model].resource_path).instance()
 	parent.add_child(res)
 	if res.has_method("init_with_id"):
-		res.init_with_id(id)
+		res.init_with_id(id,client_id)
 	#res.camera.make_current()
 	client_entities[id] = res
 	res.global_transform.origin = location

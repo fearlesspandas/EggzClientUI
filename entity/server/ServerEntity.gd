@@ -33,7 +33,7 @@ func freeze():
 func _physics_process(delta):
 	#freeze()
 	self.global_transform.origin = body.global_transform.origin
-	var socket = ServerNetwork.get(id,false)
+	var socket = ServerNetwork.get(client_id,false)
 	if socket != null:
 		socket.setGlobLocation(id,body.global_transform.origin)
 		socket.get_next_destination(id)

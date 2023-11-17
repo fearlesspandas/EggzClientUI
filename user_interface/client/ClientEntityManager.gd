@@ -29,7 +29,9 @@ func create_character_entity_client(id:String, parent = spawn):
 	if spawn != null:
 		var resource = AssetMapper.matchAsset(AssetMapper.player_model)
 		#create_entity(id,location,parent,resource,false)
-		return spawn_player_client(id,location,parent)
+		var res = spawn_player_client(id,location,parent) 
+		ServerNetwork.bind(client_id,id)
+		return res
 	else:
 		print("no spawn set for client entity manager")
 		
@@ -61,7 +63,8 @@ func parseJsonCmd(cmd,delta):
 					match glob:
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
 							if !client_entities.has(id) and client_id != id:
-								ServerNetwork.bind(client_id,id,true)
+								print("ClientEntityManager: creating entity , ", id ," in client id:",client_id)
+								#ServerNetwork.bind(client_id,id,true)
 								spawn_entity(id,Vector3(x,y,z),spawn,AssetMapper.matchAsset(AssetMapper.npc_model),false)
 						_:
 							print("ClientEntityManager could not parse glob type ", glob)

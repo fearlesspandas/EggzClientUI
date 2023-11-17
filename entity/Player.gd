@@ -15,6 +15,8 @@ func _input(event):
 		if id != null:
 			print("setting destination for player:",dest)
 			ServerNetwork.get(id).add_destination(id,dest)
+
+
 func _physics_process(delta):
 	#aligns player space with kinematic body present clientplayerentity
 	#because cameraroot is a sub node it also follows the player body automatically

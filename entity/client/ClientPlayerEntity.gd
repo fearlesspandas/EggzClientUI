@@ -9,13 +9,15 @@ onready var message_controller:MessageController = MessageController.new()
 func _ready():
 	self.add_child(message_controller)
 	pass # Replace with function entity.
-
+func getSocket() -> ClientWebSocket:
+	#print("entity socket",id)
+	return ServerNetwork.get(client_id)
 func _physics_process(delta):
 	#for clientPlayerEntities we only want to react to serverside data
 	#only players produce messages, generically we don't want to do this
 	#self.global_transform.origin = body.global_transform.origin
-	if ServerNetwork.get(id) != null:
-		ServerNetwork.get(id).getGlobLocation(id)
+	if getSocket() != null:
+		getSocket().getGlobLocation(id)
 	#entity.move_and_collide(-dir)	
 
 func _handle_message(msg,delta_accum):
