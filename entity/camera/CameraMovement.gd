@@ -17,15 +17,14 @@ var sensitivity_y = 25
 var rotating = false
 var maxzoom = 5
 var minzoom = 30
-
+var is_active:bool = false
 func check_mouse_position_within_viewport(position:Vector2) -> bool:
 	var viewport:Viewport = get_viewport()
 	var mins = viewport.global_canvas_transform.origin
 	var maxs = viewport.global_canvas_transform.origin + viewport.size
 	return mins.x < position.x and mins.y < position.y and maxs.x > position.x and maxs.y > position.y
 func _input(event):
-	
-	if event is InputEventMouse and check_mouse_position_within_viewport(event.position):
+	if event is InputEventMouse and check_mouse_position_within_viewport(event.position) and is_active:
 		if event is InputEventMouseMotion and rotating:
 			var rot = Vector2(event.relative.y * sensitivity_y,event.relative.x * sensitivity_x) * delta_x
 			camera_root.rotation_degrees.x -= rot.x
@@ -61,7 +60,8 @@ func _physics_process(delta):
 func _ready():
 	OS.window_fullscreen = false
 	pass # Replace with function body.
-
+func set_active(active:bool):
+	is_active = active
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):

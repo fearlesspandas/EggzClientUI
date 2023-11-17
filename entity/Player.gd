@@ -4,7 +4,7 @@ extends ClientPlayerEntity
 onready var camera_root =find_node("CameraRoot")
 onready var camera:Camera = camera_root.find_node("Camera")
 onready var curserRay:RayCast = camera_root.find_node("CursorRay")
-var is_active = true
+var is_active = false
 func _input(event):
 	if is_active and event is InputEventMouseButton and event.is_action_pressed("left_click") and curserRay.intersect_position != null:
 		#print("attempting to add destination")
@@ -24,5 +24,6 @@ func _physics_process(delta):
 func set_active(active:bool):
 	print("player active:",active)
 	is_active = active
+	camera.set_active(active)
 func _ready():
 	pass # Replace with function body.

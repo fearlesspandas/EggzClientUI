@@ -60,3 +60,4 @@ func spawn_player_client(id:String,location:Vector3,parent:Node):
 	#res.camera.make_current()
 	client_entities[id] = res
 	res.global_transform.origin = location
+	return res
