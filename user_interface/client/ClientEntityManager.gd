@@ -2,13 +2,16 @@ extends EntityManagement
 
 class_name ClientEntityManager
 
-
+onready var entity_scanner :EntityScannerTimer = EntityScannerTimer.new()
 onready var message_controller : MessageController = MessageController.new()
 var spawn
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	#socket.client_id = client_id
-	
+	entity_scanner.wait_time = 2
+	entity_scanner.isClient = true
+	entity_scanner.client_id = client_id
+	self.add_child(entity_scanner)
+	entity_scanner.start()
 	self.add_child(message_controller)
 	pass # Replace with function body.
 
@@ -57,8 +60,8 @@ func parseJsonCmd(cmd,delta):
 				for glob in globs:
 					match glob:
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
-							if !client_entities.has(id):
-								ServerNetwork.bind(client_id,id,false)
+							if !client_entities.has(id) and client_id != id:
+								ServerNetwork.bind(client_id,id,true)
 								spawn_entity(id,Vector3(x,y,z),spawn,AssetMapper.matchAsset(AssetMapper.npc_model),false)
 						_:
 							print("ClientEntityManager could not parse glob type ", glob)

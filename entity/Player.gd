@@ -13,7 +13,7 @@ func _input(event):
 		var z = curserRay.intersect_position.z
 		var dest = Vector3(x,y,z)
 		if id != null:
-			#print("setting destination for player:",dest)
+			print("setting destination for player:",dest)
 			ServerNetwork.get(id).add_destination(id,dest)
 func _physics_process(delta):
 	#aligns player space with kinematic body present clientplayerentity

@@ -22,6 +22,7 @@ func init(id,secret, handler:Node,method,isClient:bool = true):
 	socket.connect_to_server()
 	
 func bind(source,target,isClient:bool = true):
+	print("binding:",source,target,isClient)
 	if isClient:
 		client_binds[target] = source
 	else:

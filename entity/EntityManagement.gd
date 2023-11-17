@@ -32,10 +32,10 @@ func spawn_entity(id:String,location:Vector3,parent:Node,resource:Resource,creat
 	else:
 		client_entities[id] = res
 	#ServerNetwork.setGlobLocation(id,location)
-	parent.add_child(res)
-	res.global_transform.origin = location
 	if res.has_method("init_with_id"):
 		res.init_with_id(id)
+	parent.add_child(res)
+	res.global_transform.origin = location
 	emit_signal("terrain_created",res,parent,create_as_server_entity)
 	return res
 #terrain does not have message controlers associated with it

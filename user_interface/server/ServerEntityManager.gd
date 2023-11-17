@@ -5,13 +5,17 @@ class_name ServerEntityManager
 export var serverSpawnWorld:Resource
 export var servercharacter:Resource
 onready var message_controller : MessageController = MessageController.new()
-
+onready var entity_scanner: EntityScannerTimer = EntityScannerTimer.new()
 # Called when the node enters the scene tree for the first time.
 var spawn
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	#socket.client_id = client_id
-	
+	entity_scanner.wait_time = 2
+	entity_scanner.isClient = false
+	entity_scanner.client_id = client_id
+	self.add_child(entity_scanner)
+	entity_scanner.start()
 	self.add_child(message_controller)
 	pass # Replace with function body.
 
