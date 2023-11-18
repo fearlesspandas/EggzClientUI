@@ -62,7 +62,6 @@ func parseJsonCmd(cmd,delta):
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
 							if !server_entities.has(id):
 								print("ServerEntityManager: creating entity , ", id , "in client id," ,client_id)
-								ServerNetwork.bind(client_id,id,false)
 								spawn_character_entity_server(id,Vector3(x,y,z))
 						_:
 							print("ServerEntityManager could not parse glob type ", glob)

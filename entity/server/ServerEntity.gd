@@ -21,8 +21,6 @@ func _handle_message(msg,delta_accum):
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
 			body.global_transform.origin = location
 		{"NextDestination":{"id": var id, "location": [var x, var y , var z]}}:
-			if id == "3":
-				print("destination added serverside", [x,y,z])
 			requested_dest = false
 			destination = Vector3(x,y,z)
 			#print("set destination successfully")
@@ -36,8 +34,6 @@ func _physics_process(delta):
 	#freeze()
 	self.global_transform.origin = body.global_transform.origin
 	var socket = ServerNetwork.get(client_id,false)
-	if id == "3":
-		print("current location:", body.global_transform.origin)
 	if socket != null:
 		socket.setGlobLocation(id,body.global_transform.origin)
 		socket.get_next_destination(id)

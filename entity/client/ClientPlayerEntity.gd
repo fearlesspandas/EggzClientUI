@@ -23,8 +23,8 @@ func _physics_process(delta):
 func _handle_message(msg,delta_accum):
 	match msg:
 		{'Location':{'id':id,'location':[var x , var y , var z]}}:
-			if id == "3":
-				print("setting location",self.id,id)
+			#if id == "3":
+				#print("setting location",self.id,id,client_id)
 			var loc = Vector3(x,y,z)
 			#print("setting clientside location:",loc)
 			var diff:Vector3 = body.global_transform.origin - loc
