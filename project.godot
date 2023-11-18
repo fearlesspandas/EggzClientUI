@@ -147,6 +147,7 @@ _global_script_class_icons={
 [application]
 
 config/name="EggzClientUI"
+run/main_scene="res://user_interface/launcher/Profiles.tscn"
 config/icon="res://icon.png"
 
 [autoload]

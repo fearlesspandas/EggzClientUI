@@ -16,6 +16,7 @@ func _ready():
 	entity_scanner.client_id = client_id
 	self.add_child(entity_scanner)
 	entity_scanner.start()
+	message_controller.isClient = false
 	self.add_child(message_controller)
 	pass # Replace with function body.
 
