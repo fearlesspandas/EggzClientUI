@@ -31,7 +31,6 @@ func _handle_message(msg,delta_accum):
 func freeze():
 	body.global_transform.origin = spawn
 func _physics_process(delta):
-	#freeze()
 	self.global_transform.origin = body.global_transform.origin
 	var socket = ServerNetwork.get(client_id,false)
 	if socket != null:
@@ -45,6 +44,5 @@ func _physics_process(delta):
 		else:
 			destination = null
 		
-	#produce physics events such as location change
 	
 	pass

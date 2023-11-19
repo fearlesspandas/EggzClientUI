@@ -93,6 +93,7 @@ func get_blob(id:String):
 
 func relate_eggs(id1:String,id2:String,globid:String,bidirectional:bool):
 	_client.get_peer(1).put_packet(JSON.print({'RELATE_EGGS':{'egg1':id1,'egg2':id2,'globId':globid,'bidirectional':bidirectional}}).to_utf8())
+	
 func unrelate_eggs(id1:String,id2:String,globid:String,bidirectional:bool):
 	_client.get_peer(1).put_packet(JSON.print({'UNRELATE_EGGS':{'egg1':id1,'egg2':id2,'globId':globid,'bidirectional':bidirectional}}).to_utf8())
 
@@ -128,5 +129,6 @@ func get_next_destination(globId:String):
 	
 func get_all_destinations(globId:String):
 	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_DESTINATIONS':{'id':globId}}).to_utf8())	
+	
 func location_subscribe(id:String):
 	_client.get_peer(1).put_packet(JSON.print({'SUBSCRIBE':{"query":{'GET_GLOB_LOCATION':{'id':id}}}}).to_utf8())	

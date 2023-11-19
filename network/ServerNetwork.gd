@@ -14,7 +14,7 @@ func init(id,secret, handler:Node,method,isClient:bool = true):
 	socket.client_id = id
 	socket.secret = secret
 	self.add_child(socket)
-	socket._client.connect("data_received", handler, "_on_data")
+	socket._client.connect("data_received", handler, method)
 	if isClient:
 		client_sockets[id] = socket
 	else:

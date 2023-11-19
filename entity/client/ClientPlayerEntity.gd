@@ -9,6 +9,7 @@ var isSubbed = false
 func _ready():
 	self.add_child(message_controller)
 	pass # Replace with function entity.
+	
 func getSocket() -> ClientWebSocket:
 	#print("entity socket",id)
 	var res = ServerNetwork.get(client_id)
@@ -16,14 +17,14 @@ func getSocket() -> ClientWebSocket:
 		return null
 	else:
 		return res 
+		
 func _physics_process(delta):
 	var socket = getSocket()
-	#if !isSubbed and socket != null and socket.connected:
-	#	socket.location_subscribe(id)
-	#	print("sent subscription ",id)
-	#	isSubbed = true
-	if socket!= null:
-		socket.getGlobLocation(id)
+	if !isSubbed and socket != null and socket.connected:
+		socket.location_subscribe(id)
+		print("sent subscription ",id)
+		isSubbed = true
+	
 	#for clientPlayerEntities we only want to react to serverside data
 	#only players produce messages, generically we don't want to do this
 	#self.global_transform.origin = body.global_transform.origin
