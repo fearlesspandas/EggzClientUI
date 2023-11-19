@@ -3,7 +3,6 @@ extends Timer
 class_name EntityScannerTimer
 var queue_entities = []
 var client_id
-var isClient:bool = true
 var is_active:bool = false
 func _ready():
 	self.connect("timeout",self,"poll_for_entities")
@@ -11,7 +10,7 @@ func _ready():
 
 func poll_for_entities():
 	if is_active:
-		ServerNetwork.get(client_id,isClient).getAllGlobs()
+		ServerNetwork.get(client_id).getAllGlobs()
 		
 func set_active(active:bool):
 	is_active = active

@@ -10,7 +10,6 @@ var spawn
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	entity_scanner.wait_time = 2
-	entity_scanner.isClient = true
 	entity_scanner.client_id = client_id
 	self.add_child(entity_scanner)
 	
@@ -62,7 +61,7 @@ func parseJsonCmd(cmd,delta):
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
 							#the server network check is only needed due to a bug where different players are techncially added to the same scene
 							#in spite of being in different viewports
-							if !client_entities.has(id) and client_id != id and !ServerNetwork.client_sockets.has(id):
+							if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
 								print("ClientEntityManager: creating entity , ", id ," in client id:",client_id, spawn)
 								#ServerNetwork.bind(client_id,id,true)
 								spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)

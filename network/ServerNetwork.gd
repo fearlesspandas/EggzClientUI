@@ -1,10 +1,7 @@
 extends Node
 
 
-var server_sockets = {}
-var server_binds = {}
-var client_sockets = {}
-var client_binds = {}
+var sockets = {}
 func _ready():
 	pass
 	
@@ -15,21 +12,12 @@ func init(id,secret, handler:Node,method,isClient:bool = true):
 	socket.secret = secret
 	self.add_child(socket)
 	socket._client.connect("data_received", handler, method)
-	if isClient:
-		client_sockets[id] = socket
-	else:
-		server_sockets[id] = socket
+	sockets[id] = socket
 	socket.connect_to_server()
 	
-func bind(source,target,isClient:bool = true):
-	print("binding:",source,target,isClient)
-	if isClient:
-		client_binds[target] = source
-	else:
-		server_binds[target] = source
 		
-func get(id,isClient:bool = true) -> ClientWebSocket:
-	if isClient:
-		return client_sockets[id]
+func get(id) -> ClientWebSocket:
+	if sockets.has(id):
+		return sockets[id]
 	else:
-		return server_sockets[id]
+		return null

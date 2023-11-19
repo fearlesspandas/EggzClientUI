@@ -6,7 +6,6 @@ onready var newProfile : NewProfileTab = NewProfileTab.new()
 var idx_map = {}
 var profiles = {}
 func _ready():
-	self.margin_top = 20
 	self.set_size(OS.get_window_safe_area().size,true)
 	newProfile.boundaries = self.rect_size
 	self.add_child(newProfile)

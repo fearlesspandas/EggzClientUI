@@ -10,7 +10,6 @@ var destination=null
 var epsilon = 3
 func _ready():
 	spawn = body.global_transform.origin
-	message_controller.isClient = false
 	self.add_child(message_controller)
 	pass # Replace with function body.
 
@@ -32,7 +31,7 @@ func freeze():
 	body.global_transform.origin = spawn
 func _physics_process(delta):
 	self.global_transform.origin = body.global_transform.origin
-	var socket = ServerNetwork.get(client_id,false)
+	var socket = ServerNetwork.get(client_id)
 	if socket != null:
 		socket.setGlobLocation(id,body.global_transform.origin)
 		socket.get_next_destination(id)

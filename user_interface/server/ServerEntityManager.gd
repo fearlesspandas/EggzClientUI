@@ -12,12 +12,10 @@ var spawn
 func _ready():
 	#socket.client_id = client_id
 	entity_scanner.wait_time = 2
-	entity_scanner.isClient = false
 	entity_scanner.client_id = client_id
 	entity_scanner.is_active = true
 	self.add_child(entity_scanner)
 	entity_scanner.start()
-	message_controller.isClient = false
 	self.add_child(message_controller)
 	pass # Replace with function body.
 
@@ -46,7 +44,7 @@ func spawn_character_entity_server(id:String, location:Vector3):
 		print("no spawn set for server entity manager")
 		
 func _on_data():
-	var cmd = ServerNetwork.get(client_id,false).get_packet()
+	var cmd = ServerNetwork.get(client_id).get_packet()
 	message_controller.add_to_queue(cmd)
 
 func parseJsonCmd(cmd,delta):
