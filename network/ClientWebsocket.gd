@@ -17,7 +17,6 @@ func _init():
 
 func connect_to_server():
 	var err = _client.connect_to_url(get_websocket_url(),['json'])
-	connected = true
 	if err != OK:
 		connected = false
 		print("Unable to connect")
@@ -129,3 +128,5 @@ func get_next_destination(globId:String):
 	
 func get_all_destinations(globId:String):
 	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_DESTINATIONS':{'id':globId}}).to_utf8())	
+func location_subscribe(id:String):
+	_client.get_peer(1).put_packet(JSON.print({'SUBSCRIBE':{"query":{'GET_GLOB_LOCATION':{'id':id}}}}).to_utf8())	

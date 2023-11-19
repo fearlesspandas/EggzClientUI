@@ -1,4 +1,4 @@
-extends Node
+extends Camera
 
 
 # Declare member variables here. Examples:
@@ -62,6 +62,7 @@ func _ready():
 	pass # Replace with function body.
 func set_active(active:bool):
 	is_active = active
+		
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):

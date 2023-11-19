@@ -14,6 +14,7 @@ func _ready():
 	entity_scanner.wait_time = 2
 	entity_scanner.isClient = false
 	entity_scanner.client_id = client_id
+	entity_scanner.is_active = true
 	self.add_child(entity_scanner)
 	entity_scanner.start()
 	message_controller.isClient = false
@@ -61,7 +62,7 @@ func parseJsonCmd(cmd,delta):
 					match glob:
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
 							if !server_entities.has(id):
-								print("ServerEntityManager: creating entity , ", id , "in client id," ,client_id)
+								print("ServerEntityManager: creating entity , ", id , "in client id," ,client_id , spawn)
 								spawn_character_entity_server(id,Vector3(x,y,z))
 						_:
 							print("ServerEntityManager could not parse glob type ", glob)

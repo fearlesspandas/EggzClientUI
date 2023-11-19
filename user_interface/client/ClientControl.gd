@@ -8,6 +8,7 @@ onready var viewport_container:ViewportContainer = ViewportContainer.new()
 onready var viewport:Viewport = Viewport.new()
 onready var entity_management:ClientEntityManager = ClientEntityManager.new()
 onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
+
 var profile:PlayerProfile
 var connection_ind_size = 30
 
@@ -34,6 +35,7 @@ func load_scene(id,secret):
 	#self.add_child(viewport)
 	
 	entity_management.client_id = profile.id
+	entity_management.viewport = viewport
 	self.add_child(entity_management)
 	ServerNetwork.init(profile.id,profile.secret,entity_management,"_on_data")
 	
@@ -43,9 +45,12 @@ func load_scene(id,secret):
 	self.add_child(connection_indicator)
 	
 	entity_management.spawn_client_world(viewport,Vector3(0,0,0))
-	var player = entity_management.create_character_entity_client(profile.id)
+	var player = entity_management.create_character_entity_client(profile.id,Vector3(0,10,0),viewport)
 	print("Player:",player)
 	self.connect("is_active",player,"set_active")
+	self.connect("is_active",entity_management.entity_scanner,"set_active")
+	entity_management.entity_scanner.start()
+	
 func handle_new_entity(entity,parent,server_entity):
 	print("new entity in clientControl")
 	pass
