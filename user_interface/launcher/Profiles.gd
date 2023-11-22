@@ -26,7 +26,6 @@ func create_profile_ui(profile:PlayerProfile,clientProfile:bool):
 	res.set_position(Vector2(0,0))
 	res.set_size(self.rect_size)
 	self.add_child(res)
-	#set_tab_disabled(idx_map[res.profile.id],true)
 	self.set_tab_title(idx_map[profile.id],profile.id)
 
 func create_profile_from_input():
@@ -46,8 +45,6 @@ func on_tab_change(tab:int):
 	var previous_tab = get_tab_control(previous_tab_idx)
 	if previous_tab.has_method("set_active"):
 		previous_tab.set_active(false)
-		#set_tab_disabled(previous_tab_idx,true)
 	var active_tab = get_current_tab_control()
 	if active_tab.has_method("set_active"):
 		active_tab.set_active(true)
-		#set_tab_disabled(idx_map[active_tab.profile.id],false)

@@ -48,8 +48,8 @@ func load_scene(id,secret):
 	var player = entity_management.create_character_entity_client(profile.id,Vector3(0,10,0),viewport)
 	print("Player:",player)
 	self.connect("is_active",player,"set_active")
-	self.connect("is_active",entity_management.entity_scanner,"set_active")
-	entity_management.entity_scanner.start()
+	self.connect("is_active",entity_management,"set_active")
+	#entity_management.entity_scanner.start()
 	
 func handle_new_entity(entity,parent,server_entity):
 	print("new entity in clientControl")

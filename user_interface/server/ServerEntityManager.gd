@@ -44,7 +44,7 @@ func spawn_character_entity_server(id:String, location:Vector3):
 		print("no spawn set for server entity manager")
 		
 func _on_data():
-	var cmd = ServerNetwork.get(client_id).get_packet()
+	var cmd = ServerNetwork.get(client_id).get_packet(true)
 	message_controller.add_to_queue(cmd)
 
 func parseJsonCmd(cmd,delta):
@@ -72,7 +72,8 @@ func parseJsonCmd(cmd,delta):
 			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
 				pass
 			_:
-				print("no matching command in ServerEntityManager for ", cmd)
+				pass
+				#print("no matching command in ServerEntityManager for ", cmd)
 	else:
 		#pass
 		print("Could not parse msg:",cmd)

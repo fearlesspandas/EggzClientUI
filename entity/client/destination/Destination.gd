@@ -1,14 +1,16 @@
 extends Spatial
 
 class_name Destination
-
-export var mesh:Resource #mesh instance for destination
-onready var model = load(mesh.resource_path).instance()
+onready var body:MeshInstance = MeshInstance.new()
+onready var mesh:CylinderMesh = CylinderMesh.new()
+onready var material:SpatialMaterial = SpatialMaterial.new()
+var location:Vector3
 func _ready():
-	self.add_child(model)
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+	material.albedo_color = Color.red
+	mesh.height = 100
+	mesh.top_radius = 5
+	mesh.bottom_radius = 5
+	self.global_transform.origin = location
+	body.mesh = mesh
+	body.material_override = material
+	self.add_child(body)

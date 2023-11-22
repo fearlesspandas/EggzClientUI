@@ -7,16 +7,7 @@ var assets = {
 	3 : preload("res://world/client/SpawnBlockNoPlayer.tscn"),
 	4 : preload("res://entity/client/NonPlayerControlledEntity.tscn")
 }
-
-var player_model = 0
-
-var server_player_model = 1
-
-var server_spawn = 2
-
-var client_spawn = 3
-
-var npc_model = 4
+enum {player_model = 0, server_player_model = 1, server_spawn = 2, client_spawn = 3, npc_model = 4}
 
 func matchAsset(id:int) -> Resource:
 	return assets[id]

@@ -4,20 +4,34 @@ class_name ClientEntityManager
 
 onready var entity_scanner :EntityScannerTimer = EntityScannerTimer.new()
 onready var message_controller : MessageController = MessageController.new()
+onready var destinations:DestinationManager = DestinationManager.new()
+onready var destination_scanner : DestinationScannerTimer = DestinationScannerTimer.new()
 
 var viewport:Viewport
 var spawn
-# Called when the node enters the scene tree for the first time.
+
 func _ready():
 	entity_scanner.wait_time = 2
 	entity_scanner.client_id = client_id
+	destination_scanner.wait_time = 2
+	destination_scanner.client_id = client_id
+	destinations.entity_spawn = viewport
 	self.add_child(entity_scanner)
-	
+	self.add_child(destination_scanner)
 	self.add_child(message_controller)
-	pass # Replace with function body.
+	entity_scanner.start()
+	destination_scanner.start()
+func set_active(active:bool):
+	entity_scanner.set_active(active)
+	destination_scanner.set_active(active)
 
 func _handle_message(msg,delta_accum):
 	route(msg,delta_accum)
+	
+func route(cmd,delta):
+	#print("client entity manager received cmd:", cmd)
+	if cmd != null:
+		parseJsonCmd(cmd,delta)
 	
 func spawn_client_world(parent:Node,location:Vector3):
 	print("spawned client world")
@@ -28,7 +42,6 @@ func create_character_entity_client(id:String, location:Vector3 = Vector3(0,10,0
 	print("spawnging client character")
 	if spawn != null:
 		var resource = AssetMapper.matchAsset(AssetMapper.player_model)
-		#create_entity(id,location,parent,resource,false)
 		var res = spawn_player_client(id,location,parent)
 		return res
 	else:
@@ -39,14 +52,10 @@ func _on_data():
 	message_controller.add_to_queue(cmd)
 
 
-
 func parseJsonCmd(cmd,delta):
-	#print("raw comand:",cmd)
 	var parsed = JSON.parse(cmd)
-	#print("errors:",parsed.error_string)
 	if parsed.result != null:
 		var json:Dictionary = parsed.result
-		
 		match json:
 			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
 				pass
@@ -65,18 +74,15 @@ func parseJsonCmd(cmd,delta):
 								print("ClientEntityManager: creating entity , ", id ," in client id:",client_id, spawn)
 								#ServerNetwork.bind(client_id,id,true)
 								spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
-							#if id == client_id and !client_entities.has(id):
-								#create_character_entity_client(id,Vector3(x,y,z),viewport)
 						_:
 							print("ClientEntityManager could not parse glob type ", glob)
+							
+			{"AllDestinations":{"id":var id , "destinations":var dests}}:
+				destinations._handle_message(dests)
+				pass
 			_:
 				print("no handler found in ClientEntityManager for msg:", cmd)
 	else:
-		#pass
 		print("Could not parse msg:",cmd)
 
-func route(cmd,delta):
-	#print("client entity manager received cmd:", cmd)
-	if cmd != null:
-		parseJsonCmd(cmd,delta)
-	
+

@@ -61,16 +61,8 @@ func _connected(proto = ""):
 	print("sent session")
 	emit_signal("server_connected")
 	
-var data = []
 var delta_x = 0
-func _on_data():
-	# Print the received packet, you MUST always use get_peer(1).get_packet
-	# to receive data from server, and not get_packet directly when not
-	# using the MultiplayerAPI.
-	var cmd = _client.get_peer(1).get_packet().get_string_from_utf8()
-	EntityRoutingManagerClient.route(cmd,delta_x)
-	data.append(cmd)
-	pass
+
 func _process(delta):
 	# Call this in _process or _physics_process. Data transfer, and signals
 	# emission will only happen when calling this function.
@@ -78,57 +70,63 @@ func _process(delta):
 	#start_egg(counter,"1")
 	delta_x = delta 
 	_client.poll()
-
-func get_packet():
-	return _client.get_peer(1).get_packet().get_string_from_utf8()
+var last_packet = null
+func get_packet(use_default:bool = false):
+	var res = _client.get_peer(1).get_packet().get_string_from_utf8()
+	if (res == null or res.length() == 0 ) and use_default:
+		return last_packet
+	else:
+		last_packet = res
+		return res
+	
 func create_glob(id:String,location:Vector3):
 	#print("calling create glob")
-	_client.get_peer(1).put_packet(JSON.print({'CREATE_GLOB':{'globId':id,'location':[location.x,location.y,location.z]}}).to_utf8())
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.create_glob(id,location)).to_utf8())
 
 func create_repair_egg(eggId:String,globId:String):
-	_client.get_peer(1).put_packet(JSON.print({'CREATE_REPAIR_EGG':{'eggId':eggId,'globId':globId}}).to_utf8())
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.create_repair_egg(eggId,globId)).to_utf8())
 
 func get_blob(id:String):
-	_client.get_peer(1).put_packet(JSON.print({'GET_BLOB':{'id':id}}).to_utf8())
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_blob(id)).to_utf8())
 
 func relate_eggs(id1:String,id2:String,globid:String,bidirectional:bool):
-	_client.get_peer(1).put_packet(JSON.print({'RELATE_EGGS':{'egg1':id1,'egg2':id2,'globId':globid,'bidirectional':bidirectional}}).to_utf8())
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.relate_eggs(id1,id2,globid,bidirectional)).to_utf8())
 	
 func unrelate_eggs(id1:String,id2:String,globid:String,bidirectional:bool):
-	_client.get_peer(1).put_packet(JSON.print({'UNRELATE_EGGS':{'egg1':id1,'egg2':id2,'globId':globid,'bidirectional':bidirectional}}).to_utf8())
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.unrelate_eggs(id1,id2,globid,bidirectional)).to_utf8())
 
 func tick_eggs():	
-	_client.get_peer(1).put_packet(JSON.print({'TICK_WORLD':{}}).to_utf8())
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.tick_eggs()).to_utf8())
 
 func getAllGlobs():
-	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_GLOBS':{}}).to_utf8())
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getAllGlobs()).to_utf8())
 
 func getAllEggs():
-	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_EGGZ':{}}).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getAllEggs()).to_utf8())	
 
 func getGlobLocation(id:String):
-	_client.get_peer(1).put_packet(JSON.print({'GET_GLOB_LOCATION':{'id':str(id)}}).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getGlobLocation(id)).to_utf8())	
 
 func setGlobLocation(id:String,location:Vector3):
-	_client.get_peer(1).put_packet(JSON.print({'SET_GLOB_LOCATION':{'id':str(id),'location':[location.x,location.y,location.z]}}).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.setGlobLocation(id,location)).to_utf8())	
 
 func setGlobRotation(id,rotation):
-	_client.get_peer(1).put_packet(JSON.print({'SET_GLOB_ROTATION':{'id':str(id),'rotation':rotation}}).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.setGlobRotation(id,rotation)).to_utf8())	
 				
 func start_egg(eggId,globId):
-	_client.get_peer(1).put_packet(JSON.print({'START_EGG':{'eggId':str(eggId),'globId':str(globId)}}).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.start_egg(eggId,globId)).to_utf8())	
 
 func getAllEntityIds():
-	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_ENTITY_IDS':{}}).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getAllEntityIds()).to_utf8())	
 	
 func add_destination(globId:String,location:Vector3):
-	_client.get_peer(1).put_packet(JSON.print({'ADD_DESTINATION':{'id':globId,'location':[location.x,location.y,location.z]}}).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.add_destination(globId,location)).to_utf8())	
 	
 func get_next_destination(globId:String):
-	_client.get_peer(1).put_packet(JSON.print({'GET_NEXT_DESTINATION':{'id':globId}}).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_next_destination(globId)).to_utf8())	
 	
 func get_all_destinations(globId:String):
-	_client.get_peer(1).put_packet(JSON.print({'GET_ALL_DESTINATIONS':{'id':globId}}).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_all_destinations(globId)).to_utf8())	
 	
 func location_subscribe(id:String):
-	_client.get_peer(1).put_packet(JSON.print({'SUBSCRIBE':{"query":{'GET_GLOB_LOCATION':{'id':id}}}}).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.location_subscribe(id)).to_utf8())	

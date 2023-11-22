@@ -49,7 +49,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/ConnectionIndicator.gd"
 }, {
-"base": "Node",
+"base": "Control",
 "class": "Console",
 "language": "GDScript",
 "path": "res://user_interface/launcher/Console.gd"
@@ -58,6 +58,16 @@ _global_script_classes=[ {
 "class": "Destination",
 "language": "GDScript",
 "path": "res://entity/client/destination/Destination.gd"
+}, {
+"base": "Node",
+"class": "DestinationManager",
+"language": "GDScript",
+"path": "res://entity/client/destination/DestinationManager.gd"
+}, {
+"base": "Timer",
+"class": "DestinationScannerTimer",
+"language": "GDScript",
+"path": "res://user_interface/client/DestinationScannerTimer.gd"
 }, {
 "base": "Node",
 "class": "EntityManagement",
@@ -135,6 +145,8 @@ _global_script_class_icons={
 "ConnectionIndicator": "",
 "Console": "",
 "Destination": "",
+"DestinationManager": "",
+"DestinationScannerTimer": "",
 "EntityManagement": "",
 "EntityScannerTimer": "",
 "GameFileManager": "",
@@ -166,6 +178,7 @@ EntityRoutingManagerClient="*res://entity/EntityRoutingManagerClient.gd"
 Controller="*res://network/Controller.gd"
 NetworkConfig="*res://user_interface/NetworkConfig.gd"
 AssetMapper="*res://entity/assets/AssetMapper.gd"
+PayloadMapper="*res://network/payloads/PayloadMapper.gd"
 
 [input]
 
