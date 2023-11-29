@@ -51,4 +51,7 @@ func get_all_destinations(globId:String):
 	return {'GET_ALL_DESTINATIONS':{'id':globId}}	
 	
 func location_subscribe(id:String):
-	return {'SUBSCRIBE':{"query":{'GET_GLOB_LOCATION':{'id':id}}}}	
+	return {'SUBSCRIBE':{"query":{'GET_GLOB_LOCATION':{'id':id}}}}
+	
+func input_subscribe(id:String):
+	return {'SUBSCRIBE':{'query':{'GET_INPUT_VECTOR':{'id':id}}}}

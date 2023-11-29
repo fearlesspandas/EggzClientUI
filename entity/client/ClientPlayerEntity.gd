@@ -18,19 +18,12 @@ func getSocket() -> ClientWebSocket:
 	else:
 		return res 
 		
-func _physics_process(delta):
+func _process(delta):
 	var socket = getSocket()
 	if !isSubbed and socket != null and socket.connected:
 		socket.location_subscribe(id)
 		print("sent subscription ",id)
 		isSubbed = true
-	
-	#for clientPlayerEntities we only want to react to serverside data
-	#only players produce messages, generically we don't want to do this
-	#self.global_transform.origin = body.global_transform.origin
-	#if getSocket() != null:
-		#getSocket().getGlobLocation(id)
-	#entity.move_and_collide(-dir)	
 	pass
 func _handle_message(msg,delta_accum):
 	match msg:

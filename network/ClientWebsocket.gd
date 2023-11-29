@@ -130,3 +130,6 @@ func get_all_destinations(globId:String):
 	
 func location_subscribe(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.location_subscribe(id)).to_utf8())	
+
+func input_subscribe(id:String):
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.input_subscribe(id)).to_utf8())	

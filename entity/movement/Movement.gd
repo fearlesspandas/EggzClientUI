@@ -17,3 +17,9 @@ func entity_stop(delta,body):
 		this.stop(delta,body)
 	else:
 		pass
+
+func entity_apply_vector(delta,vector,body):
+	if self.has_meta("apply_vector"):
+		this.apply_vector(delta,vector,body)
+	else:
+		pass

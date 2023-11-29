@@ -55,6 +55,19 @@ func parseJsonCmd(cmd,delta):
 		var json:Dictionary = parsed.result
 		
 		match json:
+			{'NoInput':{'id': var id}}:
+				var s = server_entities[id]
+				if s!= null:
+					s.message_controller.add_to_queue(
+							{'NoInput':{'id' : id}}
+						)
+			{'Input':{"id":var id , "vec":[var x ,var y ,var z]}}:
+				var s = server_entities[id]
+				if s!= null:
+					s.message_controller.add_to_queue(
+							{'Input':{"id":id , "vec":[ x , y ,z]}}
+						)
+				pass
 			{"GlobSet":{"globs":var globs}}:
 				for glob in globs:
 					match glob:

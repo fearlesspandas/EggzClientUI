@@ -15,5 +15,9 @@ func move(delta,location:Vector3,body:RigidBody):
 	
 func stop(delta,body:RigidBody):
 	body.set_axis_velocity(Vector3(0,0,0))
+	
+func apply_vector(delta,vector:Vector3,body:RigidBody):
+	body.set_axis_velocity(vector*delta)
+	
 func _ready():
 	pass
