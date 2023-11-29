@@ -133,6 +133,11 @@ _global_script_classes=[ {
 "class": "ServerKinematicMovement",
 "language": "GDScript",
 "path": "res://entity/movement/server/ServerKinematicMovement.gd"
+}, {
+"base": "Movement",
+"class": "ServerRigidMovement",
+"language": "GDScript",
+"path": "res://entity/movement/server/ServerRigidBodyMovement.gd"
 } ]
 _global_script_class_icons={
 "AuthenticatedControl": "",
@@ -159,7 +164,8 @@ _global_script_class_icons={
 "ServerControl": "",
 "ServerEntity": "",
 "ServerEntityManager": "",
-"ServerKinematicMovement": ""
+"ServerKinematicMovement": "",
+"ServerRigidMovement": ""
 }
 
 [application]
@@ -202,10 +208,16 @@ left_click={
 "events": [ Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"button_mask":0,"position":Vector2( 0, 0 ),"global_position":Vector2( 0, 0 ),"factor":1.0,"button_index":1,"pressed":false,"doubleclick":false,"script":null)
  ]
 }
+control={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":0,"physical_scancode":16777238,"unicode":0,"echo":false,"script":null)
+ ]
+}
 
 [physics]
 
 common/enable_pause_aware_picking=true
+3d/physics_engine="GodotPhysics"
 
 [rendering]
 

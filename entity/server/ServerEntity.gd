@@ -30,6 +30,7 @@ func _handle_message(msg,delta_accum):
 func freeze():
 	body.global_transform.origin = spawn
 func _physics_process(delta):
+	#print("server entity location", body.global_transform.origin)
 	self.global_transform.origin = body.global_transform.origin
 	var socket = ServerNetwork.get(client_id)
 	if socket != null:
@@ -39,9 +40,15 @@ func _physics_process(delta):
 		var diff = destination - body.global_transform.origin
 		if diff.length() > epsilon:	
 			movement.entity_move(delta,destination,body)
-			#print("active destination",destination)
+			print("active destination",destination)
 		else:
+			movement.entity_stop(delta,body)
 			destination = null
 		
 	
 	pass
+
+func _input(event):
+	if  event.is_action_pressed("control"):
+		print("stopping!!")
+		movement.entity_stop(0,body)

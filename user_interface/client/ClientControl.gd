@@ -45,7 +45,7 @@ func load_scene(id,secret):
 	self.add_child(connection_indicator)
 	
 	entity_management.spawn_client_world(viewport,Vector3(0,0,0))
-	var player = entity_management.create_character_entity_client(profile.id,Vector3(0,10,0),viewport)
+	var player = entity_management.create_character_entity_client(profile.id,Vector3(0,0,0),viewport)
 	print("Player:",player)
 	self.connect("is_active",player,"set_active")
 	self.connect("is_active",entity_management,"set_active")

@@ -11,5 +11,6 @@ mesh_instance = ExtResource( 1 )
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
 shape = SubResource( 1 )
+disabled = true
 
 [node name="Skin" parent="." instance=ExtResource( 1 )]

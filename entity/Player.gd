@@ -8,7 +8,7 @@ var is_active = false
 func _input(event):
 	if is_active and event is InputEventMouseButton and event.is_action_pressed("left_click") and curserRay.intersect_position != null:
 		#print("attempting to add destination")
-		var y = body.global_transform.origin.y
+		var y = curserRay.intersect_position.y
 		var x = curserRay.intersect_position.x
 		var z = curserRay.intersect_position.z
 		var dest = Vector3(x,y,z)

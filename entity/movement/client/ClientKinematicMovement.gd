@@ -9,11 +9,9 @@ func move(delta,location:Vector3,body:KinematicBody):
 	var diff_normalized:Vector3 = diff.normalized() * speed * delta
 	#body.move_and_collide(-diff,false)
 	#body.move_and_slide_with_snap(-diff,Vector3.UP)
-	if diff.length() > 5:
-		body.global_transform.origin = location
-	else:
-		body.move_and_slide_with_snap(-diff,Vector3.UP)
-		body.global_transform.origin -= diff_normalized
+	
+	body.move_and_slide(-diff,Vector3.UP)
+		#body.global_transform.origin -= diff_normalized
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
