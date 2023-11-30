@@ -58,3 +58,6 @@ func input_subscribe(id:String):
 
 func apply_vector(id:String,vec:Vector3):
 	return {'APPLY_VECTOR':{'id':id,'vec':[vec.x,vec.y,vec.z]}}
+
+func clear_destinations(id:String):
+	return {'CLEAR_DESTINATIONS':{'id':id}}

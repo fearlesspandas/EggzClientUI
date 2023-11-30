@@ -58,5 +58,8 @@ func handle_new_entity(entity,parent,server_entity):
 func set_active(active: bool):
 	print("setting is active for control:",active)
 	emit_signal("is_active",active)
-
 	
+func _process(delta):
+	if (self.rect_size - OS.get_window_safe_area().size).length() > 5:
+		self.set_size(OS.get_window_safe_area().size,true)
+		viewport_container.set_size(self.rect_size,true)

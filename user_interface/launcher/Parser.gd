@@ -17,17 +17,23 @@ func parse(cmd):
 # Called when the node enters the scene tree for the first time.
 
 
-func parse_text(cmd):
+func parse_text(cmd) -> String:
 	var split = cmd.split(" ")
 	match split.size():
 		0:
-			pass
+			
+			return ""
 		1:
-			pass
+			return ""
 		2:
 			var head = split[0]
 			var args_split = split.remove(0)
-			
-			pass
+			match head: 
+				"SET_GLOB_LOCATION":
+					var loc = Vector3(args_split[0],args_split[1],args_split[2])
+					var msg = PayloadMapper.setGlobLocation(args_split[0],loc)
+					return msg
+				_:
+					return ""
 		_:
-			pass
+			return ""

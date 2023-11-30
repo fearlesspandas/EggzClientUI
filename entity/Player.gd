@@ -15,9 +15,15 @@ func _input(event):
 		if id != null:
 			print("setting destination for player:",dest)
 			ServerNetwork.get(id).add_destination(id,dest)
-	elif is_active and event is InputEventKey:
+	if is_active and event is InputEventKey and event.is_action_released("control"):
+		var socket = ServerNetwork.get(client_id)
+		if socket != null:
+			#id and client id should be the same but
+			#this code is technically more general
+			socket.clear_destinations(id)
+	if is_active and event is InputEventKey:
 		var vec = get_input_vec(event)
-		var socket = ServerNetwork.get(id)
+		var socket = ServerNetwork.get(client_id)
 		if socket != null:
 			socket.send_input(id,vec)
 			
@@ -39,10 +45,7 @@ func get_input_vec(event) -> Vector3:
 	if event is InputEventKey and event.is_action_pressed("fall"):
 		vec += Vector3.DOWN
 	return vec#.normalized()
-	
-func _physics_process(delta):
-	pass
-	
+
 func set_active(active:bool):
 	print("player active:",id,active)
 	is_active = active

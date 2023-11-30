@@ -48,3 +48,7 @@ func on_tab_change(tab:int):
 	var active_tab = get_current_tab_control()
 	if active_tab.has_method("set_active"):
 		active_tab.set_active(true)
+
+func _process(delta):
+	if (self.rect_size - OS.get_window_safe_area().size).length() > 5:
+		self.set_size(OS.get_window_safe_area().size,true)
