@@ -16,7 +16,10 @@ func _ready():
 
 func _handle_message(msg,delta_accum):
 	match msg:
+		{'NoInput':{'id':var id}}:
+			pass
 		{'Input':{"id":var id, "vec":[var x ,var y ,var z]}}:
+			#print("server entity received movement vec ",[x,y,z])
 			movement.entity_apply_vector(delta_accum,Vector3(x,y,z),body)
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
 			body.global_transform.origin = location

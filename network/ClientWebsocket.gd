@@ -133,3 +133,6 @@ func location_subscribe(id:String):
 
 func input_subscribe(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.input_subscribe(id)).to_utf8())	
+
+func send_input(id:String,inputVec:Vector3):	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.apply_vector(id,inputVec)).to_utf8())	

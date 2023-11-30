@@ -55,3 +55,6 @@ func location_subscribe(id:String):
 	
 func input_subscribe(id:String):
 	return {'SUBSCRIBE':{'query':{'GET_INPUT_VECTOR':{'id':id}}}}
+
+func apply_vector(id:String,vec:Vector3):
+	return {'APPLY_VECTOR':{'id':id,'vec':[vec.x,vec.y,vec.z]}}

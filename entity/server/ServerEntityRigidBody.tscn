@@ -19,6 +19,7 @@ gravity_scale = 0.0
 shape = SubResource( 1 )
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
+visible = false
 mesh = SubResource( 2 )
 skeleton = NodePath("")
 material/0 = SubResource( 3 )

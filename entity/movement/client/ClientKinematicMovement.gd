@@ -11,8 +11,9 @@ func move(delta,location:Vector3,body:KinematicBody):
 	#body.move_and_slide_with_snap(-diff,Vector3.UP)
 	
 	body.move_and_slide(-diff,Vector3.UP)
-		#body.global_transform.origin -= diff_normalized
-
+	#body.global_transform.origin -= diff
+	#body.global_transform.origin = location
+	
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
