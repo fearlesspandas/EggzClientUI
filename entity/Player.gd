@@ -32,17 +32,17 @@ func get_input_vec(event) -> Vector3:
 	#represenets a vector pointing away from our body horizontally, in the direction the camera is facing
 	var pointer:Vector3 = Vector3(diff.x,body.global_transform.origin.y,diff.z).normalized()
 	var vec = Vector3(0, 0 , 0)
-	if event is InputEventKey and event.is_action_pressed("forward"):
+	if event is InputEventKey and event.is_action_pressed("forward",true):
 		vec -= pointer
-	if event is InputEventKey and event.is_action_pressed("left"):
+	if event is InputEventKey and event.is_action_pressed("left",true):
 		vec += pointer.rotated(Vector3.UP,3*PI/2)
-	if event is InputEventKey and event.is_action_pressed("right"):
+	if event is InputEventKey and event.is_action_pressed("right",true):
 		vec -= pointer.rotated(Vector3.UP,3*PI/2)
-	if event is InputEventKey and event.is_action_pressed("backward"):
+	if event is InputEventKey and event.is_action_pressed("backward",true):
 		vec += pointer
-	if event is InputEventKey and event.is_action_pressed("rise"):
+	if event is InputEventKey and event.is_action_pressed("rise",true):
 		vec += Vector3.UP
-	if event is InputEventKey and event.is_action_pressed("fall"):
+	if event is InputEventKey and event.is_action_pressed("fall",true):
 		vec += Vector3.DOWN
 	return vec#.normalized()
 

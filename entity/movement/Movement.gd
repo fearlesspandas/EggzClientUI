@@ -23,3 +23,9 @@ func entity_apply_vector(delta,vector:Vector3,body):
 		this.apply_vector(delta,vector,body)
 	else:
 		pass
+
+func entity_get_lv(body) -> Vector3:
+	if self.has_method("get_lv"):
+		return this.get_lv(body)
+	else:
+		return Vector3.ZERO

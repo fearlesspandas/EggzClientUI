@@ -17,6 +17,7 @@ func erase_dests():
 			dest.call_deferred("free")
 			dest = null
 	destinations = []
+	
 func _handle_message(dests):
 	print("destinations:",destinations)
 	erase_dests()

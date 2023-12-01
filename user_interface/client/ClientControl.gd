@@ -8,7 +8,7 @@ onready var viewport_container:ViewportContainer = ViewportContainer.new()
 onready var viewport:Viewport = Viewport.new()
 onready var entity_management:ClientEntityManager = ClientEntityManager.new()
 onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
-
+var lv_indicator:LinearVelocityIndicator = LinearVelocityIndicator.new()
 var profile:PlayerProfile
 var connection_ind_size = 30
 
@@ -28,15 +28,18 @@ func load_scene(id,secret):
 	#viewport.size_override_stretch(true)
 	viewport_container.add_child(viewport)
 	viewport.size = viewport_container.rect_size
-	#viewport.global_canvas_transform.origin = viewport_container.get_global_transform().origin
-	self.add_child(viewport_container)
-	#var cam = Camera.new()
 	
-	#self.add_child(viewport)
+	self.add_child(viewport_container)
 	
 	entity_management.client_id = profile.id
 	entity_management.viewport = viewport
 	self.add_child(entity_management)
+	
+	lv_indicator.client_id = profile.id
+	lv_indicator.rect_size = self.rect_size / 4
+	lv_indicator.set_position(Vector2(0,0))
+	self.add_child(lv_indicator)
+	
 	ServerNetwork.init(profile.id,profile.secret,entity_management,"_on_data")
 	
 	connection_indicator.set_size(Vector2(connection_ind_size,connection_ind_size))

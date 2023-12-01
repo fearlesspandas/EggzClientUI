@@ -36,7 +36,7 @@ func spawn_entity(id:String,location:Vector3,parent:Node,resource:Resource,creat
 		res.init_with_id(id,client_id)
 	parent.add_child(res)
 	res.global_transform.origin = location
-	emit_signal("terrain_created",res,parent,create_as_server_entity)
+	emit_signal("entity_created",res,parent,create_as_server_entity)
 	return res
 #terrain does not have message controlers associated with it
 func spawn_terrain(id:String,location:Vector3,parent:Node,resource:Resource,create_as_server_entity:bool):

@@ -84,6 +84,11 @@ func parseJsonCmd(cmd,delta):
 					s.message_controller.add_to_queue(formatted)
 			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
 				pass
+			{'NoLocation':{'id':var id}}:
+				var s = server_entities[id]
+				if s != null:
+					var formatted = {'NoLocation':{'id':id}}
+					s.message_controller.add_to_queue(formatted)
 			_:
 				pass
 				#print("no matching command in ServerEntityManager for ", cmd)

@@ -135,8 +135,13 @@ func input_subscribe(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.input_subscribe(id)).to_utf8())	
 
 func send_input(id:String,inputVec:Vector3):	
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.apply_vector(id,inputVec)).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.apply_vector(id,inputVec)).to_utf8())
 
 func clear_destinations(id:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.clear_destinations(id)).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.clear_destinations(id)).to_utf8())
 
+func set_lv(id:String,lv:Vector3):
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.set_lv(id,lv)).to_utf8())
+
+func lazy_lv(id:String):
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.lazy_lv(id)).to_utf8())

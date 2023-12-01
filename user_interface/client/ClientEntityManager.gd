@@ -6,7 +6,6 @@ onready var entity_scanner :EntityScannerTimer = EntityScannerTimer.new()
 onready var message_controller : MessageController = MessageController.new()
 onready var destinations:DestinationManager = DestinationManager.new()
 onready var destination_scanner : DestinationScannerTimer = DestinationScannerTimer.new()
-
 var viewport:Viewport
 var spawn
 
@@ -21,6 +20,7 @@ func _ready():
 	self.add_child(message_controller)
 	entity_scanner.start()
 	destination_scanner.start()
+	
 func set_active(active:bool):
 	entity_scanner.set_active(active)
 	destination_scanner.set_active(active)
@@ -80,6 +80,10 @@ func parseJsonCmd(cmd,delta):
 			{"AllDestinations":{"id":var id , "destinations":var dests}}:
 				destinations._handle_message(dests)
 				pass
+			{'LV':{'id':var id, 'lv':[var x , var y , var z]}}:
+				DataCache.add_data(id,'lv',Vector3(x,y,z))
+			{'PhysStat':{'id':var id, 'max_speed':var max_speed}}:
+				DataCache.add_data(id,'max_speed',max_speed)
 			_:
 				print("no handler found in ClientEntityManager for msg:", cmd)
 	else:

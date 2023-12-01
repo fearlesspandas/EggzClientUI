@@ -61,3 +61,9 @@ func apply_vector(id:String,vec:Vector3):
 
 func clear_destinations(id:String):
 	return {'CLEAR_DESTINATIONS':{'id':id}}
+
+func set_lv(id:String,lv:Vector3):
+	return {'SET_LV':{'id':id,'lv':[lv.x,lv.y,lv.z]}}
+	
+func lazy_lv(id:String):
+	return {'LAZY_LV':{'id':id}}

@@ -84,6 +84,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/GameFileManager.gd"
 }, {
+"base": "RichTextLabel",
+"class": "LinearVelocityIndicator",
+"language": "GDScript",
+"path": "res://user_interface/client/LinearVelocityIndicator.gd"
+}, {
 "base": "Node",
 "class": "MessageController",
 "language": "GDScript",
@@ -155,6 +160,7 @@ _global_script_class_icons={
 "EntityManagement": "",
 "EntityScannerTimer": "",
 "GameFileManager": "",
+"LinearVelocityIndicator": "",
 "MessageController": "",
 "Movement": "",
 "NewProfileTab": "",
@@ -185,6 +191,7 @@ Controller="*res://network/Controller.gd"
 NetworkConfig="*res://user_interface/NetworkConfig.gd"
 AssetMapper="*res://entity/assets/AssetMapper.gd"
 PayloadMapper="*res://network/payloads/PayloadMapper.gd"
+DataCache="*res://network/DataCache.gd"
 
 [input]
 
