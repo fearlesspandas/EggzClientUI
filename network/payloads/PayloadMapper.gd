@@ -67,3 +67,12 @@ func set_lv(id:String,lv:Vector3):
 	
 func lazy_lv(id:String):
 	return {'LAZY_LV':{'id':id}}
+
+func adjust_stats(id:String,delta):
+	return {'ADJUST_PHYSICAL_STATS':{'id':id,'delta':delta}}
+	
+func get_physical_stats(id:String):
+	return {'GET_PHYSICAL_STATS':{'id': id}}
+
+func subscribe_general(query):
+	return {'SUBSCRIBE':{'query':query}}

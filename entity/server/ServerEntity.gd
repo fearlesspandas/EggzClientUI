@@ -24,7 +24,6 @@ func timer_polling():
 	var socket = ServerNetwork.get(client_id)
 	if socket != null:
 		var lv = movement.entity_get_lv(body)
-		print("server entity setting lv" , lv)
 		socket.set_lv(id,movement.entity_get_lv(body))
 		
 func _handle_message(msg,delta_accum):
@@ -32,14 +31,12 @@ func _handle_message(msg,delta_accum):
 		{'NoInput':{'id':var id}}:
 			pass
 		{'Input':{"id":var id, "vec":[var x ,var y ,var z]}}:
-			#print("server entity received movement vec ",[x,y,z])
 			movement.entity_apply_vector(delta_accum,Vector3(x,y,z),body)
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
 			body.global_transform.origin = location
 		{"NextDestination":{"id": var id, "location": [var x, var y , var z]}}:
 			requested_dest = false
 			destination = Vector3(x,y,z)
-			#print("set destination successfully")
 		{'NoLocation':{'id':var id}}:
 			destination = null
 		_:
@@ -51,7 +48,6 @@ func freeze():
 	body.global_transform.origin = spawn
 	
 func _physics_process(delta):
-	#print("server entity location", body.global_transform.origin)
 	self.global_transform.origin = body.global_transform.origin
 	var socket = ServerNetwork.get(client_id)
 	if socket != null:
@@ -59,6 +55,7 @@ func _physics_process(delta):
 		socket.get_next_destination(id)
 	if(destination != null ):
 		var diff = destination - body.global_transform.origin
+		movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 		if diff.length() > epsilon:
 			movement.entity_move(delta,destination,body)
 			#print("active destination",destination)
@@ -71,6 +68,8 @@ func _process(delta):
 	var socket = ServerNetwork.get(client_id)
 	if !isSubbed and socket != null :
 		socket.input_subscribe(id)
+		var query = PayloadMapper.get_physical_stats(id)
+		socket.subscribe_general(query)
 		isSubbed = true
 		print("server entity, subbing to input for id", id)
 		

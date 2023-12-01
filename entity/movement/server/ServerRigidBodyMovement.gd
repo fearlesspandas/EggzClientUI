@@ -28,5 +28,9 @@ func apply_vector(delta,vector:Vector3,body:RigidBody):
 
 func get_lv(body:RigidBody) -> Vector3:
 	return body.linear_velocity
+
+func set_max_speed(max_speed):
+	speed_limit = max_speed
+	
 func _ready():
 	pass

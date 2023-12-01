@@ -8,7 +8,8 @@ onready var viewport_container:ViewportContainer = ViewportContainer.new()
 onready var viewport:Viewport = Viewport.new()
 onready var entity_management:ClientEntityManager = ClientEntityManager.new()
 onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
-var lv_indicator:LinearVelocityIndicator = LinearVelocityIndicator.new()
+onready var lv_indicator:LinearVelocityIndicator = LinearVelocityIndicator.new()
+onready var max_speed_slider:MaxSpeedSlider = MaxSpeedSlider.new()
 var profile:PlayerProfile
 var connection_ind_size = 30
 
@@ -40,6 +41,16 @@ func load_scene(id,secret):
 	lv_indicator.set_position(Vector2(0,0))
 	self.add_child(lv_indicator)
 	
+	max_speed_slider.client_id = profile.id
+	max_speed_slider.rect_size = self.rect_size / 4
+	max_speed_slider.set_position(
+		Vector2(
+			self.rect_size.x - max_speed_slider.rect_size.x,
+			self.rect_size.y - (max_speed_slider.rect_size.y * 2)
+		)
+	)
+	self.add_child(max_speed_slider)
+	
 	ServerNetwork.init(profile.id,profile.secret,entity_management,"_on_data")
 	
 	connection_indicator.set_size(Vector2(connection_ind_size,connection_ind_size))
@@ -49,7 +60,6 @@ func load_scene(id,secret):
 	
 	entity_management.spawn_client_world(viewport,Vector3(0,0,0))
 	var player = entity_management.create_character_entity_client(profile.id,Vector3(0,0,0),viewport)
-	print("Player:",player)
 	self.connect("is_active",player,"set_active")
 	self.connect("is_active",entity_management,"set_active")
 	#entity_management.entity_scanner.start()
@@ -66,3 +76,10 @@ func _process(delta):
 	if (self.rect_size - OS.get_window_safe_area().size).length() > 5:
 		self.set_size(OS.get_window_safe_area().size,true)
 		viewport_container.set_size(self.rect_size,true)
+		max_speed_slider.rect_size = self.rect_size / 4
+		max_speed_slider.set_position(
+			Vector2(
+				self.rect_size.x - max_speed_slider.rect_size.x,
+				self.rect_size.y - (max_speed_slider.rect_size.y * 2)
+			)
+		)

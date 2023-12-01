@@ -51,5 +51,4 @@ func set_active(active:bool):
 	is_active = active
 	camera.set_active(active)
 	
-func _ready():
-	pass # Replace with function body.
+

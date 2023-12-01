@@ -29,3 +29,10 @@ func entity_get_lv(body) -> Vector3:
 		return this.get_lv(body)
 	else:
 		return Vector3.ZERO
+
+func entity_set_max_speed(max_speed):
+	if self.has_method("set_max_speed"):
+		this.set_max_speed(max_speed)
+	else:
+		pass
+

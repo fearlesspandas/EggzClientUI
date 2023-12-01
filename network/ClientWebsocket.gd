@@ -145,3 +145,13 @@ func set_lv(id:String,lv:Vector3):
 
 func lazy_lv(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.lazy_lv(id)).to_utf8())
+
+func adjust_stats(id:String,delta):
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.adjust_stats(id,delta)).to_utf8())
+
+func get_physical_stats(id:String):
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_physical_stats(id)).to_utf8())
+
+func subscribe_general(query):
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.subscribe_general(query)).to_utf8())
+

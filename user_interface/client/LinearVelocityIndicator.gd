@@ -16,7 +16,6 @@ func _ready():
 	timer.start()
 	
 func timeout_polling():
-	print("lv indicator polling for lv")
 	var socket = ServerNetwork.get(client_id)
 	if socket != null:
 		socket.lazy_lv(client_id)

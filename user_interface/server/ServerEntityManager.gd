@@ -89,6 +89,8 @@ func parseJsonCmd(cmd,delta):
 				if s != null:
 					var formatted = {'NoLocation':{'id':id}}
 					s.message_controller.add_to_queue(formatted)
+			{'PhysStat':{'id':var id, 'max_speed':var max_speed}}:
+				DataCache.add_data(id,'max_speed',max_speed)
 			_:
 				pass
 				#print("no matching command in ServerEntityManager for ", cmd)
