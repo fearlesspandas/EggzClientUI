@@ -14,6 +14,7 @@ func _ready():
 	auth_request.connect("session_created",self,"load_scene")
 	self.add_child(auth_request)
 	auth_request._initiate_auth_request(profile.id)
+	
 func load_scene(id,secret):
 	profile.secret = secret
 	print("entering control")
@@ -30,9 +31,7 @@ func load_scene(id,secret):
 	connection_indicator.client_id = entity_management.client_id
 	self.add_child(connection_indicator)
 	
-	entity_management.spawn_server_world(self,Vector3(0,0,0))
-	
-	#entity_management.create_character_entity_server(profile.id)
+	entity_management.spawn_server_world(self,Vector3(0,-10,0))
 
 
 func handle_new_entity(entity,parent,server_entity):

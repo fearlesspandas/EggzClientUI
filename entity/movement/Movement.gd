@@ -12,9 +12,9 @@ func entity_move(delta,location:Vector3,body):
 	else:
 		pass
 
-func entity_stop(delta,body):
+func entity_stop(body):
 	if self.has_method("stop"):
-		this.stop(delta,body)
+		this.stop(body)
 	else:
 		pass
 

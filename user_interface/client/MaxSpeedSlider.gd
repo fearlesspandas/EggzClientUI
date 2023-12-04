@@ -39,8 +39,10 @@ func _process(delta):
 	if ! is_subbed:
 		var socket = ServerNetwork.get(client_id)
 		if socket!= null:
-			print("player sending phys stats subscribe")
+			#print("max speed slider sending phys stats subscribe",client_id)
 			var query = PayloadMapper.get_physical_stats(client_id)
-			socket.subscribe_general(query)
-			is_subbed = true
+			#print("max speed slider sending phys stats subscribe",client_id,query)
+			#socket.subscribe_general(query)
+			socket.get_physical_stats(client_id)
+			#is_subbed = true
 	

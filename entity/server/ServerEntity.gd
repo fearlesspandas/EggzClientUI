@@ -29,7 +29,7 @@ func timer_polling():
 func _handle_message(msg,delta_accum):
 	match msg:
 		{'NoInput':{'id':var id}}:
-			pass
+			movement.entity_apply_vector(delta_accum,Vector3.ZERO,body)
 		{'Input':{"id":var id, "vec":[var x ,var y ,var z]}}:
 			movement.entity_apply_vector(delta_accum,Vector3(x,y,z),body)
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
@@ -48,6 +48,7 @@ func freeze():
 	body.global_transform.origin = spawn
 	
 func _physics_process(delta):
+	movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	self.global_transform.origin = body.global_transform.origin
 	var socket = ServerNetwork.get(client_id)
 	if socket != null:
@@ -55,12 +56,11 @@ func _physics_process(delta):
 		socket.get_next_destination(id)
 	if(destination != null ):
 		var diff = destination - body.global_transform.origin
-		movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 		if diff.length() > epsilon:
 			movement.entity_move(delta,destination,body)
 			#print("active destination",destination)
 		else:
-			movement.entity_stop(delta,body)
+			movement.entity_stop(body)
 			destination = null
 	pass
 	
@@ -73,3 +73,8 @@ func _process(delta):
 		isSubbed = true
 		print("server entity, subbing to input for id", id)
 		
+
+func _input(event):
+	if event is InputEventKey and event.is_action_pressed("alt",true):
+		movement.entity_stop(body)
+	

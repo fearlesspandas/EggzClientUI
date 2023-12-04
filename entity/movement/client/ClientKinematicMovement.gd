@@ -9,10 +9,10 @@ func move(delta,location:Vector3,body:KinematicBody):
 	var diff_normalized:Vector3 = diff.normalized() * speed * delta
 	#body.move_and_collide(-diff,false)
 	#body.move_and_slide_with_snap(-diff,Vector3.UP)
-	
-	body.move_and_slide(-diff,Vector3.UP)
-	#body.global_transform.origin -= diff
-	#body.global_transform.origin = location
+	if diff.length() < 100:
+		body.move_and_slide(-diff,Vector3.UP)
+	else:
+		body.global_transform.origin = location
 
 
 func _ready():

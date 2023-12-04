@@ -83,6 +83,7 @@ func parseJsonCmd(cmd,delta):
 			{'LV':{'id':var id, 'lv':[var x , var y , var z]}}:
 				DataCache.add_data(id,'lv',Vector3(x,y,z))
 			{'PhysStat':{'id':var id, 'max_speed':var max_speed}}:
+				#print("client entity manmager received physstat", max_speed)
 				DataCache.add_data(id,'max_speed',max_speed)
 			_:
 				print("no handler found in ClientEntityManager for msg:", cmd)
