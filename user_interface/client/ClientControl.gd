@@ -10,6 +10,8 @@ onready var entity_management:ClientEntityManager = ClientEntityManager.new()
 onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
 onready var lv_indicator:LinearVelocityIndicator = LinearVelocityIndicator.new()
 onready var max_speed_slider:MaxSpeedSlider = MaxSpeedSlider.new()
+onready var click_menu:ClickMenu = ClickMenu.new()
+
 var profile:PlayerProfile
 var connection_ind_size = 30
 
@@ -40,6 +42,8 @@ func load_scene(id,secret):
 	lv_indicator.rect_size = self.rect_size / 4
 	lv_indicator.set_position(Vector2(0,0))
 	self.add_child(lv_indicator)
+	
+	self.add_child(click_menu)
 	
 	max_speed_slider.client_id = profile.id
 	max_speed_slider.rect_size = self.rect_size / 4

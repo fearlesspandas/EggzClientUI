@@ -4,7 +4,12 @@ extends ClientPlayerEntity
 onready var camera_root =find_node("CameraRoot")
 onready var camera:Camera = camera_root.find_node("Camera")
 onready var curserRay:RayCast = camera_root.find_node("CursorRay")
+onready var pointer:PlayerPathPointer = PlayerPathPointer.new()
 var is_active = false
+
+func _ready():
+	self.add_child(pointer)
+	
 func _input(event):
 	if is_active and event is InputEventMouseButton and event.is_action_pressed("left_click") and curserRay.intersect_position != null:
 		#print("attempting to add destination")
@@ -24,13 +29,14 @@ func _input(event):
 	if is_active and event is InputEventKey:
 		var vec = get_input_vec(event)
 		var socket = ServerNetwork.get(client_id)
+		pointer.position(body.global_transform.origin - vec)
 		if socket != null:
 			socket.send_input(id,vec)
 			
 func get_input_vec(event) -> Vector3:
 	var diff = camera.global_transform.origin - self.body.global_transform.origin
 	#represenets a vector pointing away from our body horizontally, in the direction the camera is facing
-	var pointer:Vector3 = Vector3(diff.x,body.global_transform.origin.y,diff.z).normalized()
+	var pointer:Vector3 = Vector3(diff.x,0,diff.z).normalized()
 	var vec = Vector3(0, 0 , 0)
 	if event is InputEventKey and event.is_action_pressed("forward",true):
 		vec -= pointer
@@ -44,6 +50,7 @@ func get_input_vec(event) -> Vector3:
 		vec += Vector3.UP
 	if event is InputEventKey and event.is_action_pressed("fall",true):
 		vec += Vector3.DOWN
+	print("player input", vec)
 	return vec#.normalized()
 
 func set_active(active:bool):

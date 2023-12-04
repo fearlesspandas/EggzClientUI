@@ -5,6 +5,7 @@ onready var body:MeshInstance = MeshInstance.new()
 onready var mesh:CylinderMesh = CylinderMesh.new()
 onready var material:SpatialMaterial = SpatialMaterial.new()
 var location:Vector3
+
 func _ready():
 	material.albedo_color = Color.red
 	mesh.height = 100

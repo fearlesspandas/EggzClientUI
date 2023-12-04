@@ -79,7 +79,6 @@ func _process(delta):
 	if !in_motion:
 		x_velocity = decelerate(x_velocity,0.1)
 		z_velocity = decelerate(z_velocity,0.1)
-	print(x_velocity,z_velocity)
 
 func _ready():
 	pass
