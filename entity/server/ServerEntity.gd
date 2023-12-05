@@ -34,7 +34,7 @@ func _handle_message(msg,delta_accum):
 			movement.entity_apply_vector(delta_accum,Vector3(x,y,z),body)
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
 			body.global_transform.origin = location
-		{"NextDestination":{"id": var id, "location": [var x, var y , var z]}}:
+		{'NextDestination':{'id': var id, 'destination': {'dest_type':{'WAYPOINT':{}}, 'location':[var x, var y , var z]}}}:
 			requested_dest = false
 			destination = Vector3(x,y,z)
 		{'NoLocation':{'id':var id}}:

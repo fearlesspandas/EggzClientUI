@@ -41,8 +41,8 @@ func start_egg(eggId,globId):
 func getAllEntityIds():
 	return {'GET_ALL_ENTITY_IDS':{}}	
 	
-func add_destination(globId:String,location:Vector3):
-	return {'ADD_DESTINATION':{'id':globId,'location':[location.x,location.y,location.z]}}	
+func add_destination(globId:String,location:Vector3,type:String):
+	return {'ADD_DESTINATION':{'id':globId,'dest':{'dest_type':{type:{}},'location':[location.x,location.y,location.z]}}}	
 	
 func get_next_destination(globId:String):
 	return {'GET_NEXT_DESTINATION':{'id':globId}}	

@@ -23,7 +23,7 @@ func _handle_message(dests):
 	erase_dests()
 	for destination in dests:
 		match destination:
-			[var x,var y, var z]:
+			{'dest_type':var dest_type ,'location':[var x,var y, var z]}:
 				var loc = Vector3(x,y,z)
 				var newDest = Destination.new()
 				newDest.location = Vector3(x,y,z)

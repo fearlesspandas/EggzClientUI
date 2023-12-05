@@ -19,7 +19,7 @@ func _input(event):
 		var dest = Vector3(x,y,z)
 		if id != null:
 			print("setting destination for player:",dest)
-			ServerNetwork.get(id).add_destination(id,dest)
+			ServerNetwork.get(id).add_destination(id,dest,"WAYPOINT")
 	if is_active and event is InputEventKey and event.is_action_released("control"):
 		var socket = ServerNetwork.get(client_id)
 		if socket != null:

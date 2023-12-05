@@ -77,10 +77,10 @@ func parseJsonCmd(cmd,delta):
 								spawn_character_entity_server(id,Vector3(x,y,z))
 						_:
 							print("ServerEntityManager could not parse glob type ", glob)
-			{"NextDestination":{"id": var id, "location": [var x, var y , var z]}}:
+			{"NextDestination":{"id": var id, "destination": var dest}}:
 				var s = server_entities[id]
 				if s != null:
-					var formatted = {"NextDestination":{"id":  id, "location": [ x, y , z]}}
+					var formatted = {"NextDestination":{"id":  id, 'destination':dest}}
 					s.message_controller.add_to_queue(formatted)
 			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
 				pass
