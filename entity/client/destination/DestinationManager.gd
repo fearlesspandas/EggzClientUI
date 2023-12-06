@@ -23,10 +23,12 @@ func _handle_message(dests):
 	erase_dests()
 	for destination in dests:
 		match destination:
-			{'dest_type':var dest_type ,'location':[var x,var y, var z]}:
+			{'dest_type':var dest_type ,'location':[var x,var y, var z] , 'radius':var radius}:
 				var loc = Vector3(x,y,z)
 				var newDest = Destination.new()
+				newDest.type = dest_type
 				newDest.location = Vector3(x,y,z)
+				newDest.radius = radius
 				add_destination(newDest)
 				print("adding new dest",destinations)
 				entity_spawn.add_child(newDest)

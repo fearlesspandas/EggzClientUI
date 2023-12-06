@@ -7,7 +7,7 @@ onready var spawn
 var requested_dest = false
 var timeout = 10
 var last_request = null
-var destination=null
+var destination:Destination = null
 var epsilon = 3
 var isSubbed:bool = false
 
@@ -34,9 +34,12 @@ func _handle_message(msg,delta_accum):
 			movement.entity_apply_vector(delta_accum,Vector3(x,y,z),body)
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
 			body.global_transform.origin = location
-		{'NextDestination':{'id': var id, 'destination': {'dest_type':{'WAYPOINT':{}}, 'location':[var x, var y , var z]}}}:
+		{'NextDestination':{'id': var id, 'destination': {'dest_type':var dest_type, 'location':[var x, var y , var z] , 'radius': var radius}}}:
 			requested_dest = false
-			destination = Vector3(x,y,z)
+			destination = Destination.new()
+			destination.location = Vector3(x,y,z)
+			destination.type = dest_type
+			destination.radius = radius
 		{'NoLocation':{'id':var id}}:
 			destination = null
 		_:
@@ -55,9 +58,9 @@ func _physics_process(delta):
 		socket.setGlobLocation(id,body.global_transform.origin)
 		socket.get_next_destination(id)
 	if(destination != null ):
-		var diff = destination - body.global_transform.origin
+		var diff = destination.location - body.global_transform.origin
 		if diff.length() > epsilon:
-			movement.entity_move(delta,destination,body)
+			movement.entity_move(delta,destination.location,body)
 			#print("active destination",destination)
 		else:
 			movement.entity_stop(body)

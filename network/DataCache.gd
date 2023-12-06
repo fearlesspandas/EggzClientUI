@@ -14,6 +14,9 @@ func add_data(client_id:String,field:String, val):
 		store[client_id][field] = val
 	else:
 		store[client_id] = {field:val}
+func remove_data(client_id:String,field:String):
+	if store.has(client_id):
+		store[client_id].erase(field)
 func cached(id:String,field:String):
 	if store.has(id) and store[id].has(field):
 		return store[id][field]

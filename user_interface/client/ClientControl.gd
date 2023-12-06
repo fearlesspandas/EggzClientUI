@@ -43,6 +43,8 @@ func load_scene(id,secret):
 	lv_indicator.set_position(Vector2(0,0))
 	self.add_child(lv_indicator)
 	
+	click_menu.spawn = viewport
+	click_menu.client_id = profile.id
 	self.add_child(click_menu)
 	
 	max_speed_slider.client_id = profile.id
@@ -64,8 +66,10 @@ func load_scene(id,secret):
 	
 	entity_management.spawn_client_world(viewport,Vector3(0,-10,0))
 	var player = entity_management.create_character_entity_client(profile.id,Vector3(0,0,0),viewport)
+	
 	self.connect("is_active",player,"set_active")
 	self.connect("is_active",entity_management,"set_active")
+	player.curserRay.connect("intersection_clicked",click_menu,"handle_clicked")
 	#entity_management.entity_scanner.start()
 	
 func handle_new_entity(entity,parent,server_entity):

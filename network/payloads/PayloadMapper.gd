@@ -1,6 +1,7 @@
 extends Node
 
-
+func destination(type:String, location:Vector3,radius:float):
+	return {'dest_type':{type:{}},'location':[location.x,location.y,location.z], 'radius':radius}
 func create_glob(id:String,location:Vector3):
 	#print("calling create glob")
 	return {'CREATE_GLOB':{'globId':id,'location':[location.x,location.y,location.z]}}
@@ -40,9 +41,9 @@ func start_egg(eggId,globId):
 
 func getAllEntityIds():
 	return {'GET_ALL_ENTITY_IDS':{}}	
-	
-func add_destination(globId:String,location:Vector3,type:String):
-	return {'ADD_DESTINATION':{'id':globId,'dest':{'dest_type':{type:{}},'location':[location.x,location.y,location.z]}}}	
+
+func add_destination(globId:String,location:Vector3,type:String,radius:float = 5):
+	return {'ADD_DESTINATION':{'id':globId,'dest':destination(type,location,radius)}}
 	
 func get_next_destination(globId:String):
 	return {'GET_NEXT_DESTINATION':{'id':globId}}	

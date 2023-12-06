@@ -1,25 +1,26 @@
 extends ClientPlayerEntity
 
-
+class_name Player
 onready var camera_root =find_node("CameraRoot")
 onready var camera:Camera = camera_root.find_node("Camera")
-onready var curserRay:RayCast = camera_root.find_node("CursorRay")
+onready var curserRay:CursorRay = camera_root.find_node("CursorRay")
 onready var pointer:PlayerPathPointer = PlayerPathPointer.new()
 var is_active = false
 
 func _ready():
 	self.add_child(pointer)
-	
+	curserRay.connect("intersection_clicked",self,"handle_clicked")
 func _input(event):
 	if is_active and event is InputEventMouseButton and event.is_action_pressed("left_click") and curserRay.intersect_position != null:
 		#print("attempting to add destination")
-		var y = curserRay.intersect_position.y
-		var x = curserRay.intersect_position.x
-		var z = curserRay.intersect_position.z
-		var dest = Vector3(x,y,z)
-		if id != null:
-			print("setting destination for player:",dest)
-			ServerNetwork.get(id).add_destination(id,dest,"WAYPOINT")
+		#var y = curserRay.intersect_position.y
+		#var x = curserRay.intersect_position.x
+		#var z = curserRay.intersect_position.z
+		#var dest = Vector3(x,y,z)
+		#if id != null:
+	#		print("setting destination for player:",dest)
+	#		ServerNetwork.get(id).add_destination(id,dest,"WAYPOINT")
+		pass
 	if is_active and event is InputEventKey and event.is_action_released("control"):
 		var socket = ServerNetwork.get(client_id)
 		if socket != null:
@@ -58,4 +59,13 @@ func set_active(active:bool):
 	is_active = active
 	camera.set_active(active)
 	
-
+#can probably remove this entirely now once submenus are in
+func handle_clicked(position,button_index):
+	if button_index == 1 and curserRay.intersect_position != null:
+		var y = curserRay.intersect_position.y
+		var x = curserRay.intersect_position.x
+		var z = curserRay.intersect_position.z
+		var dest = Vector3(x,y,z)
+		if id != null:
+			print("setting destination for player:",dest)
+			#ServerNetwork.get(id).add_destination(id,dest,"WAYPOINT")

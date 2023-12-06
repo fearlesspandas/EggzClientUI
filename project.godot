@@ -24,6 +24,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/client/ClickMenu.gd"
 }, {
+"base": "RichTextLabel",
+"class": "ClickOption",
+"language": "GDScript",
+"path": "res://user_interface/client/interfaces/ClickOption.gd"
+}, {
 "base": "Control",
 "class": "ClientControl",
 "language": "GDScript",
@@ -58,6 +63,11 @@ _global_script_classes=[ {
 "class": "Console",
 "language": "GDScript",
 "path": "res://user_interface/launcher/Console.gd"
+}, {
+"base": "RayCast",
+"class": "CursorRay",
+"language": "GDScript",
+"path": "res://entity/camera/RaycastFollowPlayer.gd"
 }, {
 "base": "Spatial",
 "class": "Destination",
@@ -119,6 +129,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://entity/PhysicalPlayerEntity.gd"
 }, {
+"base": "ClientPlayerEntity",
+"class": "Player",
+"language": "GDScript",
+"path": "res://entity/Player.gd"
+}, {
 "base": "Spatial",
 "class": "PlayerPathPointer",
 "language": "GDScript",
@@ -158,11 +173,17 @@ _global_script_classes=[ {
 "class": "ServerRigidMovement",
 "language": "GDScript",
 "path": "res://entity/movement/server/ServerRigidBodyMovement.gd"
+}, {
+"base": "Spatial",
+"class": "WaypointCreator",
+"language": "GDScript",
+"path": "res://user_interface/client/interfaces/WaypointCreator.gd"
 } ]
 _global_script_class_icons={
 "AuthenticatedControl": "",
 "AuthenticationRequest": "",
 "ClickMenu": "",
+"ClickOption": "",
 "ClientControl": "",
 "ClientEntityManager": "",
 "ClientKinematicMovement": "",
@@ -170,6 +191,7 @@ _global_script_class_icons={
 "ClientWebSocket": "",
 "ConnectionIndicator": "",
 "Console": "",
+"CursorRay": "",
 "Destination": "",
 "DestinationManager": "",
 "DestinationScannerTimer": "",
@@ -182,6 +204,7 @@ _global_script_class_icons={
 "Movement": "",
 "NewProfileTab": "",
 "PhysicalPlayerEntity": "",
+"Player": "",
 "PlayerPathPointer": "",
 "PlayerProfile": "",
 "Profiles": "",
@@ -189,7 +212,8 @@ _global_script_class_icons={
 "ServerEntity": "",
 "ServerEntityManager": "",
 "ServerKinematicMovement": "",
-"ServerRigidMovement": ""
+"ServerRigidMovement": "",
+"WaypointCreator": ""
 }
 
 [application]
@@ -210,6 +234,7 @@ NetworkConfig="*res://user_interface/NetworkConfig.gd"
 AssetMapper="*res://entity/assets/AssetMapper.gd"
 PayloadMapper="*res://network/payloads/PayloadMapper.gd"
 DataCache="*res://network/DataCache.gd"
+CameraUtils="*res://entity/camera/CameraUtils.gd"
 
 [input]
 
