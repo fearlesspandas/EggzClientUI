@@ -119,8 +119,8 @@ func start_egg(eggId,globId):
 func getAllEntityIds():
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getAllEntityIds()).to_utf8())	
 	
-func add_destination(globId:String,location:Vector3,type:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.add_destination(globId,location,type)).to_utf8())	
+func add_destination(globId:String,location:Vector3,type:String,radius:float):
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.add_destination(globId,location,type,radius)).to_utf8())	
 	
 func get_next_destination(globId:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_next_destination(globId)).to_utf8())	

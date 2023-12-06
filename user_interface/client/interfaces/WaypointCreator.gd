@@ -35,6 +35,6 @@ func _input(event):
 		assert(socket != null)
 		var position:Vector3 = CameraUtils.find_mouse_collision(get_viewport().get_camera(),get_world(),event.position)
 		var dist = (position - center).length() #send distance as radius
-		socket.add_destination(client_id,center,"WAYPOINT")
+		socket.add_destination(client_id,center,"WAYPOINT",dist)
 		get_parent().remove_child(self)
 		self.call_deferred("free")
