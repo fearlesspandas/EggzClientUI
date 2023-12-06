@@ -5,7 +5,7 @@ class_name ServerRigidMovement
 
 var speed = 0.5
 var speed_limit = 10
-var autopilot_speed_limit = 0.05
+var autopilot_speed_limit = 0.0005
 var stopped_location = null
 
 var x_velocity = 0
@@ -16,14 +16,18 @@ var in_motion
 func move(delta,location:Vector3,body:RigidBody):
 	var base = (body.global_transform.origin - location)
 	var diffvec:Vector3 = (body.global_transform.origin - location).normalized() * speed * delta * base.length()/3
-	diffvec = diffvec * clamp(diffvec.length(),0,min(autopilot_speed_limit,speed_limit))/diffvec.length()
+	diffvec = diffvec * clamp(diffvec.length(),0,min(autopilot_speed_limit,speed_limit)/(1/(speed_limit + 1)))/diffvec.length()
 	body.set_axis_velocity(Vector3(1,0,0) * -diffvec.x)
 	body.set_axis_velocity(Vector3(0,1,0) * -diffvec.y)
 	body.set_axis_velocity(Vector3(0,0,1) * -diffvec.z)
 	
 func stop(body:RigidBody):
-	if stopped_location == null:
-		stopped_location = body.global_transform.origin
+	Input
+	#body.add_central_force(-body.linear_velocity)
+	#body.angular_velocity = Vector3.ZERO
+	#body.apply_central_impulse(-body.linear_velocity)
+	#body.add_central_force(-body.linear_velocity)
+	#print("stopping")
 	body.sleeping = true
 
 func decelerate(value:float,decell:float) -> float:
@@ -49,7 +53,8 @@ func move_along_path(vector:Vector3,body:RigidBody):
 	var vec = Vector3(normal.x * x_velocity,int(should_jump) * -0.01 * vector.y,normal.z * z_velocity)
 	if vec.length() > 0 and speed_limit != null:
 		vec = vec * clamp(vec.length(),0,speed_limit)/vec.length() 
-	body.set_axis_velocity(-vec)
+	body.add_central_force(-vec)
+	#body.set_axis_velocity(-vec)
 	
 
 func apply_vector(delta,vector:Vector3,body:RigidBody):

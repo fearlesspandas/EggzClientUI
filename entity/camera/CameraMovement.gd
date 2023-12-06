@@ -16,7 +16,7 @@ var sensitivity_x = 0.5
 var sensitivity_y = 25
 var rotating = false
 var maxzoom = 5
-var minzoom = 30
+var minzoom = 60
 var is_active:bool = false
 func check_mouse_position_within_viewport(position:Vector2) -> bool:
 	var viewport:Viewport = get_viewport()

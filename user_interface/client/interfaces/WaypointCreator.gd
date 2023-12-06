@@ -27,7 +27,7 @@ func _process(delta):
 	
 	
 func _input(event):
-	if event is InputEventKey and event.is_action_pressed("ui_cancel"):
+	if event is InputEvent and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("right_click")):
 		get_parent().remove_child(self)
 		self.call_deferred("free")
 	if event is InputEventMouseButton and event.is_action_pressed("left_click"):

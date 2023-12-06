@@ -12,7 +12,7 @@ var spawn
 func _ready():
 	entity_scanner.wait_time = 2
 	entity_scanner.client_id = client_id
-	destination_scanner.wait_time = 2
+	destination_scanner.wait_time = 1
 	destination_scanner.client_id = client_id
 	destinations.entity_spawn = viewport
 	self.add_child(entity_scanner)
