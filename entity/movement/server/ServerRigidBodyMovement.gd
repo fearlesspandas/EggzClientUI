@@ -13,23 +13,22 @@ var y_velocity = 0
 var z_velocity = 0
 var in_motion
 
+var force_vec_accum : Vector3 = Vector3.ZERO
+var body_ref:RigidBody
 func move(delta,location:Vector3,body:RigidBody):
 	var base = (body.global_transform.origin - location)
 	var diffvec:Vector3 = (body.global_transform.origin - location).normalized() * speed * delta * base.length()/3
 	diffvec = diffvec * clamp(diffvec.length(),0,min(autopilot_speed_limit,speed_limit)/(1/(speed_limit + 1)))/diffvec.length()
-	body.set_axis_velocity(Vector3(1,0,0) * -diffvec.x)
-	body.set_axis_velocity(Vector3(0,1,0) * -diffvec.y)
-	body.set_axis_velocity(Vector3(0,0,1) * -diffvec.z)
-	
+	#body.set_axis_velocity(Vector3(1,0,0) * -diffvec.x)
+	#body.set_axis_velocity(Vector3(0,1,0) * -diffvec.y)
+	#body.set_axis_velocity(Vector3(0,0,1) * -diffvec.z)
+	body.apply_central_impulse(-diffvec)
+	#apply_vector(delta,-base * min(autopilot_speed_limit,speed_limit)/(1/(speed_limit + 1)),body)
 func stop(body:RigidBody):
-	Input
-	#body.add_central_force(-body.linear_velocity)
-	#body.angular_velocity = Vector3.ZERO
-	#body.apply_central_impulse(-body.linear_velocity)
-	#body.add_central_force(-body.linear_velocity)
-	#print("stopping")
-	body.sleeping = true
-
+	in_motion = false
+	#body.add_central_force(-force_vec_accum)
+	force_vec_accum = Vector3.ZERO
+	#body.sleeping = true
 func decelerate(value:float,decell:float) -> float:
 	if value > 0:
 		value -= min(decell,value) 
@@ -53,8 +52,11 @@ func move_along_path(vector:Vector3,body:RigidBody):
 	var vec = Vector3(normal.x * x_velocity,int(should_jump) * -0.01 * vector.y,normal.z * z_velocity)
 	if vec.length() > 0 and speed_limit != null:
 		vec = vec * clamp(vec.length(),0,speed_limit)/vec.length() 
-	body.add_central_force(-vec)
-	#body.set_axis_velocity(-vec)
+	#body.add_central_force(-vec)
+	force_vec_accum -= vec #* 0.01
+	#going back and forth between add_force vs apply_impulse. forces feel more chaotic sometimes, but are frame independent
+	body.apply_central_impulse(-vec * 0.01)
+	
 	
 
 func apply_vector(delta,vector:Vector3,body:RigidBody):
@@ -80,10 +82,11 @@ func get_lv(body:RigidBody) -> Vector3:
 func set_max_speed(max_speed):
 	speed_limit = max_speed
 	
-func _process(delta):
+func _physics_process(delta):
 	if !in_motion:
 		x_velocity = decelerate(x_velocity,0.1)
 		z_velocity = decelerate(z_velocity,0.1)
+	#move_along_path(Vector3(1,0,1),body_ref)
 
 func _ready():
 	pass

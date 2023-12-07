@@ -17,6 +17,7 @@ func _ready():
 	timer.connect("timeout",self,"timer_polling")
 	timer.wait_time = 0.5
 	self.add_child(timer)
+	self.movement.body_ref = body
 	timer.start()
 	pass # Replace with function body.
 
@@ -29,7 +30,8 @@ func timer_polling():
 func _handle_message(msg,delta_accum):
 	match msg:
 		{'NoInput':{'id':var id}}:
-			movement.entity_apply_vector(delta_accum,Vector3.ZERO,body)
+			movement.entity_stop(body)
+			#movement.entity_apply_vector(delta_accum,Vector3.ZERO,body)
 		{'Input':{"id":var id, "vec":[var x ,var y ,var z]}}:
 			movement.entity_apply_vector(delta_accum,Vector3(x,y,z),body)
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:

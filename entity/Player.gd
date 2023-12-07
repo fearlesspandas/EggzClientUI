@@ -51,7 +51,7 @@ func get_input_vec(event) -> Vector3:
 		vec += Vector3.UP
 	if event is InputEventKey and event.is_action_pressed("fall",true):
 		vec += Vector3.DOWN
-	print("player input", vec)
+		
 	return vec#.normalized()
 
 func set_active(active:bool):

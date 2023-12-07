@@ -4,6 +4,7 @@
 
 [sub_resource type="PhysicsMaterial" id=4]
 rough = true
+absorbent = true
 
 [sub_resource type="SphereShape" id=1]
 

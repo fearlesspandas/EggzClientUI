@@ -47,6 +47,10 @@ func _on_data():
 	var cmd = ServerNetwork.get(client_id).get_packet(true)
 	message_controller.add_to_queue(cmd)
 
+func route_to_entity(id:String,msg):
+	var s = server_entities[id]
+	if s!= null:
+		s.message_controller.add_to_queue(msg)
 func parseJsonCmd(cmd,delta):
 	#print("raw comand:",cmd)
 	var parsed = JSON.parse(cmd)
@@ -55,19 +59,12 @@ func parseJsonCmd(cmd,delta):
 		var json:Dictionary = parsed.result
 		
 		match json:
+			{'MSG':{'route':var route,'message':var msg}}:
+				route_to_entity(route,msg)
 			{'NoInput':{'id': var id}}:
-				var s = server_entities[id]
-				if s!= null:
-					s.message_controller.add_to_queue(
-							{'NoInput':{'id' : id}}
-						)
+				route_to_entity(id,json)
 			{'Input':{"id":var id , "vec":[var x ,var y ,var z]}}:
-				var s = server_entities[id]
-				if s!= null:
-					s.message_controller.add_to_queue(
-							{'Input':{"id":id , "vec":[ x , y ,z]}}
-						)
-				pass
+				route_to_entity(id,json)
 			{"GlobSet":{"globs":var globs}}:
 				for glob in globs:
 					match glob:
@@ -78,17 +75,11 @@ func parseJsonCmd(cmd,delta):
 						_:
 							print("ServerEntityManager could not parse glob type ", glob)
 			{"NextDestination":{"id": var id, "destination": var dest}}:
-				var s = server_entities[id]
-				if s != null:
-					var formatted = {"NextDestination":{"id":  id, 'destination':dest}}
-					s.message_controller.add_to_queue(formatted)
+				route_to_entity(id,json)
 			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
 				pass
 			{'NoLocation':{'id':var id}}:
-				var s = server_entities[id]
-				if s != null:
-					var formatted = {'NoLocation':{'id':id}}
-					s.message_controller.add_to_queue(formatted)
+				route_to_entity(id,json)
 			{'PhysStat':{'id':var id, 'max_speed':var max_speed}}:
 				#print("server entity manmager received physstat", max_speed)
 				DataCache.add_data(id,'max_speed',max_speed)

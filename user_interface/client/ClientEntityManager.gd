@@ -51,19 +51,23 @@ func _on_data():
 	var cmd = ServerNetwork.get(client_id).get_packet()
 	message_controller.add_to_queue(cmd)
 
-
+func route_to_entity(id:String,msg):
+	var s = client_entities[id]
+	if s!= null:
+		s.message_controller.add_to_queue(msg)
+		
+		
 func parseJsonCmd(cmd,delta):
 	var parsed = JSON.parse(cmd)
 	if parsed.result != null:
 		var json:Dictionary = parsed.result
 		match json:
+			{'MSG':{'route':var route,'message':var msg}}:
+				route_to_entity(route,msg)
 			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
 				pass
 			{"Location":{"id":var id, "location": [var x , var y , var z]}}:
-				var s = client_entities[id]
-				if s != null:
-					var formatted = {"Location":{"id":id, "location": [ x , y , z]}}
-					s.message_controller.add_to_queue(formatted)
+				route_to_entity(id,json)
 			{"GlobSet":{"globs":var globs}}:
 				for glob in globs:
 					match glob:
