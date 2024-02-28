@@ -8,6 +8,7 @@ onready var pointer:PlayerPathPointer = PlayerPathPointer.new()
 var is_active = false
 
 func _ready():
+	
 	self.add_child(pointer)
 	curserRay.connect("intersection_clicked",self,"handle_clicked")
 func _input(event):

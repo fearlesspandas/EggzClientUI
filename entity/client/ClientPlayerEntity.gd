@@ -5,8 +5,12 @@ class_name ClientPlayerEntity
 #a child node PhysicalPlayerEntity which will contain a physics body depending on implemenmtation
 
 onready var message_controller:MessageController = MessageController.new()
+onready var username:Username = Username.new()
 var isSubbed = false
 func _ready():
+	username.init_id()
+	Subscriptions.subscribe(username.id,client_id)
+	self.add_child(username)
 	self.add_child(message_controller)
 	pass # Replace with function entity.
 	

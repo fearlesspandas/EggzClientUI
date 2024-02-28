@@ -15,9 +15,10 @@ func create_entity(id:String,location:Vector3,parent:Node,resource:Resource,crea
 		client_entities[id] = res
 	ServerNetwork.get(client_id).create_glob(id,location)
 	ServerNetwork.get(client_id).setGlobLocation(id,location)
-	parent.add_child(res)
+	
 	if res.has_method("init_with_id"):
 		res.init_with_id(id,client_id)
+	parent.add_child(res)
 	res.global_transform.origin = location
 	emit_signal("entity_created",res,parent,create_as_server_entity)
 	
@@ -53,10 +54,10 @@ func spawn_terrain(id:String,location:Vector3,parent:Node,resource:Resource,crea
 	return res
 	
 func spawn_player_client(id:String,location:Vector3,parent:Node):
-	var res = load(AssetMapper.assets[AssetMapper.player_model].resource_path).instance()
-	parent.add_child(res)
+	var res = AssetMapper.matchAsset(AssetMapper.player_model).instance()
 	if res.has_method("init_with_id"):
 		res.init_with_id(id,client_id)
+	parent.add_child(res)
 	#res.camera.make_current()
 	client_entities[id] = res
 	res.global_transform.origin = location
