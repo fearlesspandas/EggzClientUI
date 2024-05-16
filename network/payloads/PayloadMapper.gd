@@ -77,3 +77,10 @@ func get_physical_stats(id:String):
 
 func subscribe_general(query):
 	return {'SUBSCRIBE':{'query':query}}
+	
+func get_all_terrain():
+	return {'GET_ALL_TERRAIN':{}}
+
+func create_terrain(id:String,location:Vector3):
+	return {'ADD_TERRAIN':{'id':id,'location':[location.x,location.y,location.z]}}
+	

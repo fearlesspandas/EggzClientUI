@@ -9,6 +9,7 @@ func bind(id,handler:Node,method:String):
 	if sockets.has(id):
 		var socket:ClientWebSocket = sockets[id]
 		socket._client.connect("data_received",handler,method)
+#initializes web socket for client with Id		
 func init(id,secret, handler:Node,method:String,isClient:bool = true) -> ClientWebSocket:
 	print("readying server for session ", id)
 	var socket =  ClientWebSocket.new()

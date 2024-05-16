@@ -179,6 +179,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://entity/movement/server/ServerRigidBodyMovement.gd"
 }, {
+"base": "Timer",
+"class": "TerrainScannerTimer",
+"language": "GDScript",
+"path": "res://user_interface/TerrainScannerTimer.gd"
+}, {
+"base": "MeshInstance",
+"class": "Username",
+"language": "GDScript",
+"path": "res://user_interface/client/overheads/Username.gd"
+}, {
 "base": "Spatial",
 "class": "WaypointCreator",
 "language": "GDScript",
@@ -219,6 +229,8 @@ _global_script_class_icons={
 "ServerEntityManager": "",
 "ServerKinematicMovement": "",
 "ServerRigidMovement": "",
+"TerrainScannerTimer": "",
+"Username": "",
 "WaypointCreator": ""
 }
 
@@ -241,6 +253,7 @@ AssetMapper="*res://entity/assets/AssetMapper.gd"
 PayloadMapper="*res://network/payloads/PayloadMapper.gd"
 DataCache="*res://network/DataCache.gd"
 CameraUtils="*res://entity/camera/CameraUtils.gd"
+Subscriptions="*res://network/Subscriptions.gd"
 
 [input]
 

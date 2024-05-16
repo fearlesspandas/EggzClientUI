@@ -9,7 +9,7 @@ onready var username:Username = Username.new()
 var isSubbed = false
 func _ready():
 	username.init_id()
-	Subscriptions.subscribe(username.id,client_id)
+	Subscriptions.subscribe(username.id,id)
 	self.add_child(username)
 	self.add_child(message_controller)
 	pass # Replace with function entity.

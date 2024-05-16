@@ -21,7 +21,10 @@ func _ready():
 	sizing_mesh.global_transform.origin = center
 
 func _process(delta):
-	var position:Vector3 = CameraUtils.find_mouse_collision(get_viewport().get_camera(),get_world(),get_viewport().get_mouse_position())
+	var viewport_size = get_viewport().size
+	var mouse_pos = get_viewport().get_mouse_position()
+	var input_mouse_pos = Vector2(min(mouse_pos.x,viewport_size.x),min(mouse_pos.y,viewport_size.y))
+	var position:Vector3 = CameraUtils.find_mouse_collision(get_viewport().get_camera(),get_world(),input_mouse_pos)
 	var dist:float = (position - center).length()
 	sizing_mesh_body.top_radius = dist
 	sizing_mesh_body.bottom_radius = dist

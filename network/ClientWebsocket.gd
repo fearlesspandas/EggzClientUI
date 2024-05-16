@@ -79,6 +79,9 @@ func get_packet(use_default:bool = false):
 		last_packet = res
 		return res
 	
+func send_payload(payload):
+	_client.get_peer(1).put_packet(JSON.print(payload).to_utf8())
+	
 func create_glob(id:String,location:Vector3):
 	#print("calling create glob")
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.create_glob(id,location)).to_utf8())
@@ -155,3 +158,8 @@ func get_physical_stats(id:String):
 func subscribe_general(query):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.subscribe_general(query)).to_utf8())
 
+func get_all_terrain():
+	send_payload(PayloadMapper.get_all_terrain())
+	
+func create_terrain(id:String,location:Vector3):
+	send_payload(PayloadMapper.create_terrain(id,location))

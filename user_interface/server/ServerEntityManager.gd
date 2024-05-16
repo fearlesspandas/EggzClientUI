@@ -6,6 +6,7 @@ export var serverSpawnWorld:Resource
 export var servercharacter:Resource
 onready var message_controller : MessageController = MessageController.new()
 onready var entity_scanner: EntityScannerTimer = EntityScannerTimer.new()
+onready var terrain_scanner: TerrainScannerTimer = TerrainScannerTimer.new()
 # Called when the node enters the scene tree for the first time.
 var spawn
 # Called when the node enters the scene tree for the first time.
@@ -16,6 +17,14 @@ func _ready():
 	entity_scanner.is_active = true
 	self.add_child(entity_scanner)
 	entity_scanner.start()
+	
+	
+	terrain_scanner.wait_time = 2
+	terrain_scanner.client_id = client_id
+	terrain_scanner.is_active = true
+	self.add_child(terrain_scanner)
+	terrain_scanner.start()
+	
 	self.add_child(message_controller)
 	pass # Replace with function body.
 
@@ -83,6 +92,8 @@ func parseJsonCmd(cmd,delta):
 			{'PhysStat':{'id':var id, 'max_speed':var max_speed}}:
 				#print("server entity manmager received physstat", max_speed)
 				DataCache.add_data(id,'max_speed',max_speed)
+			{'TerrainSet':var terrain}:
+				print("SERVER_ENTITY_MANAGER:",terrain)
 			_:
 				pass
 				#print("no matching command in ServerEntityManager for ", cmd)
