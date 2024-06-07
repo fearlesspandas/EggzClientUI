@@ -15,5 +15,9 @@ func poll_for_terrain():
 		var id = str(int(rand_range(-999,999)))
 		test_vec_delete = Vector3(rand_range(-10,10),rand_range(-10,10),rand_range(-10,10))
 		#print_debug("adding terrain",id,test_vec_delete)
-		ServerNetwork.get(client_id).create_terrain(id,test_vec_delete)
+		#ServerNetwork.get(client_id).create_terrain(id,test_vec_delete)
 		ServerNetwork.get(client_id).get_all_terrain()
+
+
+func set_active(active:bool):
+	is_active = active

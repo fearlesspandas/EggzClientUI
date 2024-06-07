@@ -6,8 +6,16 @@ var assets = {
 	2 : "res://world/SpawnBlockFrame.tscn",
 	3 : "res://world/client/SpawnBlockNoPlayer.tscn",
 	4 : "res://entity/client/NonPlayerControlledEntity.tscn",
-	5 : "res://user_interface/client/overheads/Chicago.ttf"
+	5 : "res://user_interface/client/overheads/Chicago.ttf",
+	6 : "res://world/BlockTerrain.tscn",
+	7 : "res://world/client/BlockTerrainMesh.tscn"
 }
+
+var mesh = {
+	2:3,
+	6:7
+}
+
 enum {
 	player_model = 0,
 	server_player_model = 1,
@@ -29,3 +37,10 @@ func matchPath(id:int) -> String:
 		return assets[id]
 	else:
 		return ""
+
+func matchMesh(id:int) -> Resource:
+	if mesh.has(id):
+		var mesh_id = mesh[id]
+		return matchAsset(mesh_id)
+	else:
+		return null

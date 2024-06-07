@@ -6,7 +6,8 @@ onready var entity_scanner :EntityScannerTimer = EntityScannerTimer.new()
 onready var message_controller : MessageController = MessageController.new()
 onready var destinations:DestinationManager = DestinationManager.new()
 onready var destination_scanner : DestinationScannerTimer = DestinationScannerTimer.new()
-var viewport:Viewport
+onready var terrain_scanner : TerrainScannerTimer = TerrainScannerTimer.new()
+var viewport:Viewport #base node where initial map is added
 var spawn
 
 func _ready():
@@ -14,16 +15,21 @@ func _ready():
 	entity_scanner.client_id = client_id
 	destination_scanner.wait_time = 1
 	destination_scanner.client_id = client_id
+	terrain_scanner.wait_time = 1
+	terrain_scanner.client_id = client_id
 	destinations.entity_spawn = viewport
 	self.add_child(entity_scanner)
 	self.add_child(destination_scanner)
+	self.add_child(terrain_scanner)
 	self.add_child(message_controller)
 	entity_scanner.start()
 	destination_scanner.start()
+	terrain_scanner.start()
 	
 func set_active(active:bool):
 	entity_scanner.set_active(active)
 	destination_scanner.set_active(active)
+	terrain_scanner.set_active(active)
 
 func _handle_message(msg,delta_accum):
 	route(msg,delta_accum)
@@ -89,6 +95,17 @@ func parseJsonCmd(cmd,delta):
 			{'PhysStat':{'id':var id, 'max_speed':var max_speed}}:
 				#print("client entity manmager received physstat", max_speed)
 				DataCache.add_data(id,'max_speed',max_speed)
+			{'TerrainSet':var terrain}:
+				match terrain:
+					{'terrain':var t_list}:
+						for t in t_list:
+							match t:
+								{'TerrainUnitM':{'entities':var entity_map,'location':var location}}:
+									var keys = entity_map.keys()
+									var loc = Vector3(location[0],location[1],location[2])
+									var resource_id = int(keys[0])
+									var asset = AssetMapper.matchMesh(resource_id)
+									spawn_terrain(str(resource_id),loc,spawn,asset,false)
 			_:
 				print("no handler found in ClientEntityManager for msg:", cmd)
 	else:

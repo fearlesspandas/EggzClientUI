@@ -7,9 +7,11 @@ export var servercharacter:Resource
 onready var message_controller : MessageController = MessageController.new()
 onready var entity_scanner: EntityScannerTimer = EntityScannerTimer.new()
 onready var terrain_scanner: TerrainScannerTimer = TerrainScannerTimer.new()
-# Called when the node enters the scene tree for the first time.
+
+onready var server_control = get_parent() #initial node where base map is added
+
 var spawn
-# Called when the node enters the scene tree for the first time.
+
 func _ready():
 	#socket.client_id = client_id
 	entity_scanner.wait_time = 2
@@ -52,6 +54,7 @@ func spawn_character_entity_server(id:String, location:Vector3):
 	else:
 		print("no spawn set for server entity manager")
 		
+
 func _on_data():
 	var cmd = ServerNetwork.get(client_id).get_packet(true)
 	message_controller.add_to_queue(cmd)
@@ -93,7 +96,16 @@ func parseJsonCmd(cmd,delta):
 				#print("server entity manmager received physstat", max_speed)
 				DataCache.add_data(id,'max_speed',max_speed)
 			{'TerrainSet':var terrain}:
-				print("SERVER_ENTITY_MANAGER:",terrain)
+				match terrain:
+					{'terrain':var t_list}:
+						for t in t_list:
+							match t:
+								{'TerrainUnitM':{'entities':var entity_map,'location':var location}}:
+									var keys = entity_map.keys()
+									var loc = Vector3(location[0],location[1],location[2])
+									var resource_id = int(keys[0])
+									var asset = AssetMapper.matchAsset(resource_id)
+									spawn_terrain(str(resource_id),loc,spawn,asset,true)
 			_:
 				pass
 				#print("no matching command in ServerEntityManager for ", cmd)
