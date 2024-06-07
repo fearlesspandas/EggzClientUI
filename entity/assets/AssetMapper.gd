@@ -8,12 +8,14 @@ var assets = {
 	4 : "res://entity/client/NonPlayerControlledEntity.tscn",
 	5 : "res://user_interface/client/overheads/Chicago.ttf",
 	6 : "res://world/BlockTerrain.tscn",
-	7 : "res://world/client/BlockTerrainMesh.tscn"
+	7 : "res://world/client/BlockTerrainMesh.tscn",
+	8 : "res://world/client/SpawnBlockMesh.tscn",
+	9 : "res://world/SpawnFrame.tscn"
 }
 
 var mesh = {
-	2:3,
-	6:7
+	6:7,
+	9:8
 }
 
 enum {

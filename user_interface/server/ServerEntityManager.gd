@@ -63,6 +63,7 @@ func route_to_entity(id:String,msg):
 	var s = server_entities[id]
 	if s!= null:
 		s.message_controller.add_to_queue(msg)
+		
 func parseJsonCmd(cmd,delta):
 	#print("raw comand:",cmd)
 	var parsed = JSON.parse(cmd)

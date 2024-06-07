@@ -5,7 +5,7 @@ extends Spatial
 # var a = 2
 # var b = "text"
 export var blockterrain:Resource
-onready var playerspace = find_node("Player")
+#onready var playerspace = find_node("Player")
 
 onready var scenery = find_node("Scenery")
 # Called when the node enters the scene tree for the first time.

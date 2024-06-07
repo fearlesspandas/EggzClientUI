@@ -46,7 +46,7 @@ func spawn_client_world(parent:Node,location:Vector3):
 
 func create_character_entity_client(id:String, location:Vector3 = Vector3(0,10,0),parent = spawn):
 	print("spawnging client character")
-	if spawn != null:
+	if parent != null:
 		var resource = AssetMapper.matchAsset(AssetMapper.player_model)
 		var res = spawn_player_client(id,location,parent)
 		return res
@@ -106,7 +106,7 @@ func parseJsonCmd(cmd,delta):
 									var resource_id = int(keys[0])
 									var asset = AssetMapper.matchMesh(resource_id)
 									spawn_terrain(str(resource_id),loc,spawn,asset,false)
-			_:
+			_:						
 				print("no handler found in ClientEntityManager for msg:", cmd)
 	else:
 		print("Could not parse msg:",cmd)
