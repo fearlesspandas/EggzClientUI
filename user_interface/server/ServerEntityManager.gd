@@ -106,7 +106,9 @@ func parseJsonCmd(cmd,delta):
 									var loc = Vector3(location[0],location[1],location[2])
 									var resource_id = int(keys[0])
 									var asset = AssetMapper.matchAsset(resource_id)
-									spawn_terrain(str(resource_id),loc,spawn,asset,true)
+									var res = spawn_terrain(str(resource_id),loc,spawn,asset,true)
+									if resource_id == 9:
+										spawn = res
 			_:
 				pass
 				#print("no matching command in ServerEntityManager for ", cmd)

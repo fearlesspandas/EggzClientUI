@@ -10,7 +10,8 @@ var assets = {
 	6 : "res://world/BlockTerrain.tscn",
 	7 : "res://world/client/BlockTerrainMesh.tscn",
 	8 : "res://world/client/SpawnBlockMesh.tscn",
-	9 : "res://world/SpawnFrame.tscn"
+	9 : "res://world/SpawnFrame.tscn",
+	10: "res://world/EmptySpawnSpace.tscn"
 }
 
 var mesh = {
@@ -21,7 +22,7 @@ var mesh = {
 enum {
 	player_model = 0,
 	server_player_model = 1,
-	server_spawn = 2,
+	server_spawn = 10,
 	client_spawn = 3,
 	npc_model = 4,
 	username_font = 5

@@ -27,10 +27,10 @@ func _ready():
 	var block_resource =load(blockterrain.resource_path) 
 	
 	var vecs = generate_random_vecs(700,Vector3(-200,0,-200),Vector3(200,30,200))
-	for v in vecs:
-		var block = block_resource.instance()
-		self.add_child(block)
-		block.global_transform.origin = v
+	#for v in vecs:
+#		var block = block_resource.instance()
+#		self.add_child(block)
+#		block.global_transform.origin = v
 	pass # Replace with function body.
 
 
