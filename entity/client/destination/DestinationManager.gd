@@ -19,7 +19,7 @@ func erase_dests():
 	destinations = []
 	
 func _handle_message(dests):
-	print("destinations:",destinations)
+	#print("destinations:",destinations)
 	erase_dests()
 	for destination in dests:
 		match destination:
@@ -30,6 +30,6 @@ func _handle_message(dests):
 				newDest.location = Vector3(x,y,z)
 				newDest.radius = radius
 				add_destination(newDest)
-				print("adding new dest",destinations)
+				#print("adding new dest",destinations)
 				entity_spawn.add_child(newDest)
 	return destinations

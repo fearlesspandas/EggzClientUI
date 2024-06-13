@@ -31,12 +31,12 @@ func _ready():
 	self.add_child(message_controller)
 
 func _on_data():
-	
+	#pass
 	var cmd = ServerNetwork.get(client_id).get_packet(true)
-	message_controller.add_to_queue(cmd)
+	message_controller.add_to_queue(cmd.left(10))
 	
 func _handle_message(msg,delta):
-	output.text = msg
+	output.text = msg.left(10)
 
 func _process(delta):
 	#output.text = input.text

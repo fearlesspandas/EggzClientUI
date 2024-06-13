@@ -9,7 +9,6 @@ onready var destination_scanner : DestinationScannerTimer = DestinationScannerTi
 onready var terrain_scanner : TerrainScannerTimer = TerrainScannerTimer.new()
 var viewport:Viewport #base node where initial map is added
 var spawn
-
 func _ready():
 	entity_scanner.wait_time = 2
 	entity_scanner.client_id = client_id
@@ -17,6 +16,7 @@ func _ready():
 	destination_scanner.client_id = client_id
 	terrain_scanner.wait_time = 1
 	terrain_scanner.client_id = client_id
+	terrain_scanner.nonrelative = false
 	destinations.entity_spawn = viewport
 	self.add_child(entity_scanner)
 	self.add_child(destination_scanner)
@@ -98,17 +98,28 @@ func parseJsonCmd(cmd,delta):
 			{'TerrainSet':var terrain}:
 				match terrain:
 					{'terrain':var t_list}:
+						#print("CLIENT_ENTITY_MANAGER incoming terrain: ",t_list)
 						for t in t_list:
 							match t:
-								{'TerrainUnitM':{'entities':var entity_map,'location':var location}}:
+								{'TerrainUnitM':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
 									var keys = entity_map.keys()
 									var loc = Vector3(location[0],location[1],location[2])
-									var resource_id = int(keys[0])
-									var asset = AssetMapper.matchMesh(resource_id)
-									spawn_terrain(str(resource_id),loc,spawn,asset,false)
+									for k in keys:
+										var resource_id = int(k)
+										var mesh = AssetMapper.matchMesh(resource_id)
+										var asset = AssetMapper.matchAsset(resource_id)
+										for i in range(0,entity_map[k]):
+											#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
+											spawn_terrain(str(uuid),loc,spawn,mesh,false)
+											spawn_terrain(str(uuid),loc,spawn,asset,false)
+										#print("CLIENT_ENTITY_MANAGER spawning terrain:",resource_id,loc)
+								_:
+									print("no handler found for: ",t)
 			_:						
 				print("no handler found in ClientEntityManager for msg:", cmd)
 	else:
 		print("Could not parse msg:",cmd)
 
 
+func _process(delta):
+	spawn_terrain_from_queue(spawn,false)

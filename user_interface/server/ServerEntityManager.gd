@@ -21,9 +21,10 @@ func _ready():
 	entity_scanner.start()
 	
 	
-	terrain_scanner.wait_time = 2
+	terrain_scanner.wait_time = 1
 	terrain_scanner.client_id = client_id
 	terrain_scanner.is_active = true
+	terrain_scanner.nonrelative = true
 	self.add_child(terrain_scanner)
 	terrain_scanner.start()
 	
@@ -97,18 +98,22 @@ func parseJsonCmd(cmd,delta):
 				#print("server entity manmager received physstat", max_speed)
 				DataCache.add_data(id,'max_speed',max_speed)
 			{'TerrainSet':var terrain}:
+				#print("SERVER_ENTITY_terrain", terrain)
 				match terrain:
 					{'terrain':var t_list}:
 						for t in t_list:
 							match t:
-								{'TerrainUnitM':{'entities':var entity_map,'location':var location}}:
+								{'TerrainUnitM':{'entities':var entity_map,'location':var location, 'uuid':var uuid}}:
 									var keys = entity_map.keys()
 									var loc = Vector3(location[0],location[1],location[2])
-									var resource_id = int(keys[0])
-									var asset = AssetMapper.matchAsset(resource_id)
-									var res = spawn_terrain(str(resource_id),loc,spawn,asset,true)
-									if resource_id == 9:
-										spawn = res
+									for k in keys:
+										var resource_id = int(k)
+										var asset = AssetMapper.matchAsset(resource_id)
+										for i in range(0,entity_map[k]):
+											#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
+											spawn_terrain(str(uuid),loc,spawn,asset,true)
+								_:
+									print("no handler found for: ",t)
 			_:
 				pass
 				#print("no matching command in ServerEntityManager for ", cmd)
@@ -121,3 +126,6 @@ func route(cmd,delta):
 	if cmd != null:
 		parseJsonCmd(cmd,delta)
 	
+func _process(delta):
+	spawn_terrain_from_queue(spawn,true)
+	pass

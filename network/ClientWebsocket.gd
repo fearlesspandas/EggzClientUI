@@ -158,8 +158,8 @@ func get_physical_stats(id:String):
 func subscribe_general(query):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.subscribe_general(query)).to_utf8())
 
-func get_all_terrain():
-	send_payload(PayloadMapper.get_all_terrain())
+func get_all_terrain(id:String,nonrelative:bool):
+	send_payload(PayloadMapper.get_all_terrain(id,nonrelative))
 	
 func create_terrain(id:String,location:Vector3):
 	send_payload(PayloadMapper.create_terrain(id,location))

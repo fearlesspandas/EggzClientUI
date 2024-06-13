@@ -78,8 +78,8 @@ func get_physical_stats(id:String):
 func subscribe_general(query):
 	return {'SUBSCRIBE':{'query':query}}
 	
-func get_all_terrain():
-	return {'GET_ALL_TERRAIN':{}}
+func get_all_terrain(id:String,nonrelative:bool):
+	return {'GET_ALL_TERRAIN':{'id':id,'non_relative':nonrelative}}
 
 func create_terrain(id:String,location:Vector3):
 	return {'ADD_TERRAIN':{'id':id,'location':[location.x,location.y,location.z]}}
