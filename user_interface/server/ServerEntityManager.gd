@@ -29,6 +29,7 @@ func _ready():
 	terrain_scanner.start()
 	
 	self.add_child(message_controller)
+	
 	pass # Replace with function body.
 
 func _handle_message(msg,delta_accum):
@@ -98,9 +99,10 @@ func parseJsonCmd(cmd,delta):
 				#print("server entity manmager received physstat", max_speed)
 				DataCache.add_data(id,'max_speed',max_speed)
 			{'TerrainSet':var terrain}:
-				#print("SERVER_ENTITY_terrain", terrain)
+				#print("SERVER_ENTITY_terrain")
 				match terrain:
 					{'terrain':var t_list}:
+						#print("SERVER_ENTITY_MANMAGER terrain ", t_list)
 						for t in t_list:
 							match t:
 								{'TerrainUnitM':{'entities':var entity_map,'location':var location, 'uuid':var uuid}}:
@@ -111,7 +113,22 @@ func parseJsonCmd(cmd,delta):
 										var asset = AssetMapper.matchAsset(resource_id)
 										for i in range(0,entity_map[k]):
 											#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
-											spawn_terrain(str(uuid),loc,spawn,asset,true)
+											#spawn_terrain(str(uuid),loc,spawn,asset,true)
+											pass
+								{'TerrainRegionM':{'terrain':var innerterain}}:
+									for it in innerterain:
+										match it:
+											[var location,var entity_map, var uuid]:
+												var keys = entity_map.keys()
+												var loc = Vector3(location[0],location[1],location[2])
+												for k in keys:
+													var resource_id = int(k)
+													var asset = AssetMapper.matchAsset(resource_id)
+													for i in range(0,entity_map[k]):
+														#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
+														spawn_terrain(str(uuid),loc,spawn,asset,true)
+														#print("found terrain")
+														pass
 								_:
 									print("no handler found for: ",t)
 			_:

@@ -31,10 +31,11 @@ func create_profile_ui(profile:PlayerProfile,clientProfile:bool):
 func create_profile_from_input():
 	var id = newProfile.textEdit.text
 	var pp = PlayerProfile.new()
+	pp.cryptoKey = Crypto.new().generate_rsa(1024)
 	pp.id = id
+	#pp.id = pp.cryptoKey.save_to_string(true)
 	var isClient = !newProfile.checkbox.pressed
 	create_profile_ui(pp,isClient)
-	
 func get_currently_selected_profile():
 	var profile:Control = get_current_tab_control()
 	return profile.profile

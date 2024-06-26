@@ -58,7 +58,7 @@ func _connected(proto = ""):
 	# and not put_packet directly when not using the MultiplayerAPI.
 	_client.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
 	_client.get_peer(1).put_packet(JSON.print({'BasicSession':{'id':client_id,"secret":secret}}).to_utf8())
-	print("sent session")
+	print_debug("sent session")
 	emit_signal("server_connected")
 	
 var delta_x = 0
@@ -163,3 +163,6 @@ func get_all_terrain(id:String,nonrelative:bool):
 	
 func create_terrain(id:String,location:Vector3):
 	send_payload(PayloadMapper.create_terrain(id,location))
+
+func get_all_terrain_within_player_distance(id:String,radius:float):
+	send_payload(PayloadMapper.get_terrain_within_player_distance(id,radius))

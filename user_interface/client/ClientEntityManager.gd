@@ -112,7 +112,23 @@ func parseJsonCmd(cmd,delta):
 											#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
 											spawn_terrain(str(uuid),loc,spawn,mesh,false)
 											spawn_terrain(str(uuid),loc,spawn,asset,false)
+											pass
 										#print("CLIENT_ENTITY_MANAGER spawning terrain:",resource_id,loc)
+								{'TerrainRegionM':{'terrain':var innerterain}}:
+									for it in innerterain:
+										match it:
+											[var location,var entity_map, var uuid]:
+												var keys = entity_map.keys()
+												var loc = Vector3(location[0],location[1],location[2])
+												for k in keys:
+													var resource_id = int(k)
+													var asset = AssetMapper.matchAsset(resource_id)
+													var mesh = AssetMapper.matchMesh(resource_id)
+													for i in range(0,entity_map[k]):
+														#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
+														spawn_terrain(str(uuid),loc,spawn,mesh,false)
+														spawn_terrain(str(uuid),loc,spawn,asset,false)
+														pass
 								_:
 									print("no handler found for: ",t)
 			_:						

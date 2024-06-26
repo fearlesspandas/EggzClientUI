@@ -16,8 +16,11 @@ func poll_for_terrain():
 		test_vec_delete = Vector3(rand_range(-10,10),rand_range(-10,10),rand_range(-10,10))
 		#print_debug("adding terrain",id,test_vec_delete)
 		#ServerNetwork.get(client_id).create_terrain(id,test_vec_delete)
-		ServerNetwork.get(client_id).get_all_terrain(client_id,nonrelative)
-
+		#if nonrelative:
+		ServerNetwork.get(client_id).get_all_terrain(client_id,true)
+		#else:
+			#ServerNetwork.get(client_id).get_all_terrain_within_player_distance(client_id,500)
+		one_shot = true
 
 func set_active(active:bool):
 	is_active = active

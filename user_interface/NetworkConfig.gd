@@ -18,3 +18,6 @@ func get_verification_url(client_id):
 		return ""
 	else:
 		return "http://" + host + "/authenticate/" + client_id
+
+func get_verification_url2():
+	return "http://" + host + "/authenticate"

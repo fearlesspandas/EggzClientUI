@@ -83,4 +83,6 @@ func get_all_terrain(id:String,nonrelative:bool):
 
 func create_terrain(id:String,location:Vector3):
 	return {'ADD_TERRAIN':{'id':id,'location':[location.x,location.y,location.z]}}
-	
+
+func get_terrain_within_player_distance(id:String,radius:float):
+	return {'GET_TERRAIN_WITHIN_PLAYER_DISTANCE':{'id':id,'radius':radius}}

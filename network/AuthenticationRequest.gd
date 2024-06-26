@@ -9,11 +9,12 @@ func _ready():
 	self.connect("request_completed",self,"_on_request_completed")
 	pass # Replace with function body.
 
-func _initiate_auth_request(id:String):
-	var url = NetworkConfig.get_verification_url(id)
+func _initiate_auth_request(pp:PlayerProfile):
+	var url = NetworkConfig.get_verification_url(pp.id)
 	print("requesting url:", url)
 	var headers = ["Content-Type: application/json"]
-	print("request",self.request(url,headers))
+	#print("request",self.request(url,headers))
+	print("request",self.request(url,headers,true,HTTPClient.METHOD_GET,pp.cryptoKey.save_to_string(true)))
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass

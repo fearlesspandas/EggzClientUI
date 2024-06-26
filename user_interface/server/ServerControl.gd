@@ -13,11 +13,13 @@ var connection_ind_size = 30
 func _ready():
 	auth_request.connect("session_created",self,"load_scene")
 	self.add_child(auth_request)
-	auth_request._initiate_auth_request(profile.id)
+	auth_request._initiate_auth_request(profile)
 	
-func load_scene(id,secret):
-	profile.secret = secret
-	print("entering control")
+func load_scene(id,secret:String):
+	print_debug("entering control")
+	profile.set_secret_from_encrypted(secret)
+	print_debug("profile secret: ", profile.secret)
+	
 	
 	entity_management.client_id = profile.id
 	self.add_child(entity_management)

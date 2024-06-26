@@ -19,11 +19,10 @@ func _ready():
 	self.add_child(auth_request)
 	#starts auth request that retrieves server secret to be sent on socket startup
 	auth_request.connect("session_created",self,"load_scene")
-	auth_request._initiate_auth_request(profile.id)
+	auth_request._initiate_auth_request(profile)
 	
 func load_scene(id,secret):
-	profile.secret = secret
-	print("entering ClientControl")
+	profile.set_secret_from_encrypted(secret)
 	viewport_container.set_size(self.rect_size)
 	viewport_container.stretch = true
 	
