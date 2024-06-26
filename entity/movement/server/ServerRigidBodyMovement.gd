@@ -18,6 +18,7 @@ var body_ref:RigidBody
 func move(delta,location:Vector3,body:RigidBody):
 	var base = (body.global_transform.origin - location)
 	var diffvec:Vector3 = (body.global_transform.origin - location).normalized() * speed * delta * base.length()/3
+	assert(speed_limit != null)
 	diffvec = diffvec * clamp(diffvec.length(),0,min(autopilot_speed_limit,speed_limit)/(1/(speed_limit + 1)))/diffvec.length()
 	#body.set_axis_velocity(Vector3(1,0,0) * -diffvec.x)
 	#body.set_axis_velocity(Vector3(0,1,0) * -diffvec.y)

@@ -21,9 +21,10 @@ func connect_to_server():
 		connected = false
 		print("Unable to connect")
 		set_process(false)
+		
 func _ready():
-	print("websocket client id: ", client_id)
-	print("websocket secret: ",secret)
+	print_debug("websocket client id: ", client_id)
+	print_debug("websocket secret: ",secret)
 	if connected:
 		pass
 	# Connect base signals to get notified of connection open, close, and errors.
@@ -64,12 +65,9 @@ func _connected(proto = ""):
 var delta_x = 0
 
 func _process(delta):
-	# Call this in _process or _physics_process. Data transfer, and signals
-	# emission will only happen when calling this function.
-	#create_repair_egg(str(counter),"1")
-	#start_egg(counter,"1")
 	delta_x = delta 
 	_client.poll()
+	
 var last_packet = null
 func get_packet(use_default:bool = false):
 	var res = _client.get_peer(1).get_packet().get_string_from_utf8()
