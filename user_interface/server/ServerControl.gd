@@ -7,17 +7,18 @@ onready var connection_indicator:ConnectionIndicator = ConnectionIndicator.new()
 onready var entity_management:ServerEntityManager = ServerEntityManager.new()
 onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
 onready var console:Console = Console.new()
-var profile:PlayerProfile # i could remove secret from profile potentially
+var profile_id:String
 var connection_ind_size = 30
 
 func _ready():
 	auth_request.connect("session_created",self,"load_scene")
 	self.add_child(auth_request)
-	auth_request._initiate_auth_request(profile)
+	auth_request._initiate_auth_request(profile_id)
 	
 func load_scene(id,secret:String):
 	print_debug("entering control")
-	profile.set_secret_from_encrypted(secret)
+	var profile = ProfileManager.get_profile(profile_id)
+	#profile.set_secret_from_encrypted(secret)
 	print_debug("profile secret: ", profile.secret)
 	
 	

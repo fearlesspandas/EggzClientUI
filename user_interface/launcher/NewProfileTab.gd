@@ -10,6 +10,7 @@ var boundaries:Vector2
 var dimensions = Vector2(200,50)
 func find_origin_from_center_and_rectsize(center:Vector2,rect_size:Vector2):
 	return Vector2(center.x - rect_size.x/2,center.y - rect_size.y/2)
+	
 func _ready():
 	self.name = "+"
 	self.set_size(boundaries)

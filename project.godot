@@ -254,6 +254,7 @@ PayloadMapper="*res://network/payloads/PayloadMapper.gd"
 DataCache="*res://network/DataCache.gd"
 CameraUtils="*res://entity/camera/CameraUtils.gd"
 Subscriptions="*res://network/Subscriptions.gd"
+ProfileManager="*res://user_interface/launcher/ProfileManager.gd"
 
 [input]
 

@@ -12,17 +12,18 @@ onready var lv_indicator:LinearVelocityIndicator = LinearVelocityIndicator.new()
 onready var max_speed_slider:MaxSpeedSlider = MaxSpeedSlider.new()
 onready var click_menu:ClickMenu = ClickMenu.new()
 
-var profile:PlayerProfile
+var profile_id:String
 var connection_ind_size = 30
 
 func _ready():
 	self.add_child(auth_request)
 	#starts auth request that retrieves server secret to be sent on socket startup
 	auth_request.connect("session_created",self,"load_scene")
-	auth_request._initiate_auth_request(profile)
+	auth_request._initiate_auth_request(profile_id)
 	
 func load_scene(id,secret):
-	profile.set_secret_from_encrypted(secret)
+	var profile = ProfileManager.get_profile(profile_id)
+	#profile.set_secret_from_encrypted(secret)
 	viewport_container.set_size(self.rect_size)
 	viewport_container.stretch = true
 	

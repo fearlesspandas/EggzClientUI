@@ -20,7 +20,7 @@ func create_profile_ui(profile:PlayerProfile,clientProfile:bool):
 		res = ClientControl.new()
 	else:
 		res = ServerControl.new()
-	res.profile = profile
+	res.profile_id = profile.id
 	idx_map[profile.id] = self.get_tab_count()
 	profiles[profile.id] = res
 	res.set_position(Vector2(0,0))
@@ -30,12 +30,19 @@ func create_profile_ui(profile:PlayerProfile,clientProfile:bool):
 
 func create_profile_from_input():
 	var id = newProfile.textEdit.text
-	var pp = PlayerProfile.new()
-	pp.cryptoKey = Crypto.new().generate_rsa(1024)
-	pp.id = id
-	#pp.id = pp.cryptoKey.save_to_string(true)
+	var pp
+	print_debug("profiles", ProfileManager.profiles)
+	if ProfileManager.profile_exists(id):
+		print_debug("found profile for ", id)
+		pp = ProfileManager.get_profile(id)
+	else:
+		print_debug("creating new profile for ", id)
+		if ProfileManager.add_profile(id) == 0:
+			pp =  ProfileManager.get_profile(id)
+	assert(pp != null)
 	var isClient = !newProfile.checkbox.pressed
 	create_profile_ui(pp,isClient)
+	
 func get_currently_selected_profile():
 	var profile:Control = get_current_tab_control()
 	return profile.profile
