@@ -25,11 +25,13 @@ func move(delta,location:Vector3,body:RigidBody):
 	#body.set_axis_velocity(Vector3(0,0,1) * -diffvec.z)
 	body.apply_central_impulse(-diffvec)
 	#apply_vector(delta,-base * min(autopilot_speed_limit,speed_limit)/(1/(speed_limit + 1)),body)
+	
 func stop(body:RigidBody):
 	in_motion = false
 	#body.add_central_force(-force_vec_accum)
 	force_vec_accum = Vector3.ZERO
 	#body.sleeping = true
+
 func decelerate(value:float,decell:float) -> float:
 	if value > 0:
 		value -= min(decell,value) 

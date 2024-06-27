@@ -42,7 +42,8 @@ func get_profile(id:String) -> PlayerProfile:
 		return profiles[id]
 	else:
 		return null
-
+func get_all_profiles() -> Array:
+	return profiles.values()
 func add_profile(id:String) -> int:
 	if !profiles.has(id):
 		Crypto.new().generate_rsa(1024).save("res://profiles/" + id + ".key",false)
