@@ -8,8 +8,10 @@ onready var checkbox : CheckBox = CheckBox.new()
 onready var textEdit : TextEdit = TextEdit.new()
 onready var profiles_list : ProfilesList = ProfilesList.new()
 
+
 var boundaries:Vector2
 var dimensions = Vector2(200,50)
+
 func find_origin_from_center_and_rectsize(center:Vector2,rect_size:Vector2):
 	return Vector2(center.x - rect_size.x/2,center.y - rect_size.y/2)
 	
@@ -37,10 +39,13 @@ func _ready():
 	checkbox.text = "start profile as server"
 	var checkbox_origin = find_origin_from_center_and_rectsize(center,checkbox.rect_size)
 	var checkbox_offset = Vector2(checkbox_origin.x, checkbox_origin.y + one_third_offset.y)
-	
+	checkbox.set_global_position(checkbox_offset)
 	
 	self.add_child(profiles_list)
-	profiles_list.rect_size = self.rect_size/2.5
-	profiles_list.set_global_position(self.rect_size - profiles_list.rect_size)
+	profiles_list.set_size(Vector2(dimensions.x,2*dimensions.y))
+	
+	var profile_list_origin = find_origin_from_center_and_rectsize(center,profiles_list.rect_size)
+	var profile_list_offset = Vector2(profile_list_origin.x + one_third_offset.x, profile_list_origin.y)
+	profiles_list.set_global_position(profile_list_offset)
 	pass # Replace with function body.
 

@@ -10,6 +10,7 @@ func _ready():
 	newProfile.boundaries = self.rect_size
 	self.add_child(newProfile)
 	newProfile.button.connect("button_up",self,"create_profile_from_input")
+	newProfile.set_size(self.rect_size)
 	self.connect("tab_changed",self,"on_tab_change")
 	pass # Replace with function body.
 
@@ -60,3 +61,4 @@ func on_tab_change(tab:int):
 func _process(delta):
 	if (self.rect_size - OS.get_window_safe_area().size).length() > 5:
 		self.set_size(OS.get_window_safe_area().size,true)
+		newProfile.set_size(self.rect_size)

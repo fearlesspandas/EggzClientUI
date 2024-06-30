@@ -87,6 +87,9 @@ func parseJsonCmd(cmd,delta):
 							if !server_entities.has(id):
 								print("ServerEntityManager: creating entity , ", id , "in client id," ,client_id , spawn)
 								spawn_character_entity_server(id,Vector3(x,y,z))
+						{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
+							if !server_entities.has(id):
+								spawn_character_entity_server(id,Vector3(x,y,z))
 						_:
 							print("ServerEntityManager could not parse glob type ", glob)
 			{"NextDestination":{"id": var id, "destination": var dest}}:

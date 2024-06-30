@@ -48,11 +48,12 @@ func handle_input_vec(vector:Vector3,accell:float,decell:float):
 		in_motion = true
 		x_velocity -= vector.x * accell
 		z_velocity -= vector.z * accell
+	print("vector",vector)
 
 func move_along_path(vector:Vector3,body:RigidBody):
 	var normal = vector.normalized()	
 	var should_jump = vector.y != 0
-	var vec = Vector3(normal.x * x_velocity,int(should_jump) * -0.01 * vector.y,normal.z * z_velocity)
+	var vec = Vector3(normal.x * x_velocity,int(should_jump) * -0.05 * vector.y,normal.z * z_velocity)
 	if vec.length() > 0 and speed_limit != null:
 		vec = vec * clamp(vec.length(),0,speed_limit)/vec.length() 
 	#body.add_central_force(-vec)
@@ -63,7 +64,7 @@ func move_along_path(vector:Vector3,body:RigidBody):
 	
 
 func apply_vector(delta,vector:Vector3,body:RigidBody):
-	handle_input_vec(vector,0.005,20)
+	handle_input_vec(vector,0.010,20)
 	#if vector != Vector3.ZERO:
 	move_along_path(Vector3(1,vector.y,1),body)
 	
