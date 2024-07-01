@@ -68,7 +68,9 @@ func _physics_process(delta):
 			movement.entity_stop(body)
 			destination = null
 	pass
-	
+
+func _integrate_forces(state):
+	print_debug("integrateforces")
 func _process(delta):
 	var socket = ServerNetwork.get(client_id)
 	if !isSubbed and socket != null :
@@ -77,7 +79,7 @@ func _process(delta):
 		socket.subscribe_general(query)
 		isSubbed = true
 		print("server entity, subbing to input for id", id)
-		
+
 
 func _input(event):
 	if event is InputEventKey and event.is_action_pressed("alt",true):

@@ -19,17 +19,25 @@ func move(delta,location:Vector3,body:RigidBody):
 	var base = (body.global_transform.origin - location)
 	var diffvec:Vector3 = (body.global_transform.origin - location).normalized() * speed * delta * base.length()/3
 	assert(speed_limit != null)
-	diffvec = diffvec * clamp(diffvec.length(),0,min(autopilot_speed_limit,speed_limit)/(1/(speed_limit + 1)))/diffvec.length()
+	
+	diffvec = diffvec * 10000 * clamp(diffvec.length(),0,min(autopilot_speed_limit,speed_limit)/(1/(speed_limit + 1)))/diffvec.length()
+	#diffvec = diffvec * 10000 * clamp(diffvec.length(),0,min(autopilot_speed_limit,speed_limit)/(1/(speed_limit + 1)))/base.length_squared()
 	#body.set_axis_velocity(Vector3(1,0,0) * -diffvec.x)
 	#body.set_axis_velocity(Vector3(0,1,0) * -diffvec.y)
 	#body.set_axis_velocity(Vector3(0,0,1) * -diffvec.z)
-	body.apply_central_impulse(-diffvec)
+	#body.apply_central_impulse(-diffvec)
+	body.set_linear_velocity(body.linear_velocity -diffvec)
+
 	#apply_vector(delta,-base * min(autopilot_speed_limit,speed_limit)/(1/(speed_limit + 1)),body)
 	
 func stop(body:RigidBody):
 	in_motion = false
 	#body.add_central_force(-force_vec_accum)
 	force_vec_accum = Vector3.ZERO
+	if body.linear_velocity.length() > 0:
+		pass #print_debug("Linear velocity", body.linear_velocity)
+		#body.set_linear_velocity(Vector3.ZERO)
+		#body.apply_central_impulse(-body.linear_velocity)
 	#body.sleeping = true
 
 func decelerate(value:float,decell:float) -> float:
@@ -59,8 +67,8 @@ func move_along_path(vector:Vector3,body:RigidBody):
 	#body.add_central_force(-vec)
 	force_vec_accum -= vec #* 0.01
 	#going back and forth between add_force vs apply_impulse. forces feel more chaotic sometimes, but are frame independent
-	body.apply_central_impulse(-vec * 0.01)
-	
+	#body.apply_central_impulse(-vec * 0.01)
+	body.set_linear_velocity(body.linear_velocity + (-vec * 0.01))
 	
 
 func apply_vector(delta,vector:Vector3,body:RigidBody):
