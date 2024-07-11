@@ -21,3 +21,6 @@ func get_verification_url(client_id):
 
 func get_verification_url2():
 	return "http://" + host + "/authenticate"
+
+func get_rust_socket_url():
+	return "ws://" + host
