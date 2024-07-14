@@ -60,6 +60,7 @@ func _connected(proto = ""):
 	# and not put_packet directly when not using the MultiplayerAPI.
 	_client.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
 	_client.get_peer(1).put_packet(JSON.print({'BasicSession':{'id':client_id,"secret":secret}}).to_utf8())
+	setGlobLocation(client_id,Vector3(0,0,0))
 	print_debug("sent session")
 	emit_signal("server_connected")
 	

@@ -9,6 +9,8 @@ onready var rust_client = RustSocket.new()
 onready var rust_client2 = RustSocket.new()
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	rust_client.client_id = '1'
+	rust_client2.client_id = '2'
 	self.add_child(rust_client)
 	self.add_child(rust_client2)
 	rust_client._client.connect("data_received",self,"handle_data")
