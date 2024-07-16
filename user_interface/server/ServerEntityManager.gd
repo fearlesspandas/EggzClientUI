@@ -60,7 +60,11 @@ func spawn_character_entity_server(id:String, location:Vector3):
 func _on_data():
 	var cmd = ServerNetwork.get(client_id).get_packet(true)
 	message_controller.add_to_queue(cmd)
-
+	
+func _on_physics_data():
+	var cmd = ServerNetwork.get_physics(client_id).get_packet()
+	print_debug("Physics received", cmd)
+	
 func route_to_entity(id:String,msg):
 	var s = server_entities[id]
 	if s!= null:

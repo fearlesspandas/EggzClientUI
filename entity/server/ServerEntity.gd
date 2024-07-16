@@ -56,6 +56,7 @@ func _physics_process(delta):
 	movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	self.global_transform.origin = body.global_transform.origin
 	var socket = ServerNetwork.get(client_id)
+	var physics_socket = ServerNetwork.get_physics(client_id)
 	if socket != null:
 		socket.setGlobLocation(id,body.global_transform.origin)
 		socket.get_next_destination(id)
@@ -67,6 +68,8 @@ func _physics_process(delta):
 		else:
 			movement.entity_stop(body)
 			destination = null
+	if physics_socket != null:
+		physics_socket.setGlobLocation(id,body.global_transform.origin)
 	pass
 
 func _integrate_forces(state):

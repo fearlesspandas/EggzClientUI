@@ -58,6 +58,7 @@ func load_scene(id,secret):
 	self.add_child(max_speed_slider)
 	
 	ServerNetwork.init(profile.id,profile.secret,entity_management,"_on_data")
+	ServerNetwork.init_physics(profile.id,profile.secret,entity_management,"_on_physics_data")
 	
 	connection_indicator.set_size(Vector2(connection_ind_size,connection_ind_size))
 	connection_indicator.set_global_position(Vector2(connection_ind_size,connection_ind_size))

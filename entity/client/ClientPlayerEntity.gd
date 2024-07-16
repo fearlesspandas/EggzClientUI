@@ -28,6 +28,9 @@ func _process(delta):
 		socket.location_subscribe(id)
 		print("sent subscription ",id)
 		isSubbed = true
+	var physics_socket = ServerNetwork.get_physics(client_id)
+	if physics_socket != null and physics_socket.connected:
+		physics_socket.getGlobLocation(id)
 	pass
 func _handle_message(msg,delta_accum):
 	match msg:

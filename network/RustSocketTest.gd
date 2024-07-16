@@ -1,10 +1,6 @@
 extends Node
 
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
-
 onready var rust_client = RustSocket.new()
 onready var rust_client2 = RustSocket.new()
 # Called when the node enters the scene tree for the first time.
@@ -24,6 +20,10 @@ func handle_data():
 	var msg2 = rust_client2.get_packet()
 	print_debug("Message received {client 1 : ", msg ,"}", "{client 2 : " + msg2 + "}")
 
+
+func _process(delta):
+	rust_client.getGlobLocation(rust_client.client_id)
+	rust_client2.getGlobLocation(rust_client2.client_id)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):

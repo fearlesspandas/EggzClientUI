@@ -25,6 +25,7 @@ func load_scene(id,secret:String):
 	entity_management.client_id = profile.id
 	self.add_child(entity_management)
 	ServerNetwork.init(profile.id,profile.secret,entity_management,"_on_data",false)
+	ServerNetwork.init_physics(profile.id,profile.secret,entity_management,"_on_physics_data",false)
 	console.client_id = profile.id
 	
 	self.add_child(console)

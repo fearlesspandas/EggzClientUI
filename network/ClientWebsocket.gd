@@ -7,11 +7,11 @@ class_name ClientWebSocket
 
 # Our WebSocketClient instance
 onready var _client = WebSocketClient.new()
-
 onready var connected = false
 
 var client_id
 var secret
+
 func _init():
 	pass
 
@@ -62,6 +62,7 @@ func _connected(proto = ""):
 	print_debug("sent session")
 	emit_signal("server_connected")
 	
+	
 var delta_x = 0
 
 func _process(delta):
@@ -107,10 +108,10 @@ func getAllEggs():
 
 func getGlobLocation(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getGlobLocation(id)).to_utf8())	
-
+	
 func setGlobLocation(id:String,location:Vector3):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.setGlobLocation(id,location)).to_utf8())	
-
+	
 func setGlobRotation(id,rotation):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.setGlobRotation(id,rotation)).to_utf8())	
 				

@@ -41,6 +41,7 @@ func _ready():
 
 func get_websocket_url():
 	return NetworkConfig.get_rust_socket_url()
+	
 func get_verification_url():
 	return NetworkConfig.get_verification_url(client_id)
 	
