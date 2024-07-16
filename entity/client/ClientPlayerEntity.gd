@@ -30,6 +30,7 @@ func _process(delta):
 		isSubbed = true
 	var physics_socket = ServerNetwork.get_physics(client_id)
 	if physics_socket != null and physics_socket.connected:
+		print_debug("requesting physics data ", id)
 		physics_socket.getGlobLocation(id)
 	pass
 func _handle_message(msg,delta_accum):
