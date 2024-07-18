@@ -56,9 +56,12 @@ func create_character_entity_client(id:String, location:Vector3 = Vector3(0,10,0
 func _on_data():
 	var cmd = ServerNetwork.get(client_id).get_packet()
 	message_controller.add_to_queue(cmd)
+	
 func _on_physics_data():
 	var cmd = ServerNetwork.get_physics(client_id).get_packet()
-	print_debug("physics received: " , cmd)
+	message_controller.add_to_queue(cmd)
+	#print_debug("physics received: " , cmd)
+	
 func route_to_entity(id:String,msg):
 	var s = client_entities[id]
 	if s!= null:
@@ -70,6 +73,9 @@ func parseJsonCmd(cmd,delta):
 	if parsed.result != null:
 		var json:Dictionary = parsed.result
 		match json:
+			{"SendLocation":{'id':var id, 'loc': var loc}}:
+				route_to_entity(id,loc)
+				pass
 			{'MSG':{'route':var route,'message':var msg}}:
 				route_to_entity(route,msg)
 			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:

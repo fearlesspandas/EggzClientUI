@@ -58,7 +58,7 @@ func _physics_process(delta):
 	var socket = ServerNetwork.get(client_id)
 	var physics_socket = ServerNetwork.get_physics(client_id)
 	if socket != null:
-		socket.setGlobLocation(id,body.global_transform.origin)
+		#socket.setGlobLocation(id,body.global_transform.origin)
 		socket.get_next_destination(id)
 	if(destination != null ):
 		var diff = destination.location - body.global_transform.origin

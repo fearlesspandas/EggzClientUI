@@ -25,22 +25,25 @@ func getSocket() -> ClientWebSocket:
 func _process(delta):
 	var socket = getSocket()
 	if !isSubbed and socket != null and socket.connected:
-		socket.location_subscribe(id)
+		#socket.location_subscribe(id)
 		print("sent subscription ",id)
 		isSubbed = true
 	var physics_socket = ServerNetwork.get_physics(client_id)
 	if physics_socket != null and physics_socket.connected:
-		print_debug("requesting physics data ", id)
 		physics_socket.getGlobLocation(id)
 	pass
 func _handle_message(msg,delta_accum):
 	match msg:
+		[var x,var y,var z]:
+			#print_debug("Entity received physics, " , x,y,z)
+			movement.entity_move(delta_accum,Vector3(x,y,z),body)
+			pass
 		{'Location':{'id':id,'location':[var x , var y , var z]}}:
 			var loc = Vector3(x,y,z)
 			#print("setting clientside location:",loc)
 			var diff:Vector3 = body.global_transform.origin - loc
 			
-			movement.entity_move(delta_accum,loc,body)
+			#movement.entity_move(delta_accum,loc,body)
 			pass
 		_ :
 			pass
