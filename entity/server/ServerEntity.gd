@@ -69,7 +69,7 @@ func _physics_process(delta):
 			movement.entity_stop(body)
 			destination = null
 	if physics_socket != null:
-		physics_socket.setGlobLocation(id,body.global_transform.origin)
+		physics_socket.set_location_physics(id,body.global_transform.origin)
 	pass
 
 func _integrate_forces(state):

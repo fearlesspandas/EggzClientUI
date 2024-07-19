@@ -111,8 +111,14 @@ func getAllEggs():
 func getGlobLocation(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getGlobLocation(id)).to_utf8())	
 
+func get_location_physics(id:String):
+	send_payload(PayloadMapper.getLocationPhysics(id))
+
 func setGlobLocation(id:String,location:Vector3):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.setGlobLocation(id,location)).to_utf8())	
+
+func set_location_physics(id:String,location:Vector3):
+	send_payload(PayloadMapper.setLocationPhysics(id,location))
 
 func setGlobRotation(id,rotation):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.setGlobRotation(id,rotation)).to_utf8())	

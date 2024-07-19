@@ -30,8 +30,14 @@ func getAllEggs():
 func getGlobLocation(id:String):
 	return {'GET_GLOB_LOCATION':{'id':str(id)}}	
 
+func getLocationPhysics(id:String):
+	return {'type':'GET_GLOB_LOCATION','body':{'id':id}}
+	
 func setGlobLocation(id:String,location:Vector3):
 	return {'SET_GLOB_LOCATION':{'id':str(id),'location':[location.x,location.y,location.z]}}	
+
+func setLocationPhysics(id:String,location:Vector3):
+	return {'type':'SET_GLOB_LOCATION','body':{'id':id,'location':[location.x,location.y,location.z]}}
 
 func setGlobRotation(id,rotation):
 	return {'SET_GLOB_ROTATION':{'id':str(id),'rotation':rotation}}	
