@@ -60,8 +60,8 @@ func _connected(proto = ""):
 	# You MUST always use get_peer(1).put_packet to send data to server,
 	# and not put_packet directly when not using the MultiplayerAPI.
 	_client.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
-	_client.get_peer(1).put_packet(JSON.print({'BasicSession':{'id':client_id,"secret":secret}}).to_utf8())
-	setGlobLocation(client_id,Vector3(0,0,0))
+	#_client.get_peer(1).put_packet(JSON.print({'BasicSession':{'id':client_id,"secret":secret}}).to_utf8())
+	#setGlobLocation(client_id,Vector3(0,0,0))
 	print_debug("sent session")
 	emit_signal("server_connected")
 	
@@ -130,22 +130,25 @@ func getAllEntityIds():
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getAllEntityIds()).to_utf8())	
 	
 func add_destination(globId:String,location:Vector3,type:String,radius:float):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.add_destination(globId,location,type,radius)).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.add_destination(globId,location,type,radius)).to_utf8())
 	
 func get_next_destination(globId:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_next_destination(globId)).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_next_destination(globId)).to_utf8())
 	
 func get_all_destinations(globId:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_all_destinations(globId)).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_all_destinations(globId)).to_utf8())
 	
 func location_subscribe(id:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.location_subscribe(id)).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.location_subscribe(id)).to_utf8())
 
 func input_subscribe(id:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.input_subscribe(id)).to_utf8())	
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.input_subscribe(id)).to_utf8())
+	
+func get_input_physics(id:String):
+	send_payload(PayloadMapper.get_input_physics(id))
 
 func send_input(id:String,inputVec:Vector3):	
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.apply_vector(id,inputVec)).to_utf8())
+	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.set_input_physics(id,inputVec)).to_utf8())
 
 func clear_destinations(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.clear_destinations(id)).to_utf8())

@@ -65,6 +65,12 @@ func input_subscribe(id:String):
 
 func apply_vector(id:String,vec:Vector3):
 	return {'APPLY_VECTOR':{'id':id,'vec':[vec.x,vec.y,vec.z]}}
+	
+func set_input_physics(id:String,vec:Vector3):
+	return {'type':'APPLY_VECTOR','body':{'id':id,'vec':[vec.x,vec.y,vec.z]}}
+
+func get_input_physics(id:String):
+	return {'type':'GET_INPUT','body':{'id':id}}
 
 func clear_destinations(id:String):
 	return {'CLEAR_DESTINATIONS':{'id':id}}

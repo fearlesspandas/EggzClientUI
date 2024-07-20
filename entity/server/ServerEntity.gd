@@ -70,6 +70,7 @@ func _physics_process(delta):
 			destination = null
 	if physics_socket != null:
 		physics_socket.set_location_physics(id,body.global_transform.origin)
+		physics_socket.get_input_physics(id)
 	pass
 
 func _integrate_forces(state):
@@ -77,7 +78,7 @@ func _integrate_forces(state):
 func _process(delta):
 	var socket = ServerNetwork.get(client_id)
 	if !isSubbed and socket != null :
-		socket.input_subscribe(id)
+		#socket.input_subscribe(id)
 		var query = PayloadMapper.get_physical_stats(id)
 		socket.subscribe_general(query)
 		isSubbed = true

@@ -36,17 +36,17 @@ func _handle_message(msg,delta_accum):
 	route(msg,delta_accum)
 	
 func spawn_server_world(parent:Node,location:Vector3):
-	print("spawned server world")
+	print_debug("spawned server world")
 	var resource = AssetMapper.matchAsset(AssetMapper.server_spawn)
 	spawn = spawn_terrain("0",location,parent,resource,true)
 
 func create_character_entity_server(id:String, location:Vector3):
-	print("spawning server character")
+	print_debug("spawning server character")
 	if spawn != null:
 		var resource = AssetMapper.matchAsset(AssetMapper.server_player_model)
 		create_entity(id,location,spawn,resource,true)
 	else:
-		print("no spawn set for server entity manager")
+		print_debug("no spawn set for server entity manager")
 		
 func spawn_character_entity_server(id:String, location:Vector3):
 	print("spawning server character")
@@ -54,7 +54,7 @@ func spawn_character_entity_server(id:String, location:Vector3):
 		var resource = AssetMapper.matchAsset(AssetMapper.server_player_model)
 		return spawn_entity(id,location,spawn,resource,true)
 	else:
-		print("no spawn set for server entity manager")
+		print_debug("no spawn set for server entity manager")
 		
 
 func _on_data():
@@ -63,7 +63,7 @@ func _on_data():
 	
 func _on_physics_data():
 	var cmd = ServerNetwork.get_physics(client_id).get_packet()
-	print_debug("Physics received", cmd)
+	message_controller.add_to_queue(cmd)
 	
 func route_to_entity(id:String,msg):
 	var s = server_entities[id]
@@ -89,13 +89,13 @@ func parseJsonCmd(cmd,delta):
 					match glob:
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
 							if !server_entities.has(id):
-								print("ServerEntityManager: creating entity , ", id , "in client id," ,client_id , spawn)
+								print_debug("ServerEntityManager: creating entity , ", id , "in client id," ,client_id , spawn)
 								spawn_character_entity_server(id,Vector3(x,y,z))
 						{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 							if !server_entities.has(id):
 								spawn_character_entity_server(id,Vector3(x,y,z))
 						_:
-							print("ServerEntityManager could not parse glob type ", glob)
+							print_debug("ServerEntityManager could not parse glob type ", glob)
 			{"NextDestination":{"id": var id, "destination": var dest}}:
 				route_to_entity(id,json)
 			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
@@ -137,13 +137,13 @@ func parseJsonCmd(cmd,delta):
 														#print("found terrain")
 														pass
 								_:
-									print("no handler found for: ",t)
+									print_debug("no handler found for: ",t)
 			_:
 				pass
 				#print("no matching command in ServerEntityManager for ", cmd)
 	else:
 		#pass
-		print("Could not parse msg:",cmd)
+		print_debug("Could not parse msg:",cmd)
 
 func route(cmd,delta):
 	#print("cmd serverentitymanager:",cmd)

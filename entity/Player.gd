@@ -8,9 +8,9 @@ onready var pointer:PlayerPathPointer = PlayerPathPointer.new()
 var is_active = false
 
 func _ready():
-	
 	self.add_child(pointer)
-	curserRay.connect("intersection_clicked",self,"handle_clicked")
+	#curserRay.connect("intersection_clicked",self,"handle_clicked")
+
 func _input(event):
 	if is_active and event is InputEventMouseButton and event.is_action_pressed("left_click") and curserRay.intersect_position != null:
 		#print("attempting to add destination")
@@ -31,9 +31,13 @@ func _input(event):
 	if is_active and event is InputEventKey:
 		var vec = get_input_vec(event)
 		var socket = ServerNetwork.get(client_id)
+		var physics_socket = ServerNetwork.get_physics(client_id)
 		pointer.position(body.global_transform.origin - vec)
 		if socket != null:
 			socket.send_input(id,vec)
+		if physics_socket != null:
+			#print_debug("sending input " , vec)
+			physics_socket.send_input(id,vec)
 			
 func get_input_vec(event) -> Vector3:
 	var diff = camera.global_transform.origin - self.body.global_transform.origin
@@ -56,7 +60,7 @@ func get_input_vec(event) -> Vector3:
 	return vec#.normalized()
 
 func set_active(active:bool):
-	print("player active:",id,active)
+	print_debug("player active:",id,active)
 	is_active = active
 	camera.set_active(active)
 	
@@ -68,5 +72,5 @@ func handle_clicked(position,button_index):
 		var z = curserRay.intersect_position.z
 		var dest = Vector3(x,y,z)
 		if id != null:
-			print("setting destination for player:",dest)
+			print_debug("setting destination for player:",dest)
 			#ServerNetwork.get(id).add_destination(id,dest,"WAYPOINT")
