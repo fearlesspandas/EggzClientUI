@@ -33,6 +33,7 @@ func _handle_message(msg,delta_accum):
 			movement.entity_stop(body)
 			#movement.entity_apply_vector(delta_accum,Vector3.ZERO,body)
 		{'Input':{"id":var id, "vec":[var x ,var y ,var z]}}:
+			#print_debug("got input" , x,y,z)
 			movement.entity_apply_vector(delta_accum,Vector3(x,y,z),body)
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
 			body.global_transform.origin = location

@@ -5,13 +5,17 @@ onready var camera_root =find_node("CameraRoot")
 onready var camera:Camera = camera_root.find_node("Camera")
 onready var curserRay:CursorRay = camera_root.find_node("CursorRay")
 onready var pointer:PlayerPathPointer = PlayerPathPointer.new()
+var physics_socket : RustSocket
 var is_active = false
 
 func _ready():
 	self.add_child(pointer)
+	physics_socket = ServerNetwork.get_physics(client_id)
 	#curserRay.connect("intersection_clicked",self,"handle_clicked")
 
 func _input(event):
+	if event.is_pressed():
+		pass#print_debug("event is pressed")
 	if is_active and event is InputEventMouseButton and event.is_action_pressed("left_click") and curserRay.intersect_position != null:
 		#print("attempting to add destination")
 		#var y = curserRay.intersect_position.y
@@ -34,11 +38,19 @@ func _input(event):
 		var physics_socket = ServerNetwork.get_physics(client_id)
 		pointer.position(body.global_transform.origin - vec)
 		if socket != null:
-			socket.send_input(id,vec)
+			pass
+			#socket.send_input(id,vec)
 		if physics_socket != null:
 			#print_debug("sending input " , vec)
 			physics_socket.send_input(id,vec)
-			
+
+func _process(delta):
+	if false: 
+		#print_debug("No Input")
+		if physics_socket!= null:
+			physics_socket.send_input(id,Vector3.ZERO)
+		else:
+			print_debug("physics socket null")
 func get_input_vec(event) -> Vector3:
 	var diff = camera.global_transform.origin - self.body.global_transform.origin
 	#represenets a vector pointing away from our body horizontally, in the direction the camera is facing
