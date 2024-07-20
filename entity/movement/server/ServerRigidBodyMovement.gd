@@ -58,7 +58,6 @@ func handle_input_vec(vector:Vector3,accell:float,decell:float):
 		in_motion = true
 		x_velocity -= vector.x * accell
 		z_velocity -= vector.z * accell
-	print("vector",vector)
 
 func move_along_path(vector:Vector3,body:RigidBody):
 	var normal = vector.normalized()	
