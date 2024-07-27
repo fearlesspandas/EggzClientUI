@@ -15,7 +15,6 @@ func move(delta,location:Vector3,body:KinematicBody):
 func apply_vector(delta,vector:Vector3,body:KinematicBody):
 	#body.global_transform.origin += vector.normalized() * speed * delta * 0.1
 	var v = vector.normalized() * speed * delta * 0.001
-	#print("applying vec ", v)
 	#must be called every frame for collision to work
 	if body.move_and_collide(v,true) == null:
 			pass

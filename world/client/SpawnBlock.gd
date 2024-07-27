@@ -24,11 +24,11 @@ func generate_random_vecs(n:int,minVec:Vector3,maxvec:Vector3):
 	
 	return vecs
 	
-func _process(delta):
-	var environment = self.get_world().environment
-	if environment != null:
-		environment.background_color = Color.black
-		environment.background_sky
+#func _process(delta):
+	#var environment = self.get_world().environment
+	#if environment != null:
+		#environment.background_color = Color.black
+		#environment.background_sky
 func _ready():
 	#var block_resource =load(blockterrain.resource_path) 
 	#self.get_world().get_environment().background_color = Color.black

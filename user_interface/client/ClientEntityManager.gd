@@ -7,6 +7,8 @@ onready var message_controller : MessageController = MessageController.new()
 onready var destinations:DestinationManager = DestinationManager.new()
 onready var destination_scanner : DestinationScannerTimer = DestinationScannerTimer.new()
 onready var terrain_scanner : TerrainScannerTimer = TerrainScannerTimer.new()
+
+var terrain_count = 0
 var viewport:Viewport #base node where initial map is added
 var spawn
 func _ready():
@@ -121,6 +123,7 @@ func parseJsonCmd(cmd,delta):
 										var asset = AssetMapper.matchAsset(resource_id)
 										for i in range(0,entity_map[k]):
 											#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
+											terrain_count += 1
 											spawn_terrain(str(uuid),loc,spawn,mesh,false)
 											spawn_terrain(str(uuid),loc,spawn,asset,false)
 											pass
@@ -137,6 +140,7 @@ func parseJsonCmd(cmd,delta):
 													var mesh = AssetMapper.matchMesh(resource_id)
 													for i in range(0,entity_map[k]):
 														#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
+														terrain_count += 1
 														spawn_terrain(str(uuid),loc,spawn,mesh,false)
 														spawn_terrain(str(uuid),loc,spawn,asset,false)
 														pass
