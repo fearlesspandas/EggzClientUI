@@ -54,28 +54,31 @@ func freeze():
 	body.global_transform.origin = spawn
 	
 func _physics_process(delta):
-	movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
+	#movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	self.global_transform.origin = body.global_transform.origin
 	var socket = ServerNetwork.get(client_id)
 	var physics_socket = ServerNetwork.get_physics(client_id)
 	if socket != null:
 		#socket.setGlobLocation(id,body.global_transform.origin)
 		socket.get_next_destination(id)
+	if physics_socket != null:
+		physics_socket.get_input_physics(id)
+		physics_socket.set_location_physics(id,body.global_transform.origin)
+		
+	pass
+	movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	if(destination != null ):
 		var diff = destination.location - body.global_transform.origin
 		if diff.length() > epsilon:
-			movement.entity_move(delta,destination.location,body)
-			#print("active destination",destination)
+			pass
+			#movement.entity_apply_vector(delta,diff,body)
+			#movement.linear_move(delta,destination.location,body)
+			movement.entity_move(0.15,destination.location,body)
 		else:
-			movement.entity_stop(body)
+			#movement.entity_stop(body)
 			destination = null
-	if physics_socket != null:
-		physics_socket.set_location_physics(id,body.global_transform.origin)
-		physics_socket.get_input_physics(id)
-	pass
+			
 
-func _integrate_forces(state):
-	print_debug("integrateforces")
 func _process(delta):
 	var socket = ServerNetwork.get(client_id)
 	if !isSubbed and socket != null :

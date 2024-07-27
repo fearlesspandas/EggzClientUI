@@ -40,17 +40,18 @@ func _input(event):
 		if socket != null:
 			pass
 			#socket.send_input(id,vec)
-		if physics_socket != null:
+		#if physics_socket != null:
 			#print_debug("sending input " , vec)
-			physics_socket.send_input(id,vec)
+		#	physics_socket.send_input(id,vec)
 
 func _process(delta):
-	if false: 
-		#print_debug("No Input")
-		if physics_socket!= null:
-			physics_socket.send_input(id,Vector3.ZERO)
-		else:
-			print_debug("physics socket null")
+	#print_debug("No Input")
+	var physics_socket = ServerNetwork.get_physics(client_id)
+	if physics_socket!= null:
+		physics_socket.send_input(id,get_input_vec2())
+		#physics_socket.send_input(id,Vector3.ZERO)
+	else:
+		print_debug("physics socket null")
 func get_input_vec(event) -> Vector3:
 	var diff = camera.global_transform.origin - self.body.global_transform.origin
 	#represenets a vector pointing away from our body horizontally, in the direction the camera is facing
@@ -67,6 +68,26 @@ func get_input_vec(event) -> Vector3:
 	if event is InputEventKey and event.is_action_pressed("rise",true):
 		vec += Vector3.UP
 	if event is InputEventKey and event.is_action_pressed("fall",true):
+		vec += Vector3.DOWN
+		
+	return vec#.normalized()
+
+func get_input_vec2() -> Vector3:
+	var diff = camera.global_transform.origin - self.body.global_transform.origin
+	#represenets a vector pointing away from our body horizontally, in the direction the camera is facing
+	var pointer:Vector3 = Vector3(diff.x,0,diff.z).normalized()
+	var vec = Vector3(0, 0 , 0)
+	if Input.is_action_pressed("forward",true):
+		vec -= pointer
+	if Input.is_action_pressed("left",true):
+		vec += pointer.rotated(Vector3.UP,3*PI/2)
+	if Input.is_action_pressed("right",true):
+		vec -= pointer.rotated(Vector3.UP,3*PI/2)
+	if Input.is_action_pressed("backward",true):
+		vec += pointer
+	if Input.is_action_pressed("rise",true):
+		vec += Vector3.UP
+	if Input.is_action_pressed("fall",true):
 		vec += Vector3.DOWN
 		
 	return vec#.normalized()

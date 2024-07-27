@@ -7,7 +7,7 @@ var speed = 0.5
 var speed_limit = 10
 var autopilot_speed_limit = 0.0005
 var stopped_location = null
-
+var G = 0.1
 var x_velocity = 0
 var y_velocity = 0
 var z_velocity = 0
@@ -15,6 +15,23 @@ var in_motion
 
 var force_vec_accum : Vector3 = Vector3.ZERO
 var body_ref:RigidBody
+
+
+func linear_move(delta,location:Vector3,body:RigidBody):
+	body.mode = RigidBody.MODE_KINEMATIC
+	var base = location - body.global_transform.origin
+	var dir = base.normalized()
+	if speed_limit == null:
+		speed_limit = 0
+	body.global_transform.origin += dir*speed_limit*delta * 0.0005
+	
+func gravity_move(delta,location:Vector3,body:RigidBody):
+	var base = location - body.global_transform.origin
+	var dir = base.normalized()
+	if speed_limit == null:
+		speed_limit = 0
+	body.set_linear_velocity((dir*speed_limit*G/base.length_squared()))
+
 func move(delta,location:Vector3,body:RigidBody):
 	var base = (body.global_transform.origin - location)
 	var diffvec:Vector3 = (body.global_transform.origin - location).normalized() * speed * delta * base.length()/3
@@ -28,7 +45,7 @@ func move(delta,location:Vector3,body:RigidBody):
 	#body.set_axis_velocity(Vector3(0,1,0) * -diffvec.y)
 	#body.set_axis_velocity(Vector3(0,0,1) * -diffvec.z)
 	#body.apply_central_impulse(-diffvec)
-	body.set_linear_velocity(body.linear_velocity -diffvec)
+	body.set_linear_velocity(body.linear_velocity -diffvec * 0.1)
 
 	#apply_vector(delta,-base * min(autopilot_speed_limit,speed_limit)/(1/(speed_limit + 1)),body)
 	

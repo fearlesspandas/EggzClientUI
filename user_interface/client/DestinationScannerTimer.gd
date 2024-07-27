@@ -10,7 +10,7 @@ func _ready():
 
 func poll_for_entities():
 	if is_active:
-		print("polling for destinations")
+		#print_debug("polling for destinations")
 		ServerNetwork.get(client_id).get_all_destinations(client_id)
 		
 func set_active(active:bool):
