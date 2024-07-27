@@ -23,10 +23,16 @@ func generate_random_vecs(n:int,minVec:Vector3,maxvec:Vector3):
 		)
 	
 	return vecs
-func _ready():
-	var block_resource =load(blockterrain.resource_path) 
 	
-	var vecs = generate_random_vecs(700,Vector3(-200,0,-200),Vector3(200,30,200))
+func _process(delta):
+	var environment = self.get_world().environment
+	if environment != null:
+		environment.background_color = Color.black
+		environment.background_sky
+func _ready():
+	#var block_resource =load(blockterrain.resource_path) 
+	#self.get_world().get_environment().background_color = Color.black
+	#var vecs = generate_random_vecs(700,Vector3(-200,0,-200),Vector3(200,30,200))
 	#for v in vecs:
 #		var block = block_resource.instance()
 #		self.add_child(block)

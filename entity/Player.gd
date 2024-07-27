@@ -47,11 +47,11 @@ func _input(event):
 func _process(delta):
 	#print_debug("No Input")
 	var physics_socket = ServerNetwork.get_physics(client_id)
-	if physics_socket!= null:
+	if physics_socket!= null and is_active:
 		physics_socket.send_input(id,get_input_vec2())
 		#physics_socket.send_input(id,Vector3.ZERO)
-	else:
-		print_debug("physics socket null")
+	#else:
+		#print_debug("physics socket null")
 func get_input_vec(event) -> Vector3:
 	var diff = camera.global_transform.origin - self.body.global_transform.origin
 	#represenets a vector pointing away from our body horizontally, in the direction the camera is facing

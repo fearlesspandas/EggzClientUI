@@ -31,8 +31,8 @@ func load_profiles():
 		print_debug("creating fresh profiles directory")
 		dir.make_dir("res://profiles/")
 	print_debug("loaded profiles: ",profiles.size())
-	for p in profiles:
-		print_debug(get_profile(p).id)
+	#for p in profiles:
+		#print_debug(get_profile(p).id)
 
 func profile_exists(id:String) -> bool:
 	return profiles.has(id)

@@ -32,7 +32,7 @@ func create_profile_ui(profile:PlayerProfile,clientProfile:bool):
 func create_profile_from_input():
 	var id = newProfile.textEdit.text
 	var pp
-	print_debug("profiles", ProfileManager.profiles)
+	#print_debug("profiles", ProfileManager.profiles)
 	if ProfileManager.profile_exists(id):
 		print_debug("found profile for ", id)
 		pp = ProfileManager.get_profile(id)
