@@ -144,6 +144,17 @@ func parseJsonCmd(cmd,delta):
 														spawn_terrain(str(uuid),loc,spawn,mesh,false)
 														spawn_terrain(str(uuid),loc,spawn,asset,false)
 														pass
+								{'TerrainChunkM': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
+									var chunk = Chunk.new()
+									chunk.client_id = client_id
+									chunk.uuid = uuid
+									chunk.spawn = spawn
+									chunk.center = Vector3(x,y,z)
+									chunk.scale = Vector3(radius,radius,radius)
+									chunk.radius = radius
+									chunk.entity_manager = self
+									spawn.add_child(chunk)
+									terrain[uuid] = chunk
 								_:
 									print("no handler found for: ",t)
 			_:						

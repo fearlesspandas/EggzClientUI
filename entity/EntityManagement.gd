@@ -7,7 +7,7 @@ var client_id:String
 var client_entities = {}
 var server_entities = {}
 var terrain_queue = []
-
+var terrain = {}
 func create_entity(id:String,location:Vector3,parent:Node,resource:Resource,create_as_server_entity:bool):
 	var res = load(resource.resource_path).instance()
 	if create_as_server_entity:

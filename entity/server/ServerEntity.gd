@@ -86,7 +86,7 @@ func _process(delta):
 		var query = PayloadMapper.get_physical_stats(id)
 		socket.subscribe_general(query)
 		isSubbed = true
-		print("server entity, subbing to input for id", id)
+		#print_debug("subbing to input for id", id)
 
 
 func _input(event):

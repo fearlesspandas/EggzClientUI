@@ -17,7 +17,9 @@ func poll_for_terrain():
 		#print_debug("adding terrain",id,test_vec_delete)
 		#ServerNetwork.get(client_id).create_terrain(id,test_vec_delete)
 		#if nonrelative:
-		ServerNetwork.get(client_id).get_all_terrain(client_id,true)
+		ServerNetwork.get(client_id).get_top_level_terrain()#.get_all_terrain(client_id,true)
+		
+		
 		#else:
 			#ServerNetwork.get(client_id).get_all_terrain_within_player_distance(client_id,500)
 		one_shot = true

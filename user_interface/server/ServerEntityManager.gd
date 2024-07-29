@@ -49,7 +49,7 @@ func create_character_entity_server(id:String, location:Vector3):
 		print_debug("no spawn set for server entity manager")
 		
 func spawn_character_entity_server(id:String, location:Vector3):
-	print("spawning server character")
+	#print_debug("spawning server character")
 	if spawn != null:
 		var resource = AssetMapper.matchAsset(AssetMapper.server_player_model)
 		return spawn_entity(id,location,spawn,resource,true)
@@ -89,7 +89,7 @@ func parseJsonCmd(cmd,delta):
 					match glob:
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
 							if !server_entities.has(id):
-								print_debug("ServerEntityManager: creating entity , ", id , "in client id," ,client_id , spawn)
+								#print_debug("ServerEntityManager: creating entity , ", id , "in client id," ,client_id , spawn)
 								spawn_character_entity_server(id,Vector3(x,y,z))
 						{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 							if !server_entities.has(id):
@@ -106,7 +106,7 @@ func parseJsonCmd(cmd,delta):
 				#print("server entity manmager received physstat", max_speed)
 				DataCache.add_data(id,'max_speed',max_speed)
 			{'TerrainSet':var terrain}:
-				#print("SERVER_ENTITY_terrain")
+				#print_debug("SERVER_ENTITY_terrain", terrain)
 				match terrain:
 					{'terrain':var t_list}:
 						#print("SERVER_ENTITY_MANMAGER terrain ", t_list)
@@ -136,6 +136,17 @@ func parseJsonCmd(cmd,delta):
 														spawn_terrain(str(uuid),loc,spawn,asset,true)
 														#print("found terrain")
 														pass
+								{'TerrainChunkM': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
+									var chunk = Chunk.new()
+									chunk.client_id = client_id
+									chunk.uuid = uuid
+									chunk.spawn = spawn
+									chunk.center = Vector3(x,y,z)
+									chunk.scale = Vector3(radius,radius,radius)
+									chunk.radius = radius
+									chunk.entity_manager = self
+									spawn.add_child(chunk)
+									terrain[uuid] = chunk
 								_:
 									print_debug("no handler found for: ",t)
 			_:

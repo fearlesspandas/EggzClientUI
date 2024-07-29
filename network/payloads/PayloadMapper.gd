@@ -98,3 +98,9 @@ func create_terrain(id:String,location:Vector3):
 
 func get_terrain_within_player_distance(id:String,radius:float):
 	return {'GET_TERRAIN_WITHIN_PLAYER_DISTANCE':{'id':id,'radius':radius}}
+
+func get_top_level_terrain():
+	return {'GET_TOP_LEVEL_TERRAIN':{}}
+
+func get_cached_terrain(uuid:String):
+	return {'GET_CACHED_TERRAIN':{"id":uuid}}

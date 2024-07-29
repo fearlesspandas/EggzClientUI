@@ -26,7 +26,7 @@ func _process(delta):
 	var socket = getSocket()
 	if !isSubbed and socket != null and socket.connected:
 		#socket.location_subscribe(id)
-		print_debug("sent subscription ",id)
+		#print_debug("sent subscription ",id)
 		isSubbed = true
 	var physics_socket = ServerNetwork.get_physics(client_id)
 	if physics_socket != null and physics_socket.connected:
