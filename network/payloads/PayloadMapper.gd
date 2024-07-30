@@ -102,5 +102,9 @@ func get_terrain_within_player_distance(id:String,radius:float):
 func get_top_level_terrain():
 	return {'GET_TOP_LEVEL_TERRAIN':{}}
 
+func get_top_level_terrain_within_distance(distance:float,location:Vector3):
+	return {'GET_TOP_LEVEL_TERRAIN_IN_DISTANCE':{'distance':distance,'location':[location.x,location.y,location.z]}}
+
 func get_cached_terrain(uuid:String):
 	return {'GET_CACHED_TERRAIN':{"id":uuid}}
+

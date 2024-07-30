@@ -19,7 +19,7 @@ var collision_shape:CollisionShape = CollisionShape.new()
 var shape:BoxShape = BoxShape.new()
 
 func _ready():
-	timer.wait_time = 5
+	timer.wait_time = 3
 	timer.connect("timeout",self,"check_load")
 	self.add_child(timer)
 	timer.start()
@@ -32,13 +32,15 @@ func _ready():
 	#collision_shape.disabled = true
 	self.add_child(collision_shape)
 	#self.connect("body_entered",self,"load_terrain")
+	#print_debug("creating chunk ",center , " ", radius , " ", uuid)
 	pass
 	
 func load_terrain():
 	if !has_loaded:
-		print_debug("Loading Area")
+		print_debug("Loading Area " , center, " " ,radius , " ",uuid)
 		ServerNetwork.get(client_id).get_cached_terrain(uuid)
 		has_loaded = true
+		#ServerNetwork.get(client_id).get_top_level_terrain_in_distance(2 * radius,center)
 		
 
 func check_load():

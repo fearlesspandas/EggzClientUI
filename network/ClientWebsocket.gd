@@ -169,5 +169,8 @@ func get_all_terrain_within_player_distance(id:String,radius:float):
 func get_top_level_terrain():
 	send_payload(PayloadMapper.get_top_level_terrain())
 
+func get_top_level_terrain_in_distance(distance:float, location:Vector3):
+	send_payload(PayloadMapper.get_top_level_terrain_within_distance(distance,location))
+	
 func get_cached_terrain(uuid:String):
 	send_payload(PayloadMapper.get_cached_terrain(uuid))
