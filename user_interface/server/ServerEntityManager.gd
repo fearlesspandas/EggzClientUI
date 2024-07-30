@@ -147,6 +147,8 @@ func parseJsonCmd(cmd,delta):
 										chunk.entity_manager = self
 										spawn.add_child(chunk)
 										terrain[uuid] = chunk
+									else:
+										print_debug("already has uuid, ", uuid)
 									#TerrainScheduler.add_terain(chunk)
 								_:
 									print_debug("no handler found for: ",t)

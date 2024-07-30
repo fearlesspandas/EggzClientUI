@@ -19,7 +19,6 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0 )
 
 [node name="SpawnBlockGround" type="MeshInstance" parent="Scenery/SpawnBlockFrame"]
 mesh = SubResource( 1 )
-material/0 = null
 
 [node name="BlockTerrainShaded" parent="Scenery" instance=ExtResource( 4 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.43155, 0 )
