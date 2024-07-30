@@ -142,11 +142,12 @@ func parseJsonCmd(cmd,delta):
 									chunk.uuid = uuid
 									chunk.spawn = spawn
 									chunk.center = Vector3(x,y,z)
-									chunk.scale = Vector3(radius,radius,radius)
+									#chunk.scale = Vector3(radius,radius,radius)
 									chunk.radius = radius
 									chunk.entity_manager = self
 									spawn.add_child(chunk)
 									terrain[uuid] = chunk
+									#TerrainScheduler.add_terain(chunk)
 								_:
 									print_debug("no handler found for: ",t)
 			_:

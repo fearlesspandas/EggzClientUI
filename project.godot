@@ -19,7 +19,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://network/AuthenticationRequest.gd"
 }, {
-"base": "Spatial",
+"base": "Area",
 "class": "Chunk",
 "language": "GDScript",
 "path": "res://world/Chunk.gd"
@@ -273,6 +273,7 @@ DataCache="*res://network/DataCache.gd"
 CameraUtils="*res://entity/camera/CameraUtils.gd"
 Subscriptions="*res://network/Subscriptions.gd"
 ProfileManager="*res://user_interface/launcher/ProfileManager.gd"
+TerrainScheduler="*res://world/TerrainScheduler.gd"
 
 [input]
 
