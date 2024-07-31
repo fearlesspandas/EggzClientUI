@@ -19,25 +19,14 @@ var collision_shape:CollisionShape = CollisionShape.new()
 var shape:BoxShape = BoxShape.new()
 
 func _ready():
-	
-	
-	#scheduler_timer.wait_time = 5
-	#timer.connect("timeout",self,"check_scheduler")
-	#self.add_child(scheduler_timer)
 	shape.extents = Vector3(radius,radius,radius)
 	collision_shape.shape = shape
-	#collision_shape.global_transform.origin = center
-	#collision_mask = 10
-	#collision_shape.disabled = true
-	
 	self.add_child(collision_shape)
 	self.set_collision_mask_bit(10,true)
 	self.set_collision_mask_bit(0,false)
 	self.set_collision_layer_bit(10,true)
 	self.set_collision_layer_bit(0,false)
-	
 	self.global_transform.origin = center
-	#self.connect("body_entered",self,"load_terrain")
 	timer.wait_time = 3
 	timer.connect("timeout",self,"check_load")
 	self.add_child(timer)
@@ -46,20 +35,15 @@ func _ready():
 	pass
 	
 func load_terrain():
-	if !has_loaded:
+	if !self.has_loaded:
 		print_debug("Loading Area " , center, " " ,radius , " ",uuid)
 		ServerNetwork.get(client_id).get_cached_terrain(uuid)
 		self.has_loaded = true
-		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(radius,center)
-		
+		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(2*radius,center)
 
 func check_load():
-	if !has_loaded:
+	if !self.has_loaded:
 		var entities = get_overlapping_bodies()
 		if entities.size() > 0:
-			#print_debug("entities " , entities , entities.size())
 			load_terrain()
 			self.has_loaded = true
-			print_debug("loaded " , has_loaded)
-			#pass
-			#print_debug("overlapping entities ", entities)

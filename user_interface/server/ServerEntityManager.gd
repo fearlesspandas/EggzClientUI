@@ -105,9 +105,9 @@ func parseJsonCmd(cmd,delta):
 			{'PhysStat':{'id':var id, 'max_speed':var max_speed}}:
 				#print("server entity manmager received physstat", max_speed)
 				DataCache.add_data(id,'max_speed',max_speed)
-			{'TerrainSet':var terrain}:
+			{'TerrainSet':var terrain_set}:
 				#print_debug("SERVER_ENTITY_terrain", terrain)
-				match terrain:
+				match terrain_set:
 					{'terrain':var t_list}:
 						#print("SERVER_ENTITY_MANMAGER terrain ", t_list)
 						for t in t_list:
@@ -145,11 +145,8 @@ func parseJsonCmd(cmd,delta):
 										chunk.center = Vector3(x,y,z)
 										chunk.radius = radius
 										chunk.entity_manager = self
-										spawn.add_child(chunk)
 										terrain[uuid] = chunk
-									else:
-										print_debug("already has uuid, ", uuid)
-									#TerrainScheduler.add_terain(chunk)
+										spawn.add_child(chunk)
 								_:
 									print_debug("no handler found for: ",t)
 			_:
