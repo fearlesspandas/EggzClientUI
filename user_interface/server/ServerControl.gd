@@ -11,6 +11,7 @@ var profile_id:String
 var connection_ind_size = 30
 
 func _ready():
+	Engine.physics_jitter_fix = 0
 	auth_request.connect("session_created",self,"load_scene")
 	self.add_child(auth_request)
 	auth_request._initiate_auth_request(profile_id)

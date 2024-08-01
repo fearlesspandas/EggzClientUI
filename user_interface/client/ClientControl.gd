@@ -9,6 +9,7 @@ onready var viewport:Viewport = Viewport.new()
 onready var entity_management:ClientEntityManager = ClientEntityManager.new()
 onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
 onready var lv_indicator:LinearVelocityIndicator = LinearVelocityIndicator.new()
+onready var position_indicator:PositionIndicator = PositionIndicator.new()
 onready var max_speed_slider:MaxSpeedSlider = MaxSpeedSlider.new()
 onready var click_menu:ClickMenu = ClickMenu.new()
 
@@ -16,12 +17,14 @@ var profile_id:String
 var connection_ind_size = 30
 
 func _ready():
+	Engine.physics_jitter_fix = 0
 	self.add_child(auth_request)
 	#starts auth request that retrieves server secret to be sent on socket startup
 	auth_request.connect("session_created",self,"load_scene")
 	auth_request._initiate_auth_request(profile_id)
 	
 func load_scene(id,secret):
+	
 	var profile = ProfileManager.get_profile(profile_id)
 	#profile.set_secret_from_encrypted(secret)
 	viewport_container.set_size(self.rect_size)
@@ -42,6 +45,7 @@ func load_scene(id,secret):
 	lv_indicator.rect_size = self.rect_size / 4
 	lv_indicator.set_position(Vector2(0,0))
 	self.add_child(lv_indicator)
+	
 	
 	click_menu.spawn = viewport
 	click_menu.client_id = profile.id
@@ -68,9 +72,16 @@ func load_scene(id,secret):
 	entity_management.spawn_client_world(viewport,Vector3(0,-10,0))
 	var player = entity_management.create_character_entity_client(profile.id,Vector3(0,5,0),viewport)
 	
+	position_indicator.player = player
+	position_indicator.rect_size = self.rect_size / 4
+	position_indicator.set_position(self.rect_size - position_indicator.rect_size)
+	self.add_child(position_indicator)
+	
+	
 	self.connect("is_active",player,"set_active")
 	self.connect("is_active",entity_management,"set_active")
 	player.curserRay.connect("intersection_clicked",click_menu,"handle_clicked")
+	ServerNetwork.get(profile.id).get_top_level_terrain_in_distance(1000,player.global_transform.origin)
 	#entity_management.entity_scanner.start()
 	
 func handle_new_entity(entity,parent,server_entity):

@@ -55,6 +55,17 @@ func create_character_entity_client(id:String, location:Vector3 = Vector3(0,10,0
 	else:
 		print("no spawn set for client entity manager")
 		
+func spawn_npc_character_entity_client(id:String,location:Vector3) -> ClientPlayerEntity:
+	var res:ClientPlayerEntity = AssetMapper.matchAsset(AssetMapper.npc_model).instance()
+	client_entities[id] = res
+	res.is_npc = true
+	res.init_with_id(id,client_id)
+	spawn.add_child(res)
+	res.global_transform.origin = location
+	emit_signal("entity_created",res,spawn,false)
+	return res
+
+
 func _on_data():
 	var cmd = ServerNetwork.get(client_id).get_packet()
 	message_controller.add_to_queue(cmd)
@@ -93,10 +104,11 @@ func parseJsonCmd(cmd,delta):
 							if !client_entities.has(id) and client_id != id and (!ServerNetwork.sockets.has(id) or !ServerNetwork.physics_sockets.has(id)):
 								print("ClientEntityManager: creating entity , ", id ," in client id:",client_id, spawn)
 								#ServerNetwork.bind(client_id,id,true)
-								spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
+								var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
+								ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1000,spawned_character.global_transform.origin)
 						{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 							if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
-								spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
+								spawn_npc_character_entity_client(id,Vector3(x,y,z))
 						_:
 							print("ClientEntityManager could not parse glob type ", glob)
 							
@@ -157,11 +169,11 @@ func parseJsonCmd(cmd,delta):
 										terrain[uuid] = chunk
 									
 								_:
-									print("no handler found for: ",t)
+									print_debug("no handler found for: ",t)
 			_:						
-				print("no handler found in ClientEntityManager for msg:", cmd)
+				print_debug("no handler found for msg:", cmd)
 	else:
-		print("Could not parse msg:",cmd)
+		print_debug("Could not parse msg:",cmd)
 
 
 func _process(delta):

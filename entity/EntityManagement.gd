@@ -40,6 +40,7 @@ func spawn_entity(id:String,location:Vector3,parent:Node,resource:Resource,creat
 	res.global_transform.origin = location
 	emit_signal("entity_created",res,parent,create_as_server_entity)
 	return res
+
 #terrain does not have message controlers associated with it
 func spawn_terrain(id:String,location:Vector3,parent:Node,resource:Resource,create_as_server_entity:bool):
 	var res = load(resource.resource_path).instance()
@@ -65,9 +66,10 @@ func spawn_terrain_from_queue(spawn,server:bool = false):
 		spawn_terrain(str(t.uuid),t.loc,spawn,asset,server)
 		
 func spawn_player_client(id:String,location:Vector3,parent:Node):
-	var res = AssetMapper.matchAsset(AssetMapper.player_model).instance()
+	var res:Player = AssetMapper.matchAsset(AssetMapper.player_model).instance()
 	if res.has_method("init_with_id"):
 		res.init_with_id(id,client_id)
+	
 	parent.add_child(res)
 	#res.camera.make_current()
 	client_entities[id] = res

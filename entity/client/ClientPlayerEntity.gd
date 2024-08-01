@@ -6,12 +6,26 @@ class_name ClientPlayerEntity
 
 onready var message_controller:MessageController = MessageController.new()
 onready var username:Username = Username.new()
+onready var timer:Timer = Timer.new()
 var isSubbed = false
+var is_npc = false
+var physics_socket:RustSocket
+var socket : ClientWebSocket
+
 func _ready():
 	username.init_id()
 	Subscriptions.subscribe(username.id,id)
 	self.add_child(username)
 	self.add_child(message_controller)
+	socket = ServerNetwork.get(client_id)
+	assert(socket != null)
+	physics_socket = ServerNetwork.get_physics(client_id)
+	assert(physics_socket != null)
+	if is_npc:
+		timer.connect("timeout",self,"poll_physics")
+		timer.wait_time = 0.25
+		self.add_child(timer)
+		timer.start()
 	pass # Replace with function entity.
 	
 func getSocket() -> ClientWebSocket:
@@ -21,17 +35,14 @@ func getSocket() -> ClientWebSocket:
 		return null
 	else:
 		return res 
-		
 func _process(delta):
-	var socket = getSocket()
-	if !isSubbed and socket != null and socket.connected:
-		#socket.location_subscribe(id)
-		#print_debug("sent subscription ",id)
-		isSubbed = true
-	var physics_socket = ServerNetwork.get_physics(client_id)
-	if physics_socket != null and physics_socket.connected:
+	if !is_npc:
+		poll_physics()
+		
+func poll_physics():
+	if physics_socket.connected:
 		physics_socket.get_location_physics(id)
-	pass
+		
 func _handle_message(msg,delta_accum):
 	match msg:
 		[var x,var y,var z]:

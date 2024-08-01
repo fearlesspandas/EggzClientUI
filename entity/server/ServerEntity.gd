@@ -4,29 +4,47 @@ class_name ServerEntity
 onready var message_controller:MessageController = MessageController.new()
 onready var timer:Timer = Timer.new()
 onready var spawn
+var socket:ClientWebSocket
+var physics_socket:RustSocket
 var requested_dest = false
 var timeout = 10
 var last_request = null
 var destination:Destination = null
 var epsilon = 3
 var isSubbed:bool = false
+var is_npc:bool = false
 
 func _ready():
 	spawn = body.global_transform.origin
 	self.add_child(message_controller)
-	timer.connect("timeout",self,"timer_polling")
-	timer.wait_time = 0.5
-	self.add_child(timer)
+	
+	
 	self.movement.body_ref = body
-	timer.start()
-	pass # Replace with function body.
-
+	
+	if is_npc:
+		timer.connect("timeout",self,"npc_polling")
+		timer.wait_time = 0.5
+		self.add_child(timer)
+		timer.start()
+	else: 
+		timer.connect("timeout",self,"timer_polling")
+		timer.wait_time = 0.5
+		self.add_child(timer)
+		timer.start()
+	init_sockets()
+	
+func init_sockets():
+	socket = ServerNetwork.get(client_id)
+	assert(socket != null)
+	physics_socket = ServerNetwork.get_physics(client_id)
+	assert(physics_socket != null)
+	
 func timer_polling():
-	var socket = ServerNetwork.get(client_id)
-	if socket != null:
-		var lv = movement.entity_get_lv(body)
-		socket.set_lv(id,movement.entity_get_lv(body))
-		
+	var lv = movement.entity_get_lv(body)
+	socket.set_lv(id,movement.entity_get_lv(body))
+	
+func npc_polling():
+	socket.get_next_destination(id)
 func _handle_message(msg,delta_accum):
 	match msg:
 		{'NoInput':{'id':var id}}:
@@ -56,21 +74,14 @@ func freeze():
 func _physics_process(delta):
 	#movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	self.global_transform.origin = body.global_transform.origin
-	var socket = ServerNetwork.get(client_id)
-	var physics_socket = ServerNetwork.get_physics(client_id)
-	if socket != null:
-		#socket.setGlobLocation(id,body.global_transform.origin)
+	physics_socket.get_input_physics(id)
+	physics_socket.set_location_physics(id,body.global_transform.origin)
+	if !is_npc:
 		socket.get_next_destination(id)
-	if physics_socket != null:
-		physics_socket.get_input_physics(id)
-		physics_socket.set_location_physics(id,body.global_transform.origin)
-		
-	pass
 	movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	if(destination != null ):
 		var diff = destination.location - body.global_transform.origin
 		if diff.length() > epsilon:
-			pass
 			#movement.entity_apply_vector(delta,diff,body)
 			#movement.linear_move(delta,destination.location,body)
 			movement.entity_move(0.15,destination.location,body)
@@ -80,10 +91,10 @@ func _physics_process(delta):
 			
 
 func _process(delta):
-	var socket = ServerNetwork.get(client_id)
-	if !isSubbed and socket != null :
+	if !isSubbed:
 		#socket.input_subscribe(id)
 		var query = PayloadMapper.get_physical_stats(id)
+		#if socket!=null:
 		socket.subscribe_general(query)
 		isSubbed = true
 		#print_debug("subbing to input for id", id)

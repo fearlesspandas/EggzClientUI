@@ -17,7 +17,7 @@ func exited():
 
 func gui_input(event):
 	if event is InputEventMouseButton and event.is_action_pressed("left_click"):
-		print("label clicked")
+		print_debug("label clicked")
 		emit_signal("option_clicked",self.text)
 func _process(delta):
 	if hovered:

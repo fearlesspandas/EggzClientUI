@@ -55,7 +55,18 @@ func spawn_character_entity_server(id:String, location:Vector3):
 		return spawn_entity(id,location,spawn,resource,true)
 	else:
 		print_debug("no spawn set for server entity manager")
-		
+
+func spawn_npc_character_entity_server(id:String,location:Vector3) -> ServerEntity:
+	var resource = AssetMapper.matchAsset(AssetMapper.server_player_model)
+	var res:ServerEntity = load(resource.resource_path).instance()
+	server_entities[id] = res
+	res.is_npc = true
+	res.init_with_id(id,client_id)
+	spawn.add_child(res)
+	res.global_transform.origin = location
+	emit_signal("entity_created",res,spawn,false)
+	return res
+
 
 func _on_data():
 	var cmd = ServerNetwork.get(client_id).get_packet(true)
@@ -90,10 +101,13 @@ func parseJsonCmd(cmd,delta):
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
 							if !server_entities.has(id):
 								#print_debug("ServerEntityManager: creating entity , ", id , "in client id," ,client_id , spawn)
-								spawn_character_entity_server(id,Vector3(x,y,z))
+								var spawned_character = spawn_character_entity_server(id,Vector3(x,y,z))
+								ServerNetwork.get(client_id).get_top_level_terrain_in_distance(500,spawned_character.global_transform.origin)
 						{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 							if !server_entities.has(id):
-								spawn_character_entity_server(id,Vector3(x,y,z))
+								var spawned_character = spawn_npc_character_entity_server(id,Vector3(x,y,z))
+								spawned_character.is_npc = true
+								
 						_:
 							print_debug("ServerEntityManager could not parse glob type ", glob)
 			{"NextDestination":{"id": var id, "destination": var dest}}:
@@ -150,8 +164,7 @@ func parseJsonCmd(cmd,delta):
 								_:
 									print_debug("no handler found for: ",t)
 			_:
-				pass
-				#print("no matching command in ServerEntityManager for ", cmd)
+				print_debug("No handler found for command " , cmd)
 	else:
 		#pass
 		print_debug("Could not parse msg:",cmd)

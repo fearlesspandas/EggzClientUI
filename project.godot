@@ -149,6 +149,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/PlayerProfile.gd"
 }, {
+"base": "RichTextLabel",
+"class": "PositionIndicator",
+"language": "GDScript",
+"path": "res://user_interface/client/PositionIndicator.gd"
+}, {
 "base": "TabContainer",
 "class": "Profiles",
 "language": "GDScript",
@@ -238,6 +243,7 @@ _global_script_class_icons={
 "Player": "",
 "PlayerPathPointer": "",
 "PlayerProfile": "",
+"PositionIndicator": "",
 "Profiles": "",
 "ProfilesList": "",
 "RustSocket": "",
@@ -262,9 +268,9 @@ config/icon="res://icon.png"
 
 ServerNetwork="*res://network/ServerNetwork.gd"
 HttpServerManager="*res://network/HttpServerManager.gd"
-EntityFactory="*res://entity/EntityFactory.gd"
-EntityManager="*res://entity/EntityManager.gd"
-EntityRoutingManagerClient="*res://entity/EntityRoutingManagerClient.gd"
+EntityFactory="res://entity/EntityFactory.gd"
+EntityManager="res://entity/EntityManager.gd"
+EntityRoutingManagerClient="res://entity/EntityRoutingManagerClient.gd"
 Controller="*res://network/Controller.gd"
 NetworkConfig="*res://user_interface/NetworkConfig.gd"
 AssetMapper="*res://entity/assets/AssetMapper.gd"

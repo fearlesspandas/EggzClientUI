@@ -5,53 +5,27 @@ onready var camera_root =find_node("CameraRoot")
 onready var camera:Camera = camera_root.find_node("Camera")
 onready var curserRay:CursorRay = camera_root.find_node("CursorRay")
 onready var pointer:PlayerPathPointer = PlayerPathPointer.new()
-var physics_socket : RustSocket
 var is_active = false
 
 func _ready():
 	self.add_child(pointer)
 	physics_socket = ServerNetwork.get_physics(client_id)
+	assert(physics_socket!=null)
 	#curserRay.connect("intersection_clicked",self,"handle_clicked")
 
 func _input(event):
-	if event.is_pressed():
-		pass#print_debug("event is pressed")
-	if is_active and event is InputEventMouseButton and event.is_action_pressed("left_click") and curserRay.intersect_position != null:
-		#print("attempting to add destination")
-		#var y = curserRay.intersect_position.y
-		#var x = curserRay.intersect_position.x
-		#var z = curserRay.intersect_position.z
-		#var dest = Vector3(x,y,z)
-		#if id != null:
-	#		print("setting destination for player:",dest)
-	#		ServerNetwork.get(id).add_destination(id,dest,"WAYPOINT")
-		pass
 	if is_active and event is InputEventKey and event.is_action_released("control"):
 		var socket = ServerNetwork.get(client_id)
-		if socket != null:
-			#id and client id should be the same but
-			#this code is technically more general
-			socket.clear_destinations(id)
+		socket.clear_destinations(id)
 	if is_active and event is InputEventKey:
 		var vec = get_input_vec(event)
-		var socket = ServerNetwork.get(client_id)
-		var physics_socket = ServerNetwork.get_physics(client_id)
 		pointer.position(body.global_transform.origin - vec)
-		if socket != null:
-			pass
-			#socket.send_input(id,vec)
-		#if physics_socket != null:
-			#print_debug("sending input " , vec)
-		#	physics_socket.send_input(id,vec)
-
+		
 func _process(delta):
 	#print_debug("No Input")
-	var physics_socket = ServerNetwork.get_physics(client_id)
-	if physics_socket!= null and is_active:
+	if is_active:
 		physics_socket.send_input(id,get_input_vec2())
-		#physics_socket.send_input(id,Vector3.ZERO)
-	#else:
-		#print_debug("physics socket null")
+
 func get_input_vec(event) -> Vector3:
 	var diff = camera.global_transform.origin - self.body.global_transform.origin
 	#represenets a vector pointing away from our body horizontally, in the direction the camera is facing
