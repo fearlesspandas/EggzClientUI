@@ -16,7 +16,7 @@ func _input(event):
 		intersect_position = null
 	elif event is InputEventMouseButton and event.pressed and (event.button_index == 1 || event.button_index == 2):
 		from = camera.project_ray_origin(event.position)
-		to = from + camera.project_ray_normal(event.position) * 1000
+		to = from + camera.project_ray_normal(event.position) * camera.far
 		var mouse_position = get_viewport().get_mouse_position()
 		var ray_origin = from
 		var ray_target = to

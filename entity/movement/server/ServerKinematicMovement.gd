@@ -2,14 +2,19 @@ extends Movement
 
 class_name ServerKinematicMovement
 
-
+onready var entity:ServerEntity = get_parent()
 var speed = 0.0
 var body_ref
 func move(delta,location:Vector3,body:KinematicBody):
 	var diff_base:Vector3 = (body.global_transform.origin - location)
 	var diff:Vector3 = (body.global_transform.origin - location).normalized() * speed * delta
 	var diff2:Vector3 = diff_base * diff_base.length() * speed * delta
-	#body.global_transform.origin -= diff2 * 0.0000001
+	body.move_and_collide(-diff* 0.0005)
+		
+func move_by_gravity(delta,location:Vector3,body:KinematicBody):
+	var diff_base:Vector3 = (body.global_transform.origin - location)
+	var diff:Vector3 = (body.global_transform.origin - location).normalized() * speed * delta
+	var diff2:Vector3 = diff_base * diff_base.length() * speed * delta
 	body.move_and_collide(-diff2* 0.00000001)
 	
 func apply_vector(delta,vector:Vector3,body:KinematicBody):

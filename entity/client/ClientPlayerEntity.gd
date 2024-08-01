@@ -21,11 +21,11 @@ func _ready():
 	assert(socket != null)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
-	if is_npc:
-		timer.connect("timeout",self,"poll_physics")
-		timer.wait_time = 0.25
-		self.add_child(timer)
-		timer.start()
+	#if is_npc:
+	#	timer.connect("timeout",self,"poll_physics")
+	#	timer.wait_time = 0.25
+	#	self.add_child(timer)
+	#	timer.start()
 	pass # Replace with function entity.
 	
 func getSocket() -> ClientWebSocket:
@@ -36,8 +36,8 @@ func getSocket() -> ClientWebSocket:
 	else:
 		return res 
 func _process(delta):
-	if !is_npc:
-		poll_physics()
+	#if !is_npc:
+	poll_physics()
 		
 func poll_physics():
 	if physics_socket.connected:

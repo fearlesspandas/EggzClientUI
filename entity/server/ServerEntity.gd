@@ -81,14 +81,22 @@ func _physics_process(delta):
 	movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	if(destination != null ):
 		var diff = destination.location - body.global_transform.origin
-		if diff.length() > epsilon:
-			#movement.entity_apply_vector(delta,diff,body)
-			#movement.linear_move(delta,destination.location,body)
-			movement.entity_move(0.15,destination.location,body)
-		else:
-			#movement.entity_stop(body)
-			destination = null
-			
+		match destination.type:
+			'{WAYPOINT:{}}':
+				if diff.length() > epsilon:
+					movement.entity_move(delta,destination.location,body)
+				else:
+					#movement.entity_stop(body)
+					destination = null
+			"GRAVITY_BIND":
+				if diff.length() > epsilon:
+					movement.entity_move_by_gravity(delta,destination.location,body)
+				else:
+					#movement.entity_stop(body)
+					destination = null
+					
+			_:
+				print_debug("no handler found for destination with type ", destination.type)
 
 func _process(delta):
 	if !isSubbed:
