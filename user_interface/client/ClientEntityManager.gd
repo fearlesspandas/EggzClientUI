@@ -82,103 +82,146 @@ func route_to_entity(id:String,msg):
 		
 func handle_json(json) -> bool:
 	match json:
-			{"SendLocation":{'id':var id, 'loc': var loc}}:
-				route_to_entity(id,loc)
-				return false
-			{'MSG':{'route':var route,'message':var msg}}:
-				route_to_entity(route,msg)
-				return false
-			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
-				return false
-			{"Location":{"id":var id, "location": [var x , var y , var z]}}:
-				route_to_entity(id,json)
-				return false
-			{"GlobSet":{"globs":var globs}}:
-				var res = false
-				for glob in globs:
-					match glob:
-						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
-							#the server network check is only needed due to a bug where different players are techncially added to the same scene
-							#in spite of being in different viewports
-							if !client_entities.has(id) and client_id != id and (!ServerNetwork.sockets.has(id) or !ServerNetwork.physics_sockets.has(id)):
-								print("ClientEntityManager: creating entity , ", id ," in client id:",client_id, spawn)
-								#ServerNetwork.bind(client_id,id,true)
-								var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
-								ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1000,spawned_character.global_transform.origin)
-								res = true
-						{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
-							if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
-								spawn_npc_character_entity_client(id,Vector3(x,y,z))
-						_:
-							print("ClientEntityManager could not parse glob type ", glob)
-				return res
-							
-			{"AllDestinations":{"id":var id , "destinations":var dests}}:
-				destinations._handle_message(dests)
-				return false
-			{'LV':{'id':var id, 'lv':[var x , var y , var z]}}:
-				DataCache.add_data(id,'lv',Vector3(x,y,z))
-				return false
-			{'PhysStat':{'id':var id, 'max_speed':var max_speed}}:
-				#print("client entity manmager received physstat", max_speed)
-				DataCache.add_data(id,'max_speed',max_speed)
-				return false
-			{'TerrainSet':var terrain_set}:
-				match terrain_set:
-					{'terrain':var t_list}:
-						#print("CLIENT_ENTITY_MANAGER incoming terrain: ",t_list)
-						for t in t_list:
-							match t:
-								{'TerrainUnitM':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
-									var keys = entity_map.keys()
-									var loc = Vector3(location[0],location[1],location[2])
-									for k in keys:
-										var resource_id = int(k)
-										var mesh = AssetMapper.matchMesh(resource_id)
-										var asset = AssetMapper.matchAsset(resource_id)
-										for i in range(0,entity_map[k]):
-											#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
-											terrain_count += 1
-											spawn_terrain(str(uuid),loc,spawn,mesh,false)
-											spawn_terrain(str(uuid),loc,spawn,asset,false)
-											pass
-										#print("CLIENT_ENTITY_MANAGER spawning terrain:",resource_id,loc)
-								{'TerrainRegionM':{'terrain':var innerterain}}:
-									for it in innerterain:
-										match it:
-											[var location,var entity_map, var uuid]:
-												var keys = entity_map.keys()
-												var loc = Vector3(location[0],location[1],location[2])
-												for k in keys:
-													var resource_id = int(k)
-													var asset = AssetMapper.matchAsset(resource_id)
-													var mesh = AssetMapper.matchMesh(resource_id)
-													for i in range(0,entity_map[k]):
-														#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
-														terrain_count += 1
-														spawn_terrain(str(uuid),loc,spawn,mesh,false)
-														spawn_terrain(str(uuid),loc,spawn,asset,false)
-														pass
-								{'TerrainChunkM': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
-									if !terrain.has(uuid):
-										var chunk = Chunk.new()
-										chunk.client_id = client_id
-										chunk.uuid = uuid
-										chunk.spawn = spawn
-										chunk.center = Vector3(x,y,z)
-										chunk.radius = radius
-										chunk.entity_manager = self
-										chunk.player = client_entities[client_id]
-										spawn.add_child(chunk)
-										terrain[uuid] = chunk
-									
-								_:
-									print_debug("no handler found for: ",t)
-				return true
-			_:						
-				print_debug("no handler found for msg:", json)
-				return false
-				
+		{"SendLocation":{'id':var id, 'loc': var loc}}:
+			route_to_entity(id,loc)
+			return false
+		{'MSG':{'route':var route,'message':var msg}}:
+			route_to_entity(route,msg)
+			return false
+		{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
+			return false
+		{"Location":{"id":var id, "location": [var x , var y , var z]}}:
+			route_to_entity(id,json)
+			return false
+		{"GlobSet":{"globs":var globs}}:
+			var res = false
+			for glob in globs:
+				match glob:
+					{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
+						#the server network check is only needed due to a bug where different players are techncially added to the same scene
+						#in spite of being in different viewports
+						if !client_entities.has(id) and client_id != id and (!ServerNetwork.sockets.has(id) or !ServerNetwork.physics_sockets.has(id)):
+							print("ClientEntityManager: creating entity , ", id ," in client id:",client_id, spawn)
+							#ServerNetwork.bind(client_id,id,true)
+							var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
+							ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1000,spawned_character.global_transform.origin)
+							res = true
+					{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
+						if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
+							spawn_npc_character_entity_client(id,Vector3(x,y,z))
+					_:
+						print("ClientEntityManager could not parse glob type ", glob)
+			return res
+						
+		{"AllDestinations":{"id":var id , "destinations":var dests}}:
+			destinations._handle_message(dests)
+			return false
+		{'LV':{'id':var id, 'lv':[var x , var y , var z]}}:
+			DataCache.add_data(id,'lv',Vector3(x,y,z))
+			return false
+		{'PhysStat':{'id':var id, 'max_speed':var max_speed}}:
+			#print("client entity manmager received physstat", max_speed)
+			DataCache.add_data(id,'max_speed',max_speed)
+			return false
+		{'TerrainUnitm':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
+			var keys = entity_map.keys()
+			var loc = Vector3(location[0],location[1],location[2])
+			for k in keys:
+				var resource_id = int(k)
+				var mesh = AssetMapper.matchMesh(resource_id)
+				var asset = AssetMapper.matchAsset(resource_id)
+				for i in range(0,entity_map[k]):
+					#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
+					spawn_terrain(str(uuid),loc,spawn,mesh,false)
+					spawn_terrain(str(uuid),loc,spawn,asset,false)
+					
+			return true
+		{'TerrainRegionm':{'terrain':var innerterain}}:
+			for it in innerterain:
+				match it:
+					[var location,var entity_map, var uuid]:
+						var keys = entity_map.keys()
+						var loc = Vector3(location[0],location[1],location[2])
+						for k in keys:
+							var resource_id = int(k)
+							var asset = AssetMapper.matchAsset(resource_id)
+							var mesh = AssetMapper.matchMesh(resource_id)
+							for i in range(0,entity_map[k]):
+								#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
+								#terrain_count += 1
+								spawn_terrain(str(uuid),loc,spawn,mesh,false)
+								spawn_terrain(str(uuid),loc,spawn,asset,false)
+			return true
+		{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
+			if !terrain.has(uuid):
+				var chunk = Chunk.new()
+				chunk.client_id = client_id
+				chunk.uuid = uuid
+				chunk.spawn = spawn
+				chunk.center = Vector3(x,y,z)
+				chunk.radius = radius
+				chunk.entity_manager = self
+				chunk.player = client_entities[client_id]
+				spawn.add_child(chunk)
+				terrain[uuid] = chunk
+			return true
+			
+		{'TerrainSet':var terrain_set}:
+			print_debug("USING OLD TERRAIN")
+			match terrain_set:
+				{'terrain':var t_list}:
+					#print("CLIENT_ENTITY_MANAGER incoming terrain: ",t_list)
+					for t in t_list:
+						match t:
+							{'TerrainUnitM':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
+								var keys = entity_map.keys()
+								var loc = Vector3(location[0],location[1],location[2])
+								for k in keys:
+									var resource_id = int(k)
+									var mesh = AssetMapper.matchMesh(resource_id)
+									var asset = AssetMapper.matchAsset(resource_id)
+									for i in range(0,entity_map[k]):
+										#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
+										spawn_terrain(str(uuid),loc,spawn,mesh,false)
+										spawn_terrain(str(uuid),loc,spawn,asset,false)
+										pass
+									#print("CLIENT_ENTITY_MANAGER spawning terrain:",resource_id,loc)
+							{'TerrainRegionM':{'terrain':var innerterain}}:
+								for it in innerterain:
+									match it:
+										[var location,var entity_map, var uuid]:
+											var keys = entity_map.keys()
+											var loc = Vector3(location[0],location[1],location[2])
+											for k in keys:
+												var resource_id = int(k)
+												var asset = AssetMapper.matchAsset(resource_id)
+												var mesh = AssetMapper.matchMesh(resource_id)
+												for i in range(0,entity_map[k]):
+													#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
+													#terrain_count += 1
+													spawn_terrain(str(uuid),loc,spawn,mesh,false)
+													spawn_terrain(str(uuid),loc,spawn,asset,false)
+													pass
+							{'TerrainChunkM': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
+								if !terrain.has(uuid):
+									var chunk = Chunk.new()
+									chunk.client_id = client_id
+									chunk.uuid = uuid
+									chunk.spawn = spawn
+									chunk.center = Vector3(x,y,z)
+									chunk.radius = radius
+									chunk.entity_manager = self
+									chunk.player = client_entities[client_id]
+									spawn.add_child(chunk)
+									terrain[uuid] = chunk
+								
+							_:
+								print_debug("no handler found for: ",t)
+			return true
+		_:						
+			print_debug("no handler found for msg:", json)
+			return false
+			
 func parseJsonCmd(cmd,delta):
 	var parsed = JSON.parse(cmd)
 	if parsed.result != null:

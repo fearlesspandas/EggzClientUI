@@ -16,5 +16,5 @@ func generate_id() -> String:
 	var res = ""
 	for i in range(0 , id_len):
 		res += alphabet[int(rand_range(0,alphabet.length()))]
-	print("subscriptions generated id: " , res)
+	#print_debug("subscriptions generated id: " , res)
 	return res

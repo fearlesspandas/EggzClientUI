@@ -121,6 +121,43 @@ func handle_json(json) -> bool:
 				#print("server entity manmager received physstat", max_speed)
 				DataCache.add_data(id,'max_speed',max_speed)
 				return false
+			{'TerrainUnitM':{'entities':var entity_map,'location':var location, 'uuid':var uuid}}:
+				var keys = entity_map.keys()
+				var loc = Vector3(location[0],location[1],location[2])
+				for k in keys:
+					var resource_id = int(k)
+					var asset = AssetMapper.matchAsset(resource_id)
+					for i in range(0,entity_map[k]):
+							#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
+						#spawn_terrain(str(uuid),loc,spawn,asset,true)
+						pass
+				return true
+			{'TerrainRegionm':{'terrain':var innerterain}}:
+				for it in innerterain:
+					match it:
+						[var location,var entity_map, var uuid]:
+							var keys = entity_map.keys()
+							var loc = Vector3(location[0],location[1],location[2])
+							for k in keys:
+								var resource_id = int(k)
+								var asset = AssetMapper.matchAsset(resource_id)
+								for i in range(0,entity_map[k]):
+									#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
+									spawn_terrain(str(uuid),loc,spawn,asset,true)
+									#print("found terrain")
+				return true
+			{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
+				if !terrain.has(uuid):
+					var chunk = Chunk.new()
+					chunk.client_id = client_id
+					chunk.uuid = uuid
+					chunk.spawn = spawn
+					chunk.center = Vector3(x,y,z)
+					chunk.radius = radius
+					chunk.entity_manager = self
+					terrain[uuid] = chunk
+					spawn.add_child(chunk)
+				return true
 			{'TerrainSet':var terrain_set}:
 				#print_debug("SERVER_ENTITY_terrain", terrain)
 				match terrain_set:

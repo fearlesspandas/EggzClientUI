@@ -53,6 +53,7 @@ func chunk_is_visible():
 	print_debug("Chunk IS VISIBLE ", uuid)
 	if !self.has_loaded:
 		load_terrain()
+
 func chunk_is_not_visible():
 	pass
 	#print_debug("Chunk is NOT visible ", uuid)
