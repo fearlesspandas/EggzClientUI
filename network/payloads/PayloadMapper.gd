@@ -108,3 +108,5 @@ func get_top_level_terrain_within_distance(distance:float,location:Vector3):
 func get_cached_terrain(uuid:String):
 	return {'GET_CACHED_TERRAIN':{"id":uuid}}
 
+func get_next_command():
+	return {'NEXT_CMD':{}}

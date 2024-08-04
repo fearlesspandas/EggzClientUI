@@ -80,22 +80,21 @@ func route_to_entity(id:String,msg):
 	if s!= null:
 		s.message_controller.add_to_queue(msg)
 		
-		
-func parseJsonCmd(cmd,delta):
-	var parsed = JSON.parse(cmd)
-	if parsed.result != null:
-		var json:Dictionary = parsed.result
-		match json:
+func handle_json(json) -> bool:
+	match json:
 			{"SendLocation":{'id':var id, 'loc': var loc}}:
 				route_to_entity(id,loc)
-				pass
+				return false
 			{'MSG':{'route':var route,'message':var msg}}:
 				route_to_entity(route,msg)
+				return false
 			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
-				pass
+				return false
 			{"Location":{"id":var id, "location": [var x , var y , var z]}}:
 				route_to_entity(id,json)
+				return false
 			{"GlobSet":{"globs":var globs}}:
+				var res = false
 				for glob in globs:
 					match glob:
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
@@ -106,20 +105,24 @@ func parseJsonCmd(cmd,delta):
 								#ServerNetwork.bind(client_id,id,true)
 								var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
 								ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1000,spawned_character.global_transform.origin)
+								res = true
 						{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 							if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
 								spawn_npc_character_entity_client(id,Vector3(x,y,z))
 						_:
 							print("ClientEntityManager could not parse glob type ", glob)
+				return res
 							
 			{"AllDestinations":{"id":var id , "destinations":var dests}}:
 				destinations._handle_message(dests)
-				pass
+				return false
 			{'LV':{'id':var id, 'lv':[var x , var y , var z]}}:
 				DataCache.add_data(id,'lv',Vector3(x,y,z))
+				return false
 			{'PhysStat':{'id':var id, 'max_speed':var max_speed}}:
 				#print("client entity manmager received physstat", max_speed)
 				DataCache.add_data(id,'max_speed',max_speed)
+				return false
 			{'TerrainSet':var terrain_set}:
 				match terrain_set:
 					{'terrain':var t_list}:
@@ -165,13 +168,23 @@ func parseJsonCmd(cmd,delta):
 										chunk.center = Vector3(x,y,z)
 										chunk.radius = radius
 										chunk.entity_manager = self
+										chunk.player = client_entities[client_id]
 										spawn.add_child(chunk)
 										terrain[uuid] = chunk
 									
 								_:
 									print_debug("no handler found for: ",t)
+				return true
 			_:						
-				print_debug("no handler found for msg:", cmd)
+				print_debug("no handler found for msg:", json)
+				return false
+				
+func parseJsonCmd(cmd,delta):
+	var parsed = JSON.parse(cmd)
+	if parsed.result != null:
+		var json:Dictionary = parsed.result
+		if handle_json(json):
+			ServerNetwork.get(client_id).get_next_command()
 	else:
 		print_debug("Could not parse msg:",cmd)
 

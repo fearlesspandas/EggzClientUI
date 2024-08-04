@@ -174,3 +174,6 @@ func get_top_level_terrain_in_distance(distance:float, location:Vector3):
 	
 func get_cached_terrain(uuid:String):
 	send_payload(PayloadMapper.get_cached_terrain(uuid))
+
+func get_next_command():
+	send_payload(PayloadMapper.get_next_command())
