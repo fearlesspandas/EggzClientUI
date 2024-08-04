@@ -104,7 +104,7 @@ func handle_json(json) -> bool:
 							print("ClientEntityManager: creating entity , ", id ," in client id:",client_id, spawn)
 							#ServerNetwork.bind(client_id,id,true)
 							var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
-							ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1000,spawned_character.global_transform.origin)
+							ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,spawned_character.global_transform.origin)
 							res = true
 					{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 						if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
