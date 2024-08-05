@@ -15,6 +15,7 @@ func _input(event):
 		intersect_object = null
 		intersect_position = null
 	elif event is InputEventMouseButton and event.pressed and (event.button_index == 1 || event.button_index == 2):
+		print_debug("Looking for intersection")
 		from = camera.project_ray_origin(event.position)
 		to = from + camera.project_ray_normal(event.position) * camera.far
 		var mouse_position = get_viewport().get_mouse_position()
@@ -27,6 +28,7 @@ func _input(event):
 			intersect_object = intersection.collider
 			DataCache.add_data('camera','intersect_position',intersection.position)
 			DataCache.add_data('camera','intersect_object',intersection.collider)
+			print_debug("Intersection clicked " , intersect_position, intersect_object)
 			emit_signal("intersection_clicked",intersect_position,event.button_index)
 		else:
 			DataCache.remove_data('camera','intersect_position')

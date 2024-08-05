@@ -43,15 +43,11 @@ func spawn_entity(id:String,location:Vector3,parent:Node,resource:Resource,creat
 
 #terrain does not have message controlers associated with it
 func spawn_terrain(id:String,location:Vector3,parent:Node,resource:Resource,create_as_server_entity:bool):
-	var res = load(resource.resource_path).instance()
-	if create_as_server_entity and !server_entities.has(id):
-		server_entities[id] = res
-		parent.add_child(res)
-		res.global_transform.origin = location
-	elif !create_as_server_entity and !client_entities.has(id):
-		client_entities[id] = res
-		parent.add_child(res)
-		res.global_transform.origin = location
+	var res = resource.instance()
+	terrain[id] = res
+	parent.add_child(res)
+	res.global_transform.origin = location
+	
 	emit_signal("terrain_created",res,parent,create_as_server_entity)
 	return res
 

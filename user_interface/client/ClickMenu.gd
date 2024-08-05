@@ -63,6 +63,7 @@ func _input(event):
 		
 func handle_clicked(position,button_index):
 	#pass position to 'options menu'
+	print_debug("Found intersection")
 	if button_index == 2:
 		current_position = position
 		#var waypoint_creator:WaypointCreator = WaypointCreator.new()

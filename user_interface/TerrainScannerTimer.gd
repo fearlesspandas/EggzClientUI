@@ -14,7 +14,7 @@ func _ready():
 
 func poll_for_terrain():
 	if is_active:
-		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(500,Vector3(0,0,0))
+		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,Vector3(0,0,0))
 		one_shot = true
 
 func set_active(active:bool):

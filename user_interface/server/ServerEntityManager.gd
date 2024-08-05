@@ -212,7 +212,8 @@ func parseJsonCmd(cmd,delta):
 	if parsed.result != null:
 		var json:Dictionary = parsed.result
 		if handle_json(json):
-			ServerNetwork.get(client_id).get_next_command()
+			pass
+			#ServerNetwork.get(client_id).get_next_command()
 		
 	else:
 		#pass

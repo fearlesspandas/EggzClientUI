@@ -35,8 +35,9 @@ func _ready():
 
 
 func inspect_terrain():
+	var t_chunk = Chunk.new()
 	for t in terrain.values():
-		if t.is_within_distance(player.global_transform.origin,t.radius):
+		if t is Chunk and t.is_within_distance(player.global_transform.origin,t.radius):
 			t.load_terrain()
 			
 func set_player(player:Player):
