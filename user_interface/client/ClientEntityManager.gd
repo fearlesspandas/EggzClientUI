@@ -1,5 +1,7 @@
 extends EntityManagement
 
+signal spawned_player_character(player)
+
 class_name ClientEntityManager
 
 onready var entity_scanner :EntityScannerTimer = EntityScannerTimer.new()
@@ -11,14 +13,16 @@ onready var terrain_scanner : TerrainScannerTimer = TerrainScannerTimer.new()
 var terrain_count = 0
 var viewport:Viewport #base node where initial map is added
 var spawn
+var is_active = false
+var player:Player
+
 func _ready():
-	entity_scanner.wait_time = 2
+	entity_scanner.wait_time = 3
 	entity_scanner.client_id = client_id
 	destination_scanner.wait_time = 1
 	destination_scanner.client_id = client_id
 	terrain_scanner.wait_time = 1
 	terrain_scanner.client_id = client_id
-	terrain_scanner.nonrelative = false
 	destinations.entity_spawn = viewport
 	self.add_child(entity_scanner)
 	self.add_child(destination_scanner)
@@ -26,9 +30,14 @@ func _ready():
 	self.add_child(message_controller)
 	entity_scanner.start()
 	destination_scanner.start()
-	terrain_scanner.start()
+	#terrain_scanner.start()
+	self.connect("spawned_player_character",self,"set_player")
+
+func set_player(player:Player):
+	self.player = player
 	
 func set_active(active:bool):
+	is_active = active
 	entity_scanner.set_active(active)
 	destination_scanner.set_active(active)
 	terrain_scanner.set_active(active)
@@ -42,18 +51,24 @@ func route(cmd,delta):
 		parseJsonCmd(cmd,delta)
 	
 func spawn_client_world(parent:Node,location:Vector3):
-	print("spawned client world")
+	print_debug("spawned client world")
 	var resource = AssetMapper.matchAsset(AssetMapper.client_spawn)
 	spawn = spawn_terrain("0",location,parent,resource,false)
 
-func create_character_entity_client(id:String, location:Vector3 = Vector3(0,10,0),parent = spawn):
-	print("spawnging client character")
+func emit_character():
+	print_debug("EMITTING SIGNAL")
+	emit_signal("spawned_player_character")
+
+func create_character_entity_client(id:String, location:Vector3 = Vector3(0,10,0),parent = spawn) -> Player:
+	#print_debug("spawning client character")
 	if parent != null:
 		var resource = AssetMapper.matchAsset(AssetMapper.player_model)
 		var res = spawn_player_client(id,location,parent)
+		emit_signal("spawned_player_character",res)
 		return res
 	else:
-		print("no spawn set for client entity manager")
+		print_debug("no spawn set for client entity manager")
+		return null
 		
 func spawn_npc_character_entity_client(id:String,location:Vector3) -> ClientPlayerEntity:
 	var res:ClientPlayerEntity = AssetMapper.matchAsset(AssetMapper.npc_model).instance()
@@ -100,8 +115,18 @@ func handle_json(json) -> bool:
 					{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
 						#the server network check is only needed due to a bug where different players are techncially added to the same scene
 						#in spite of being in different viewports
+						if !client_entities.has(id) and id == client_id:
+							print_debug("creating entity , ", id ," in client id:",client_id, spawn)
+							#ServerNetwork.bind(client_id,id,true)
+							#print_debug("REQUESTING CHUNKS FOR PLAYER")
+							var spawned_character = create_character_entity_client(id,Vector3(x,y,z),viewport)
+							ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,Vector3(x,y,z))
+							
+							spawned_character.set_active(self.is_active)
+							res = true
+							
 						if !client_entities.has(id) and client_id != id and (!ServerNetwork.sockets.has(id) or !ServerNetwork.physics_sockets.has(id)):
-							print("ClientEntityManager: creating entity , ", id ," in client id:",client_id, spawn)
+							print_debug("creating entity , ", id ," in client id:",client_id, spawn)
 							#ServerNetwork.bind(client_id,id,true)
 							var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
 							ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,spawned_character.global_transform.origin)
@@ -161,9 +186,11 @@ func handle_json(json) -> bool:
 				chunk.center = Vector3(x,y,z)
 				chunk.radius = radius
 				chunk.entity_manager = self
-				chunk.player = client_entities[client_id]
+				#chunk.player = client_entities[client_id]
 				spawn.add_child(chunk)
 				terrain[uuid] = chunk
+				if chunk.is_within_chunk(player.global_transform.origin) or chunk.is_within_distance(player.global_transform.origin,2056):
+					chunk.load_terrain()
 			return true
 			
 		{'TerrainSet':var terrain_set}:

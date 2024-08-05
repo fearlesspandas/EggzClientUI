@@ -69,3 +69,7 @@ func handle_clicked(position,button_index):
 		#waypoint_creator.client_id = client_id
 		#waypoint_creator.center = position
 		#spawn.add_child(waypoint_creator)
+		
+func player_character_spawned(player:Player):
+	assert(player != null)
+	player.curserRay.connect("intersection_clicked",self,"handle_clicked")

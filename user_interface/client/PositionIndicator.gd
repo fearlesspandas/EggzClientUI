@@ -9,3 +9,7 @@ var player
 func _process(delta):
 	if player != null:
 		text = str(player.global_transform.origin)
+
+func player_character_spawned(player:Player):
+	assert(player != null)
+	self.player = player

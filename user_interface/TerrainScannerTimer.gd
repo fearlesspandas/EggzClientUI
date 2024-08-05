@@ -4,8 +4,7 @@ class_name TerrainScannerTimer
 
 var client_id
 var is_active:bool = false
-var nonrelative:bool
-var test_vec_delete = Vector3(0,0,0)
+
 onready var entity_management:EntityManagement = get_parent()
 var is_server = false
 func _ready():

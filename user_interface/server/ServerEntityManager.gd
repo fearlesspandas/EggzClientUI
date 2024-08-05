@@ -24,7 +24,6 @@ func _ready():
 	terrain_scanner.wait_time = 1
 	terrain_scanner.client_id = client_id
 	terrain_scanner.is_active = true
-	terrain_scanner.nonrelative = true
 	self.add_child(terrain_scanner)
 	terrain_scanner.start()
 	

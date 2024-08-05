@@ -17,8 +17,6 @@ var has_loaded:bool = false
 var is_server = false
 
 
-var player
-
 var collision_shape:CollisionShape = CollisionShape.new()
 var shape:BoxShape = BoxShape.new()
 
@@ -67,7 +65,7 @@ func load_terrain():
 		print_debug("Loading Area " , center, " " ,radius , " ",uuid)
 		ServerNetwork.get(client_id).get_cached_terrain(uuid)
 		self.has_loaded = true
-		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(2*radius,center)
+		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(2.5*radius,center)
 		#timer.stop()
 		
 func check_load():
@@ -78,3 +76,12 @@ func check_load():
 			load_terrain()
 			self.has_loaded = true
 			#timer.stop()
+
+func is_within_chunk(loc:Vector3) -> bool:
+	var xdiff = abs(loc.x - center.x)
+	var ydiff = abs(loc.y - center.y)
+	var zdiff = abs(loc.z - center.z)
+	return xdiff <= radius and ydiff <= radius and zdiff <= radius
+
+func is_within_distance(loc:Vector3,distance:float) -> bool:
+	return (loc - center).length() <= distance

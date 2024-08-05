@@ -39,6 +39,7 @@ func load_scene(id,secret):
 	
 	entity_management.client_id = profile.id
 	entity_management.viewport = viewport
+	self.connect("is_active",entity_management,"set_active")
 	self.add_child(entity_management)
 	
 	lv_indicator.client_id = profile.id
@@ -50,6 +51,7 @@ func load_scene(id,secret):
 	click_menu.spawn = viewport
 	click_menu.client_id = profile.id
 	self.add_child(click_menu)
+	entity_management.connect("spawned_player_character",click_menu,"player_character_spawned")
 	
 	max_speed_slider.client_id = profile.id
 	max_speed_slider.rect_size = self.rect_size / 4
@@ -70,26 +72,36 @@ func load_scene(id,secret):
 	self.add_child(connection_indicator)
 	
 	entity_management.spawn_client_world(viewport,Vector3(0,-10,0))
-	var player = entity_management.create_character_entity_client(profile.id,Vector3(0,5,0),viewport)
-	
-	position_indicator.player = player
+	entity_management.connect("spawned_player_character",position_indicator,"player_character_spawned")
+	#position_indicator.player = player
 	position_indicator.rect_size = self.rect_size / 4
 	position_indicator.set_position(self.rect_size - position_indicator.rect_size)
 	self.add_child(position_indicator)
+	entity_management.connect("spawned_player_character",self,"player_character_spawned")
+	#var player = entity_management.create_character_entity_client(profile.id,Vector3(0,5,0),viewport)
 	
 	
-	self.connect("is_active",player,"set_active")
-	self.connect("is_active",entity_management,"set_active")
-	player.curserRay.connect("intersection_clicked",click_menu,"handle_clicked")
-	ServerNetwork.get(profile.id).get_top_level_terrain_in_distance(1000,player.global_transform.origin)
+	
+	#self.connect("is_active",player,"set_active")
+	
+	ServerNetwork.get(profile.id).getAllGlobs()
+	#player.curserRay.connect("intersection_clicked",click_menu,"handle_clicked")
+	
 	#entity_management.entity_scanner.start()
+	
+func player_character_spawned(player:Player):
+	assert(player != null)
+	self.connect("is_active",player,"set_active")
+	ServerNetwork.get(player.id).get_top_level_terrain_in_distance(1000,player.global_transform.origin)
+	
 	
 func handle_new_entity(entity,parent,server_entity):
 	print("new entity in clientControl")
 	pass
 
+
 func set_active(active: bool):
-	print("setting is active for control:",active)
+	print_debug("setting is active for control:",active)
 	emit_signal("is_active",active)
 	
 func _process(delta):
