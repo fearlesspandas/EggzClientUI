@@ -8,7 +8,7 @@ onready var entity_scanner :EntityScannerTimer = EntityScannerTimer.new()
 onready var message_controller : MessageController = MessageController.new()
 onready var destinations:DestinationManager = DestinationManager.new()
 onready var destination_scanner : DestinationScannerTimer = DestinationScannerTimer.new()
-onready var terrain_scanner : TerrainScannerTimer = TerrainScannerTimer.new()
+onready var terrain_scanner : Timer = Timer.new()
 
 var terrain_count = 0
 var viewport:Viewport #base node where initial map is added
@@ -21,8 +21,8 @@ func _ready():
 	entity_scanner.client_id = client_id
 	destination_scanner.wait_time = 1
 	destination_scanner.client_id = client_id
-	terrain_scanner.wait_time = 1
-	terrain_scanner.client_id = client_id
+	terrain_scanner.wait_time = 5
+	terrain_scanner.connect("timeout",self,"inspect_terrain")
 	destinations.entity_spawn = viewport
 	self.add_child(entity_scanner)
 	self.add_child(destination_scanner)
@@ -30,9 +30,15 @@ func _ready():
 	self.add_child(message_controller)
 	entity_scanner.start()
 	destination_scanner.start()
-	#terrain_scanner.start()
+	terrain_scanner.start()
 	self.connect("spawned_player_character",self,"set_player")
 
+
+func inspect_terrain():
+	for t in terrain.values():
+		if t.is_within_distance(player.global_transform.origin,t.radius):
+			t.load_terrain()
+			
 func set_player(player:Player):
 	self.player = player
 	
@@ -40,7 +46,7 @@ func set_active(active:bool):
 	is_active = active
 	entity_scanner.set_active(active)
 	destination_scanner.set_active(active)
-	terrain_scanner.set_active(active)
+	#terrain_scanner.set_active(active)
 
 func _handle_message(msg,delta_accum):
 	route(msg,delta_accum)
@@ -128,8 +134,8 @@ func handle_json(json) -> bool:
 						if !client_entities.has(id) and client_id != id and (!ServerNetwork.sockets.has(id) or !ServerNetwork.physics_sockets.has(id)):
 							print_debug("creating entity , ", id ," in client id:",client_id, spawn)
 							#ServerNetwork.bind(client_id,id,true)
+							ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,Vector3(x,y,z))
 							var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
-							ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,spawned_character.global_transform.origin)
 							res = true
 					{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 						if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
@@ -254,7 +260,8 @@ func parseJsonCmd(cmd,delta):
 	if parsed.result != null:
 		var json:Dictionary = parsed.result
 		if handle_json(json):
-			ServerNetwork.get(client_id).get_next_command()
+			pass
+			#ServerNetwork.get(client_id).get_next_command()
 	else:
 		print_debug("Could not parse msg:",cmd)
 

@@ -13,10 +13,10 @@ func _ready():
 	self.add_child(pointer)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket!=null)
-	terrain_scanner.wait_time = 3
+	terrain_scanner.wait_time = 6
 	terrain_scanner.connect("timeout",self,"scan_for_terrain")
 	self.add_child(terrain_scanner)
-	#terrain_scanner.start()
+	terrain_scanner.start()
 	#curserRay.connect("intersection_clicked",self,"handle_clicked")
 
 func scan_for_terrain():

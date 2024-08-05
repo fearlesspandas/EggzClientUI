@@ -98,8 +98,8 @@ func handle_json(json) -> bool:
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
 							if !server_entities.has(id):
 								#print_debug("ServerEntityManager: creating entity , ", id , "in client id," ,client_id , spawn)
+								ServerNetwork.get(client_id).get_top_level_terrain_in_distance(512,Vector3(x,y,z))
 								var spawned_character = spawn_character_entity_server(id,Vector3(x,y,z))
-								ServerNetwork.get(client_id).get_top_level_terrain_in_distance(512,spawned_character.global_transform.origin)
 								res = true
 						{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 							if !server_entities.has(id):
@@ -128,7 +128,7 @@ func handle_json(json) -> bool:
 					var asset = AssetMapper.matchAsset(resource_id)
 					for i in range(0,entity_map[k]):
 							#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
-						#spawn_terrain(str(uuid),loc,spawn,asset,true)
+						spawn_terrain(str(uuid),loc,spawn,asset,true)
 						pass
 				return true
 			{'TerrainRegionm':{'terrain':var innerterain}}:

@@ -12,7 +12,7 @@ var entity_manager:EntityManagement
 #onready var scheduler_timer:Timer = Timer.new()
 onready var visibility_not : VisibilityNotifier = VisibilityNotifier.new()
 onready var mesh_instance:MeshInstance = MeshInstance.new()
-#onready var mesh:CubeMesh = CubeMesh.new()
+onready var mesh:CubeMesh = CubeMesh.new()
 var has_loaded:bool = false
 var is_server = false
 
@@ -21,11 +21,13 @@ var collision_shape:CollisionShape = CollisionShape.new()
 var shape:BoxShape = BoxShape.new()
 
 func _ready():
-	shape.extents = Vector3(radius,radius,radius)
-	#mesh.size = shape.extents
-	#mesh_instance.mesh = mesh
-	#self.add_child(mesh_instance)
-	#mesh_instance.transform.origin = center - shape.extents
+	shape.extents = 2*Vector3(radius,radius,radius)
+	mesh.size = shape.extents #- Vector3(20,20,20)
+	mesh.material = SpatialMaterial.new()
+	mesh.material.albedo_color = Color.red
+	mesh_instance.mesh = mesh
+	self.add_child(mesh_instance)
+	
 	collision_shape.shape = shape
 	self.add_child(collision_shape)
 	visibility_not.aabb = AABB(center - shape.extents,shape.extents * 2)
@@ -37,7 +39,10 @@ func _ready():
 	self.set_collision_mask_bit(0,false)
 	self.set_collision_layer_bit(10,true)
 	self.set_collision_layer_bit(0,false)
-	self.global_transform.origin = center
+	self.set_collision_layer_bit(11,true)
+	self.set_collision_mask_bit(11,true)
+	self.global_transform.origin = center - shape.extents
+	#mesh_instance.translate(center - mesh.size)
 	#timer.wait_time = 3
 	#timer.connect("timeout",self,"check_load")
 	#self.add_child(timer)
@@ -65,7 +70,8 @@ func load_terrain():
 		print_debug("Loading Area " , center, " " ,radius , " ",uuid)
 		ServerNetwork.get(client_id).get_cached_terrain(uuid)
 		self.has_loaded = true
-		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(2.5*radius,center)
+		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(4*radius,center)
+		mesh_instance.visible = false
 		#timer.stop()
 		
 func check_load():
