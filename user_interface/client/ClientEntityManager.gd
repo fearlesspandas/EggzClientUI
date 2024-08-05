@@ -35,7 +35,6 @@ func _ready():
 
 
 func inspect_terrain():
-	var t_chunk = Chunk.new()
 	for t in terrain.values():
 		if t is Chunk and t.is_within_distance(player.global_transform.origin,t.radius):
 			t.load_terrain()
@@ -192,7 +191,6 @@ func handle_json(json) -> bool:
 				chunk.spawn = spawn
 				chunk.center = Vector3(x,y,z)
 				chunk.radius = radius
-				chunk.entity_manager = self
 				#chunk.player = client_entities[client_id]
 				spawn.add_child(chunk)
 				terrain[uuid] = chunk

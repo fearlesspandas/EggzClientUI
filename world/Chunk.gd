@@ -7,7 +7,6 @@ var uuid
 var spawn
 var center:Vector3
 var radius:float
-var entity_manager:EntityManagement
 #onready var timer:Timer = Timer.new()
 #onready var scheduler_timer:Timer = Timer.new()
 onready var visibility_not : VisibilityNotifier = VisibilityNotifier.new()
@@ -21,7 +20,7 @@ var collision_shape:CollisionShape = CollisionShape.new()
 var shape:BoxShape = BoxShape.new()
 
 func _ready():
-	shape.extents = 2*Vector3(radius,radius,radius)
+	shape.extents = Vector3(radius,radius,radius)
 	mesh.size = shape.extents #- Vector3(20,20,20)
 	mesh.material = SpatialMaterial.new()
 	mesh.material.albedo_color = Color.red

@@ -8,21 +8,7 @@ var client_entities = {}
 var server_entities = {}
 var terrain_queue = []
 var terrain = {}
-func create_entity(id:String,location:Vector3,parent:Node,resource:Resource,create_as_server_entity:bool):
-	var res = load(resource.resource_path).instance()
-	if create_as_server_entity:
-		server_entities[id] = res
-	else:
-		client_entities[id] = res
-	ServerNetwork.get(client_id).create_glob(id,location)
-	ServerNetwork.get(client_id).setGlobLocation(id,location)
-	
-	if res.has_method("init_with_id"):
-		res.init_with_id(id,client_id)
-	parent.add_child(res)
-	res.global_transform.origin = location
-	emit_signal("entity_created",res,parent,create_as_server_entity)
-	
+
 func _ready():
 	pass # Replace with function body.
 #does not request a new entity be created serverside, whereas create_entity requests
@@ -47,7 +33,6 @@ func spawn_terrain(id:String,location:Vector3,parent:Node,resource:Resource,crea
 	terrain[id] = res
 	parent.add_child(res)
 	res.global_transform.origin = location
-	
 	emit_signal("terrain_created",res,parent,create_as_server_entity)
 	return res
 
