@@ -41,7 +41,7 @@ func _ready():
 	self.set_collision_layer_bit(11,true)
 	self.set_collision_mask_bit(11,true)
 	self.global_transform.origin = center - shape.extents/2
-	mesh_instance.global_transform.origin = center - shape.extents/2
+	mesh_instance.global_transform.origin = self.global_transform.origin #center - shape.extents/2
 	#mesh_instance.translate(center - mesh.size)
 	#timer.wait_time = 3
 	#timer.connect("timeout",self,"check_load")
