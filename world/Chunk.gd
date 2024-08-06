@@ -20,8 +20,8 @@ var collision_shape:CollisionShape = CollisionShape.new()
 var shape:BoxShape = BoxShape.new()
 
 func _ready():
-	shape.extents = 2*Vector3(radius,radius,radius)
-	mesh.size = shape.extents #- Vector3(20,20,20)
+	shape.extents = Vector3(radius,radius,radius)
+	mesh.size = 2*shape.extents #- Vector3(20,20,20)
 	mesh.material = SpatialMaterial.new()
 	mesh.material.albedo_color = Color.red
 	mesh_instance.mesh = mesh
@@ -40,8 +40,8 @@ func _ready():
 	self.set_collision_layer_bit(0,false)
 	self.set_collision_layer_bit(11,true)
 	self.set_collision_mask_bit(11,true)
-	self.global_transform.origin = center - shape.extents/2
-	mesh_instance.global_transform.origin = self.global_transform.origin #center - shape.extents/2
+	self.global_transform.origin = center #- shape.extents
+	mesh_instance.global_transform.origin = self.global_transform.origin #- shape.extents #center - shape.extents/2
 	#mesh_instance.translate(center - mesh.size)
 	#timer.wait_time = 3
 	#timer.connect("timeout",self,"check_load")
@@ -90,4 +90,6 @@ func is_within_chunk(loc:Vector3) -> bool:
 	return xdiff <= radius and ydiff <= radius and zdiff <= radius
 
 func is_within_distance(loc:Vector3,distance:float) -> bool:
-	return (loc - center).length() <= distance
+	var diffs = loc - center
+	var dist = distance + radius
+	return abs(diffs.x) <= dist and abs(diffs.y) <= dist and abs(diffs.z) <= dist

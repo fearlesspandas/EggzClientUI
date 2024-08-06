@@ -35,12 +35,13 @@ func _ready():
 
 
 func inspect_terrain():
-	for t in terrain.values():
-		if t is Chunk and t.is_within_distance(player.global_transform.origin,t.radius):
-			t.load_terrain()
-			
+	#for t in terrain.values():
+		#if t is Chunk and t.is_within_distance(player.global_transform.origin,t.radius):
+			#t.load_terrain()
+	pass
 func set_player(player:Player):
 	self.player = player
+	ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,player.global_transform.origin)
 	
 func set_active(active:bool):
 	is_active = active
@@ -184,6 +185,7 @@ func handle_json(json) -> bool:
 								spawn_terrain(str(uuid),loc,spawn,asset,false)
 			return true
 		{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
+			#assert(x >= 0 and y >= 0 and z >= 0)
 			if !terrain.has(uuid):
 				var chunk = Chunk.new()
 				chunk.client_id = client_id
@@ -194,8 +196,9 @@ func handle_json(json) -> bool:
 				#chunk.player = client_entities[client_id]
 				spawn.add_child(chunk)
 				terrain[uuid] = chunk
-				if chunk.is_within_chunk(player.global_transform.origin) or chunk.is_within_distance(player.global_transform.origin,2056):
+				if chunk.is_within_chunk(player.global_transform.origin) or chunk.is_within_distance(player.global_transform.origin,512):
 					chunk.load_terrain()
+				
 			return true
 			
 		{'TerrainSet':var terrain_set}:

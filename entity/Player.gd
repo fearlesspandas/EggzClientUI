@@ -16,13 +16,13 @@ func _ready():
 	terrain_scanner.wait_time = 6
 	terrain_scanner.connect("timeout",self,"scan_for_terrain")
 	self.add_child(terrain_scanner)
-	terrain_scanner.start()
+	#terrain_scanner.start()
 	#curserRay.connect("intersection_clicked",self,"handle_clicked")
 
 func scan_for_terrain():
 	if is_active:
 		print_debug("Scanning for terrain for player " , client_id)
-		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1000,self.global_transform.origin)
+		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,self.global_transform.origin)
 		
 func _input(event):
 	if is_active and event is InputEventKey and event.is_action_released("control"):
