@@ -41,7 +41,7 @@ func inspect_terrain():
 	pass
 func set_player(player:Player):
 	self.player = player
-	ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,player.global_transform.origin)
+	ServerNetwork.get(client_id).get_top_level_terrain_in_distance(2048,player.global_transform.origin)
 	
 func set_active(active:bool):
 	is_active = active
@@ -127,7 +127,7 @@ func handle_json(json) -> bool:
 							#ServerNetwork.bind(client_id,id,true)
 							#print_debug("REQUESTING CHUNKS FOR PLAYER")
 							var spawned_character = create_character_entity_client(id,Vector3(x,y,z),viewport)
-							ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,Vector3(x,y,z))
+							#ServerNetwork.get(client_id).get_top_level_terrain_in_distance(2048,Vector3(x,y,z))
 							
 							spawned_character.set_active(self.is_active)
 							res = true
@@ -135,7 +135,7 @@ func handle_json(json) -> bool:
 						if !client_entities.has(id) and client_id != id and (!ServerNetwork.sockets.has(id) or !ServerNetwork.physics_sockets.has(id)):
 							print_debug("creating entity , ", id ," in client id:",client_id, spawn)
 							#ServerNetwork.bind(client_id,id,true)
-							ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,Vector3(x,y,z))
+							#ServerNetwork.get(client_id).get_top_level_terrain_in_distance(2048,Vector3(x,y,z))
 							var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
 							res = true
 					{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
@@ -185,7 +185,7 @@ func handle_json(json) -> bool:
 								spawn_terrain(str(uuid),loc,spawn,asset,false)
 			return true
 		{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
-			#assert(x >= 0 and y >= 0 and z >= 0)
+			#assert(y >= 0)
 			if !terrain.has(uuid):
 				var chunk = Chunk.new()
 				chunk.client_id = client_id
@@ -196,7 +196,7 @@ func handle_json(json) -> bool:
 				#chunk.player = client_entities[client_id]
 				spawn.add_child(chunk)
 				terrain[uuid] = chunk
-				if chunk.is_within_chunk(player.global_transform.origin) or chunk.is_within_distance(player.global_transform.origin,512):
+				if chunk.is_within_chunk(player.global_transform.origin) or chunk.is_within_distance(player.global_transform.origin,0):
 					chunk.load_terrain()
 				
 			return true
