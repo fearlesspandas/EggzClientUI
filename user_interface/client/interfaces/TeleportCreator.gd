@@ -1,6 +1,6 @@
 extends Spatial
 
-class_name WaypointCreator
+class_name TeleportCreator
 
 onready var sizing_mesh:MeshInstance = MeshInstance.new()
 onready var sizing_mesh_body:SphereMesh = SphereMesh.new()
@@ -8,6 +8,7 @@ onready var sizing_mesh_material:SpatialMaterial = SpatialMaterial.new()
 
 var client_id:String
 var center:Vector3
+
 func _ready():
 	assert(client_id != null)
 	assert(center != null)
@@ -32,7 +33,7 @@ func _process(delta):
 	else:
 		var center_on_screen = get_viewport().get_camera().unproject_position(center)
 		sizing_mesh_body.radius = (center_on_screen - input_mouse_pos).length()/2
-	sizing_mesh_body.height = sizing_mesh_body.radius
+	
 	
 func release():
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -49,5 +50,5 @@ func _input(event):
 		var res = CameraUtils.find_mouse_collision_or_null(get_viewport().get_camera(),get_world(),event.position)
 		#if !res.empty():
 		var dist = sizing_mesh_body.radius
-		socket.add_destination(client_id,center,"WAYPOINT",dist)
+		socket.add_destination(client_id,center,"TELEPORT",dist)
 		release()

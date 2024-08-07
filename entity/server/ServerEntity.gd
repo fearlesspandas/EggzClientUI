@@ -14,13 +14,12 @@ var epsilon = 3
 var isSubbed:bool = false
 var is_npc:bool = false
 
+var last_pos:Vector3 #used for lv
+var lv:Vector3
 func _ready():
 	spawn = body.global_transform.origin
 	self.add_child(message_controller)
-	
-	
 	self.movement.body_ref = body
-	
 	if is_npc:
 		timer.connect("timeout",self,"npc_polling")
 		timer.wait_time = 0.5
@@ -40,11 +39,11 @@ func init_sockets():
 	assert(physics_socket != null)
 	
 func timer_polling():
-	var lv = movement.entity_get_lv(body)
-	socket.set_lv(id,movement.entity_get_lv(body))
+	socket.set_lv(id,get_lv())
 	
 func npc_polling():
 	socket.get_next_destination(id)
+	
 func _handle_message(msg,delta_accum):
 	match msg:
 		{'NoInput':{'id':var id}}:
@@ -71,11 +70,24 @@ func _handle_message(msg,delta_accum):
 func freeze():
 	body.global_transform.origin = spawn
 	
+	
+func update_lv_internal(body,delta):
+	if last_pos != null:
+		lv = (body.global_transform.origin - last_pos)/delta
+	last_pos = body.global_transform.origin
+	
+func get_lv() -> Vector3:
+	if lv != null:
+		return lv			
+	else:
+		return Vector3.ZERO
+		
 func _physics_process(delta):
 	#movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	self.global_transform.origin = body.global_transform.origin
 	physics_socket.get_input_physics(id)
 	physics_socket.set_location_physics(id,body.global_transform.origin)
+	update_lv_internal(body,delta)
 	if !is_npc:
 		socket.get_next_destination(id)
 	movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
@@ -87,6 +99,11 @@ func _physics_process(delta):
 					movement.entity_move(delta,destination.location,body)
 				else:
 					#movement.entity_stop(body)
+					destination = null
+			'{TELEPORT:{}}':
+				if diff.length() > epsilon:
+					movement.entity_teleport(delta,destination.location,body)
+				else:
 					destination = null
 			"GRAVITY_BIND":
 				if diff.length() > epsilon:

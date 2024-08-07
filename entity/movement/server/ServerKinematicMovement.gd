@@ -5,6 +5,10 @@ class_name ServerKinematicMovement
 onready var entity:ServerEntity = get_parent()
 var speed = 0.0
 var body_ref
+
+func teleport(delta,location:Vector3,body:KinematicBody):
+	body.global_transform.origin = location
+	
 func move(delta,location:Vector3,body:KinematicBody):
 	var diff_base:Vector3 = (body.global_transform.origin - location)
 	var diff:Vector3 = (body.global_transform.origin - location).normalized() * speed * delta
@@ -24,9 +28,11 @@ func apply_vector(delta,vector:Vector3,body:KinematicBody):
 	if body.move_and_collide(v,true) == null:
 			pass
 			#body.move_and_collide(v)
-				
+
+
 func set_max_speed(max_speed):
 	if max_speed != null:
 		speed = max_speed
+		
 func _ready():
 	pass

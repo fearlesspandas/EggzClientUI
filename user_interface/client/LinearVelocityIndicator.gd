@@ -20,10 +20,9 @@ func timeout_polling():
 	if socket != null:
 		socket.lazy_lv(client_id)
 	self.text = str(DataCache.cached(client_id,'lv'))
+	
 func _handle_message(msg,delta):
 	match msg:
 		{'LV':{'id':var id,'lv': [var x , var y , var z]}}:
 			self.text = str([x,y,z])
-func _process(delta):
-	if parent.entity_management != null:
-		self.text = str(parent.entity_management.terrain_count)
+			

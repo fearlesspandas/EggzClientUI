@@ -8,6 +8,7 @@ class_name ClickMenu
 
 onready var close_label : ClickOption = ClickOption.new()
 onready var waypoint_label : ClickOption = ClickOption.new()
+onready var teleport_label :ClickOption = ClickOption.new()
 onready var rect:ColorRect = ColorRect.new()
 
 var spawn
@@ -20,8 +21,9 @@ func _ready():
 	assert(client_id != null)
 	close_label.text = "close"
 	waypoint_label.text = "waypoint"
-	
+	teleport_label.text = "teleport"
 	options.append(waypoint_label)
+	options.append(teleport_label)
 	options.append(close_label)
 	
 	var size = OS.window_size
@@ -42,6 +44,13 @@ func _ready():
 	
 func spawn_interface(label:String):
 	match label.to_upper():
+		"TELEPORT":
+			assert(current_position != null)
+			var teleport_creator:TeleportCreator = TeleportCreator.new()
+			teleport_creator.client_id = client_id
+			teleport_creator.center = current_position
+			spawn.add_child(teleport_creator)
+			self.visible = false
 		"WAYPOINT":
 			assert(current_position != null)
 			var waypoint_creator:WaypointCreator = WaypointCreator.new()

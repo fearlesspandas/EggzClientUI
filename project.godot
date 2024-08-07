@@ -199,6 +199,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://entity/movement/server/ServerRigidBodyMovement.gd"
 }, {
+"base": "Spatial",
+"class": "TeleportCreator",
+"language": "GDScript",
+"path": "res://user_interface/client/interfaces/TeleportCreator.gd"
+}, {
 "base": "Timer",
 "class": "TerrainScannerTimer",
 "language": "GDScript",
@@ -253,6 +258,7 @@ _global_script_class_icons={
 "ServerEntityManager": "",
 "ServerKinematicMovement": "",
 "ServerRigidMovement": "",
+"TeleportCreator": "",
 "TerrainScannerTimer": "",
 "Username": "",
 "WaypointCreator": ""
