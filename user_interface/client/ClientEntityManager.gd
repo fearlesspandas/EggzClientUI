@@ -128,7 +128,6 @@ func handle_json(json) -> bool:
 							#print_debug("REQUESTING CHUNKS FOR PLAYER")
 							var spawned_character = create_character_entity_client(id,Vector3(x,y,z),viewport)
 							#ServerNetwork.get(client_id).get_top_level_terrain_in_distance(2048,Vector3(x,y,z))
-							
 							spawned_character.set_active(self.is_active)
 							res = true
 							
@@ -196,9 +195,12 @@ func handle_json(json) -> bool:
 				#chunk.player = client_entities[client_id]
 				spawn.add_child(chunk)
 				terrain[uuid] = chunk
-				if chunk.is_within_chunk(player.global_transform.origin) or chunk.is_within_distance(player.global_transform.origin,0):
+				if chunk.is_within_chunk(player.global_transform.origin) or chunk.is_within_distance(player.global_transform.origin,1024):
 					chunk.load_terrain()
-				
+			else:
+				var chunk = terrain[uuid]
+				if chunk.is_within_chunk(player.global_transform.origin) or chunk.is_within_distance(player.global_transform.origin,1024):
+					chunk.load_terrain()
 			return true
 			
 		{'TerrainSet':var terrain_set}:

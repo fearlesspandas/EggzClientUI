@@ -10,7 +10,11 @@ var radius:float
 
 func _ready():
 	material.albedo_color = Color.red
-	
+	match type:
+		"{WAYPOINT:{}}":
+			material.albedo_color = Color.red
+		"{TELEPORT:{}}":
+			material.albedo_color = Color.black
 	mesh.radius = radius
 	self.global_transform.origin = location
 	body.mesh = mesh

@@ -6,8 +6,9 @@ onready var entity:ServerEntity = get_parent()
 var speed = 0.0
 var body_ref
 
-func teleport(delta,location:Vector3,body:KinematicBody):
-	body.global_transform.origin = location
+func teleport(location:Vector3,body:KinematicBody):
+	body.translate(location - body.global_transform.origin)
+	
 	
 func move(delta,location:Vector3,body:KinematicBody):
 	var diff_base:Vector3 = (body.global_transform.origin - location)
@@ -25,10 +26,12 @@ func apply_vector(delta,vector:Vector3,body:KinematicBody):
 	#body.global_transform.origin += vector.normalized() * speed * delta * 0.1
 	var v = vector.normalized() * speed * delta * 0.001
 	#must be called every frame for collision to work
-	if body.move_and_collide(v,true) == null:
-			pass
+	#if body.move_and_collide(v,false) == null:
+	#		pass
+	body.move_and_slide(v * 100,Vector3.UP)
+	
 			#body.move_and_collide(v)
-
+	#body.move_and_collide()
 
 func set_max_speed(max_speed):
 	if max_speed != null:

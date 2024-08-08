@@ -23,7 +23,7 @@ func _ready():
 	mesh.material = SpatialMaterial.new()
 	mesh.material.albedo_color = Color.red
 	mesh_instance.mesh = mesh
-	self.add_child(mesh_instance)
+	#self.add_child(mesh_instance)
 	
 	collision_shape.shape = shape
 	self.add_child(collision_shape)
@@ -37,7 +37,7 @@ func _ready():
 	self.set_collision_layer_bit(11,true)
 	self.set_collision_mask_bit(11,true)
 	self.global_transform.origin = center #- shape.extents
-	mesh_instance.global_transform.origin = self.global_transform.origin #- shape.extents #center - shape.extents/2
+	#mesh_instance.global_transform.origin = self.global_transform.origin #- shape.extents #center - shape.extents/2
 #	print_debug("creating chunk ",center , " ", radius , " ", uuid)
 	self.connect("body_entered",self,"body_entered_print")
 	pass

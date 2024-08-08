@@ -6,9 +6,9 @@ onready var this = self
 func _ready():
 	pass
 
-func entity_teleport(delta,location:Vector3,body):
+func entity_teleport(location:Vector3,body):
 	if self.has_method("teleport"):
-		this.teleport(delta,location,body)
+		this.teleport(location,body)
 		
 func entity_move(delta,location:Vector3,body):
 	if self.has_method("move"):

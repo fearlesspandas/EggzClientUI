@@ -19,7 +19,7 @@ func erase_dests():
 	destinations = []
 	
 func _handle_message(dests):
-	#print("destinations:",destinations)
+	print_debug("destinations:",destinations)
 	erase_dests()
 	for destination in dests:
 		match destination:

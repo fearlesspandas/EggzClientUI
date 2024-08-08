@@ -13,7 +13,9 @@ var destination:Destination = null
 var epsilon = 3
 var isSubbed:bool = false
 var is_npc:bool = false
-
+var queued_teleports = []
+var queued_input = Vector3()
+var is_teleporting:bool = false
 var last_pos:Vector3 #used for lv
 var lv:Vector3
 func _ready():
@@ -51,7 +53,8 @@ func _handle_message(msg,delta_accum):
 			#movement.entity_apply_vector(delta_accum,Vector3.ZERO,body)
 		{'Input':{"id":var id, "vec":[var x ,var y ,var z]}}:
 			#print_debug("got input" , x,y,z)
-			movement.entity_apply_vector(delta_accum,Vector3(x,y,z),body)
+			#movement.entity_apply_vector(delta_accum,Vector3(x,y,z),body)
+			queued_input = Vector3(x,y,z)
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
 			body.global_transform.origin = location
 		{'NextDestination':{'id': var id, 'destination': {'dest_type':var dest_type, 'location':[var x, var y , var z] , 'radius': var radius}}}:
@@ -60,6 +63,9 @@ func _handle_message(msg,delta_accum):
 			destination.location = Vector3(x,y,z)
 			destination.type = dest_type
 			destination.radius = radius
+		{'TeleportToNext':{'id':var id, 'location':[var x, var y ,var z]}}:
+			print_debug("teleporting " , x,y,z)
+			queued_teleports.push_front(Vector3(x,y,z))
 		{'NoLocation':{'id':var id}}:
 			destination = null
 		_:
@@ -85,13 +91,25 @@ func get_lv() -> Vector3:
 func _physics_process(delta):
 	#movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	self.global_transform.origin = body.global_transform.origin
+	#if body is KinematicBody:
+		#body.move_and_slide(Vector3(),Vector3.UP)
 	physics_socket.get_input_physics(id)
-	physics_socket.set_location_physics(id,body.global_transform.origin)
 	update_lv_internal(body,delta)
-	if !is_npc:
-		socket.get_next_destination(id)
+	movement.entity_apply_vector(delta,queued_input,body)
 	movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
+	if !queued_teleports.empty() and body is KinematicBody:
+		var t = queued_teleports.pop_front()
+		var dir = (t - body.global_transform.origin).normalized()
+		body.translate(dir)
+		body.move_and_slide(-lv,Vector3.UP)
 	if(destination != null ):
+		#if is_teleporting:
+			#var tele:Vector3 = queued_teleports.front()
+			#var diff = tele - body.global_transform.origin
+			#if diff.length() > destination.radius:
+				#body.translate(diff.normalized() * min(delta * 100,diff.length()))
+				#body.translate(diff * delta)
+				#body.global_transform.origin = tele
 		var diff = destination.location - body.global_transform.origin
 		match destination.type:
 			'{WAYPOINT:{}}':
@@ -102,7 +120,7 @@ func _physics_process(delta):
 					destination = null
 			'{TELEPORT:{}}':
 				if diff.length() > epsilon:
-					movement.entity_teleport(delta,destination.location,body)
+					movement.entity_move(delta,destination.location,body)
 				else:
 					destination = null
 			"GRAVITY_BIND":
@@ -114,8 +132,15 @@ func _physics_process(delta):
 					
 			_:
 				print_debug("no handler found for destination with type ", destination.type)
-
+	else:
+		queued_teleports.pop_front()
+		is_teleporting = false
+	physics_socket.set_location_physics(id,body.global_transform.origin)
+	queued_input = Vector3()
+	
 func _process(delta):
+	if !is_npc:
+		socket.get_next_destination(id)
 	if !isSubbed:
 		#socket.input_subscribe(id)
 		var query = PayloadMapper.get_physical_stats(id)
