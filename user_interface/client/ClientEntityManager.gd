@@ -195,11 +195,12 @@ func handle_json(json) -> bool:
 				#chunk.player = client_entities[client_id]
 				spawn.add_child(chunk)
 				terrain[uuid] = chunk
-				if chunk.is_within_chunk(player.global_transform.origin) or chunk.is_within_distance(player.global_transform.origin,1024):
+				if chunk.is_within_chunk(player.body.global_transform.origin) or chunk.is_within_distance(player.body.global_transform.origin,1024):
 					chunk.load_terrain()
 			else:
+				#else case mainly handles when we run client and server in same game instancea
 				var chunk = terrain[uuid]
-				if chunk.is_within_chunk(player.global_transform.origin) or chunk.is_within_distance(player.global_transform.origin,1024):
+				if chunk.is_within_chunk(player.body.global_transform.origin) or chunk.is_within_distance(player.body.global_transform.origin,1024):
 					chunk.load_terrain()
 			return true
 			

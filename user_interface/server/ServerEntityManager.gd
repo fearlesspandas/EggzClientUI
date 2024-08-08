@@ -38,7 +38,7 @@ func scan_initial_terrain():
 	
 func inspect_terrain(player:ServerEntity):
 	for t in terrain.values():
-		if t is Chunk and t.is_within_distance(player.global_transform.origin,2*t.radius):
+		if t is Chunk and t.is_within_distance(player.body.global_transform.origin,2*t.radius):
 			t.load_terrain()
 			
 			
