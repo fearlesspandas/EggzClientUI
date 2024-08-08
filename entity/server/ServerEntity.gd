@@ -90,18 +90,19 @@ func get_lv() -> Vector3:
 		
 func _physics_process(delta):
 	#movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
-	self.global_transform.origin = body.global_transform.origin
+	#self.global_transform.origin = body.global_transform.origin
 	#if body is KinematicBody:
 		#body.move_and_slide(Vector3(),Vector3.UP)
 	physics_socket.get_input_physics(id)
 	update_lv_internal(body,delta)
 	movement.entity_apply_vector(delta,queued_input,body)
+	#movement.entity_apply_vector(delta,-queued_input,body)
 	movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	if !queued_teleports.empty() and body is KinematicBody:
 		var t = queued_teleports.pop_front()
-		var dir = (t - body.global_transform.origin).normalized()
+		var dir = (t - body.global_transform.origin)#.normalized()
 		body.translate(dir)
-		body.move_and_slide(-lv,Vector3.UP)
+		#body.move_and_slide(-dir.normalized(),Vector3.UP)
 	if(destination != null ):
 		#if is_teleporting:
 			#var tele:Vector3 = queued_teleports.front()
@@ -135,8 +136,9 @@ func _physics_process(delta):
 	else:
 		queued_teleports.pop_front()
 		is_teleporting = false
+		
 	physics_socket.set_location_physics(id,body.global_transform.origin)
-	queued_input = Vector3()
+	#queued_input = Vector3.ZERO
 	
 func _process(delta):
 	if !is_npc:

@@ -15,8 +15,8 @@ func _ready():
 	pass # Replace with function body.
 
 func _physics_process(delta):
-	self.global_transform.origin = body.global_transform.origin
-
+	#self.global_transform.origin = body.global_transform.origin
+	pass
 func swap_body(resource:Resource):
 	var nwbody = load(resource.resource_path).instance()
 	self.remove_child(body)

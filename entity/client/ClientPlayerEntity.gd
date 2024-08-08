@@ -15,7 +15,7 @@ var socket : ClientWebSocket
 func _ready():
 	username.init_id()
 	Subscriptions.subscribe(username.id,id)
-	self.add_child(username)
+	body.add_child(username)
 	self.add_child(message_controller)
 	socket = ServerNetwork.get(client_id)
 	assert(socket != null)
@@ -36,6 +36,7 @@ func getSocket() -> ClientWebSocket:
 	else:
 		return res 
 func _process(delta):
+	#self.global_transform.origin = body.global_transform.origin
 	#if !is_npc:
 	poll_physics()
 		

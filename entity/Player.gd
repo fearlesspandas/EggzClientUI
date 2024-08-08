@@ -10,7 +10,7 @@ var is_active = false
 
 func _ready():
 	self.is_npc = false
-	self.add_child(pointer)
+	body.add_child(pointer)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket!=null)
 	terrain_scanner.wait_time = 6
@@ -35,7 +35,11 @@ func _input(event):
 		#print("input ", vec)
 		
 func _process(delta):
-	if is_active:	
+	if is_active:
+		camera_root.global_transform.origin = body.global_transform.origin	
+		#to not have to set this every frame we have to have timeout on physics server
+		var vec = get_input_vec2()
+		pointer.position(body.global_transform.origin - vec)
 		physics_socket.send_input(id,get_input_vec2())
 		
 func get_input_vec(event) -> Vector3:

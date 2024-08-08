@@ -32,7 +32,8 @@ func _ready():
 	pass # Replace with function body.
 
 func scan_initial_terrain():
-	ServerNetwork.get(client_id).get_top_level_terrain()
+	#ServerNetwork.get(client_id).get_top_level_terrain()
+	ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,Vector3(0,0,0))
 	terrain_scanner.one_shot = true
 	
 func inspect_terrain(player:ServerEntity):
