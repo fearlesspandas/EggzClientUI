@@ -124,7 +124,7 @@ func _physics_process(delta):
 					movement.entity_move(delta,destination.location,body)
 				else:
 					destination = null
-			"GRAVITY_BIND":
+			"{GRAVITY_BIND:{}}":
 				if diff.length() > epsilon:
 					movement.entity_move_by_gravity(delta,destination.location,body)
 				else:

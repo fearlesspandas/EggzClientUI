@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Spatial",
+"class": "AbilityOptionCreator",
+"language": "GDScript",
+"path": "res://user_interface/client/interfaces/AbilityOptionCreator.gd"
+}, {
 "base": "Control",
 "class": "AuthenticatedControl",
 "language": "GDScript",
@@ -199,7 +204,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://entity/movement/server/ServerRigidBodyMovement.gd"
 }, {
-"base": "Spatial",
+"base": "AbilityOptionCreator",
 "class": "TeleportCreator",
 "language": "GDScript",
 "path": "res://user_interface/client/interfaces/TeleportCreator.gd"
@@ -214,12 +219,13 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/client/overheads/Username.gd"
 }, {
-"base": "Spatial",
+"base": "AbilityOptionCreator",
 "class": "WaypointCreator",
 "language": "GDScript",
 "path": "res://user_interface/client/interfaces/WaypointCreator.gd"
 } ]
 _global_script_class_icons={
+"AbilityOptionCreator": "",
 "AuthenticatedControl": "",
 "AuthenticationRequest": "",
 "Chunk": "",
