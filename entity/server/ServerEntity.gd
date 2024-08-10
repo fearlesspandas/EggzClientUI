@@ -10,6 +10,7 @@ var requested_dest = false
 var timeout = 10
 var last_request = null
 var destination:Destination = null
+var destinations_active:bool
 var epsilon = 3
 var isSubbed:bool = false
 var is_npc:bool = false
@@ -18,6 +19,7 @@ var queued_input = Vector3()
 var is_teleporting:bool = false
 var last_pos:Vector3 #used for lv
 var lv:Vector3
+
 func _ready():
 	spawn = body.global_transform.origin
 	self.add_child(message_controller)
@@ -48,6 +50,8 @@ func npc_polling():
 	
 func _handle_message(msg,delta_accum):
 	match msg:
+		{'DestinationsActive':{'id': var id, 'is_active':var active}}:
+			destinations_active = bool(active)
 		{'NoInput':{'id':var id}}:
 			movement.entity_stop(body)
 			#movement.entity_apply_vector(delta_accum,Vector3.ZERO,body)
@@ -103,7 +107,7 @@ func _physics_process(delta):
 		var dir = (t - body.global_transform.origin)#.normalized()
 		body.translate(dir)
 		#body.move_and_slide(-dir.normalized(),Vector3.UP)
-	if(destination != null ):
+	if(destination != null and destinations_active ):
 		#if is_teleporting:
 			#var tele:Vector3 = queued_teleports.front()
 			#var diff = tele - body.global_transform.origin
@@ -148,6 +152,7 @@ func _process(delta):
 		var query = PayloadMapper.get_physical_stats(id)
 		#if socket!=null:
 		socket.subscribe_general(query)
+		socket.toggle_destinations(id)
 		isSubbed = true
 		#print_debug("subbing to input for id", id)
 
