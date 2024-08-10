@@ -4,8 +4,8 @@ extends Node
 # Declare member variables here. Examples:
 # var a = 2
 # var b = "text"
-onready var host = "192.168.1.6:8080"
-onready var physics_host = "192.168.1.6:8081"
+onready var host = "localhost:8080"
+onready var physics_host = "localhost:8081"
 func get_websocket_url(client_id):
 	if client_id == null:
 		print("client id is null for server network")
