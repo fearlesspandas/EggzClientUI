@@ -3,7 +3,7 @@
 [sub_resource type="CubeMesh" id=1]
 
 [sub_resource type="SpatialMaterial" id=2]
-albedo_color = Color( 0.0745098, 0.152941, 0.486275, 1 )
+albedo_color = Color( 0, 1, 0.917647, 1 )
 
 [node name="MeshInstance" type="MeshInstance"]
 mesh = SubResource( 1 )
