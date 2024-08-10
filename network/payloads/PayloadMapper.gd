@@ -66,6 +66,9 @@ func input_subscribe(id:String):
 func toggle_destinations(id:String):
 	return {'TOGGLE_DESTINATIONS':{'id':id}}
 
+func toggle_gravity(id:String):
+	return {'TOGGLE_GRAVITATE':{'id':id}}
+
 func apply_vector(id:String,vec:Vector3):
 	return {'APPLY_VECTOR':{'id':id,'vec':[vec.x,vec.y,vec.z]}}
 	

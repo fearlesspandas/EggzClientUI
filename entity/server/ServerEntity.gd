@@ -11,6 +11,7 @@ var timeout = 10
 var last_request = null
 var destination:Destination = null
 var destinations_active:bool
+var gravity_active:bool
 var epsilon = 3
 var isSubbed:bool = false
 var is_npc:bool = false
@@ -25,6 +26,7 @@ func _ready():
 	self.add_child(message_controller)
 	self.movement.body_ref = body
 	if is_npc:
+		destinations_active = true
 		timer.connect("timeout",self,"npc_polling")
 		timer.wait_time = 0.5
 		self.add_child(timer)
@@ -50,6 +52,9 @@ func npc_polling():
 	
 func _handle_message(msg,delta_accum):
 	match msg:
+		{'GravityActive':{'id': var id, 'is_active':var active}}:
+			print_debug("gravity active " , active)
+			gravity_active = bool(active)
 		{'DestinationsActive':{'id': var id, 'is_active':var active}}:
 			destinations_active = bool(active)
 		{'NoInput':{'id':var id}}:
@@ -119,13 +124,19 @@ func _physics_process(delta):
 		match destination.type:
 			'{WAYPOINT:{}}':
 				if diff.length() > epsilon:
-					movement.entity_move(delta,destination.location,body)
+					if gravity_active:
+						movement.entity_move_by_gravity(delta,destination.location,body)
+					else:
+						movement.entity_move(delta,destination.location,body)
 				else:
 					#movement.entity_stop(body)
 					destination = null
 			'{TELEPORT:{}}':
 				if diff.length() > epsilon:
-					movement.entity_move(delta,destination.location,body)
+					if gravity_active:
+						movement.entity_move_by_gravity(delta,destination.location,body)
+					else:
+						movement.entity_move(delta,destination.location,body)
 				else:
 					destination = null
 			"{GRAVITY_BIND:{}}":
@@ -152,7 +163,8 @@ func _process(delta):
 		var query = PayloadMapper.get_physical_stats(id)
 		#if socket!=null:
 		socket.subscribe_general(query)
-		socket.toggle_destinations(id)
+		if !is_npc:
+			socket.toggle_destinations(id)
 		isSubbed = true
 		#print_debug("subbing to input for id", id)
 

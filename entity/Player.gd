@@ -25,6 +25,9 @@ func scan_for_terrain():
 		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,self.global_transform.origin)
 		
 func _input(event):
+	if is_active and event is InputEventKey and event.is_action_released("toggle_gravity"):
+		var socket = ServerNetwork.get(client_id)
+		socket.toggle_gravity(id)
 	if is_active and event is InputEventKey and event.is_action_released("toggle_destinations"):
 		var socket = ServerNetwork.get(client_id)
 		socket.toggle_destinations(id)

@@ -138,7 +138,10 @@ func input_subscribe(id:String):
 
 func toggle_destinations(id:String):
 	send_payload(PayloadMapper.toggle_destinations(id))
-	
+
+func toggle_gravity(id:String):
+	send_payload(PayloadMapper.toggle_gravity(id))
+		
 func send_input(id:String,inputVec:Vector3):	
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.apply_vector(id,inputVec)).to_utf8())
 
