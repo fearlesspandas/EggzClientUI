@@ -146,6 +146,9 @@ func input_subscribe(id:String):
 	
 func get_input_physics(id:String):
 	send_payload(PayloadMapper.get_input_physics(id))
+	
+func get_dir_physics(id:String):
+	send_payload(PayloadMapper.get_dir_physics(id))
 
 func send_input(id:String,inputVec:Vector3):	
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.set_input_physics(id,inputVec)).to_utf8())

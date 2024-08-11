@@ -47,7 +47,8 @@ func poll_physics():
 func _handle_message(msg,delta_accum):
 	match msg:
 		[var x,var y,var z]:
-			#print_debug("Entity received physics, " , x,y,z)
+			#if not is_npc:
+				#print("client player entity received location ", Vector3(x,y,z))
 			movement.entity_move(delta_accum,Vector3(x,y,z),body)
 			pass
 		{'Location':{'id':id,'location':[var x , var y , var z]}}:

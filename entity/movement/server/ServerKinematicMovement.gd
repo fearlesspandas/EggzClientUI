@@ -3,13 +3,14 @@ extends Movement
 class_name ServerKinematicMovement
 
 onready var entity:ServerEntity = get_parent()
+
 var speed = 0.0
 var body_ref
 var dir = Vector3()
 
+
 func teleport(location:Vector3,body:KinematicBody):
 	body.translate(location - body.global_transform.origin)
-	
 	
 func move(delta,location:Vector3,body:KinematicBody):
 	var diff_base:Vector3 = (body.global_transform.origin - location)
@@ -34,6 +35,17 @@ func apply_vector(delta,vector:Vector3,body:KinematicBody):
 	dir += v * 100
 	body.move_and_slide(dir,Vector3.UP)
 
+func move_by_direction(delta,body:KinematicBody):
+	body.move_and_slide(dir * speed * delta * 0.5,Vector3.UP)
+
+func get_direction() -> Vector3:
+	return dir
+func apply_direction(direction:Vector3):
+	dir += direction.normalized()
+
+func set_direction(direction:Vector3):
+	dir = direction
+	
 func set_max_speed(max_speed):
 	if max_speed != null:
 		speed = max_speed

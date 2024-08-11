@@ -6,6 +6,7 @@ onready var camera:Camera = camera_root.find_node("Camera")
 onready var curserRay:CursorRay = camera_root.find_node("CursorRay")
 onready var pointer:PlayerPathPointer = PlayerPathPointer.new()
 onready var terrain_scanner:Timer = Timer.new()
+onready var input_timer:Timer = Timer.new()
 var is_active = false
 
 func _ready():
@@ -16,6 +17,10 @@ func _ready():
 	terrain_scanner.wait_time = 6
 	terrain_scanner.connect("timeout",self,"scan_for_terrain")
 	self.add_child(terrain_scanner)
+	input_timer.wait_time = 0.1
+	input_timer.connect("timeout",self,"muh_process")
+	self.add_child(input_timer)
+	input_timer.start()
 	#terrain_scanner.start()
 	#curserRay.connect("intersection_clicked",self,"handle_clicked")
 
@@ -39,10 +44,15 @@ func _input(event):
 		pointer.position(body.global_transform.origin - vec)
 		#physics_socket.send_input(id,vec)
 		#print("input ", vec)
-		
+
 func _process(delta):
 	if is_active:
-		camera_root.global_transform.origin = body.global_transform.origin	
+		camera_root.global_transform.origin = body.global_transform.origin
+		var vec = get_input_vec2()
+		pointer.position(body.global_transform.origin - vec)
+		
+func muh_process():
+	if is_active:
 		#to not have to set this every frame we have to have timeout on physics server
 		var vec = get_input_vec2()
 		pointer.position(body.global_transform.origin - vec)

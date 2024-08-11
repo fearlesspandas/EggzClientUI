@@ -78,6 +78,10 @@ func set_input_physics(id:String,vec:Vector3):
 func get_input_physics(id:String):
 	return {'type':'GET_INPUT','body':{'id':id}}
 
+func get_dir_physics(id:String):
+	return {'type':'GET_DIR','body':{'id':id}}
+
+
 func clear_destinations(id:String):
 	return {'CLEAR_DESTINATIONS':{'id':id}}
 

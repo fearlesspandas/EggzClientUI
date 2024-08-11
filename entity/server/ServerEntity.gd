@@ -3,6 +3,7 @@ class_name ServerEntity
 
 onready var message_controller:MessageController = MessageController.new()
 onready var timer:Timer = Timer.new()
+onready var direction_timer:Timer = Timer.new()
 onready var spawn
 var socket:ClientWebSocket
 var physics_socket:RustSocket
@@ -25,6 +26,7 @@ func _ready():
 	spawn = body.global_transform.origin
 	self.add_child(message_controller)
 	self.movement.body_ref = body
+	self.movement.physics_socket = physics_socket
 	if is_npc:
 		destinations_active = true
 		timer.connect("timeout",self,"check_destinations")
@@ -37,6 +39,10 @@ func _ready():
 		timer.wait_time = 0.25
 		self.add_child(timer)
 		timer.start()
+	direction_timer.wait_time = 0.2
+	direction_timer.connect("timeout",self,"check_dir")
+	#self.add_child(direction_timer)
+	#direction_timer.start()
 	init_sockets()
 	
 func init_sockets():
@@ -51,6 +57,9 @@ func timer_polling():
 func check_destinations():
 	socket.get_next_destination(id)
 	
+func check_dir():
+	physics_socket.get_dir_physics(id)
+
 func _handle_message(msg,delta_accum):
 	match msg:
 		{'GravityActive':{'id': var id, 'is_active':var active}}:
@@ -62,6 +71,13 @@ func _handle_message(msg,delta_accum):
 		{'NoInput':{'id':var id}}:
 			movement.entity_stop(body)
 			#movement.entity_apply_vector(delta_accum,Vector3.ZERO,body)
+		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
+			#print("direction ", Vector3(x,y,z))
+			if not destinations_active:
+				movement.entity_set_direction(Vector3(x,y,z))
+			elif gravity_active:
+				movement.entity_apply_direction(Vector3(x,y,z))
+				
 		{'Input':{"id":var id, "vec":[var x ,var y ,var z]}}:
 			#print_debug("got input" , x,y,z)
 			#movement.entity_apply_vector(delta_accum,Vector3(x,y,z),body)
@@ -100,28 +116,21 @@ func get_lv() -> Vector3:
 		return Vector3.ZERO
 		
 func _physics_process(delta):
-	#movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
-	#self.global_transform.origin = body.global_transform.origin
-	#if body is KinematicBody:
-		#body.move_and_slide(Vector3(),Vector3.UP)
-	physics_socket.get_input_physics(id)
+
+	#physics_socket.get_input_physics(id)
+	physics_socket.get_dir_physics(id)
 	update_lv_internal(body,delta)
-	movement.entity_apply_vector(delta,queued_input,body)
-	#movement.entity_apply_vector(delta,-queued_input,body)
+	#movement.entity_apply_vector(delta,queued_input,body)
+	#var dir_ = movement.entity_get_direction()
+	#if (not dir_ == Vector3.ZERO) and lv == Vector3.ZERO:
+		#physics_socket.send_input(id,-dir_)
+	movement.entity_move_by_direction(delta,body)
 	movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	if !queued_teleports.empty() and body is KinematicBody:
 		var t = queued_teleports.pop_front()
 		var dir = (t - body.global_transform.origin)#.normalized()
 		body.translate(dir)
-		#body.move_and_slide(-dir.normalized(),Vector3.UP)
-	if(destination != null and destinations_active ):
-		#if is_teleporting:
-			#var tele:Vector3 = queued_teleports.front()
-			#var diff = tele - body.global_transform.origin
-			#if diff.length() > destination.radius:
-				#body.translate(diff.normalized() * min(delta * 100,diff.length()))
-				#body.translate(diff * delta)
-				#body.global_transform.origin = tele
+	if(destination != null and destinations_active):
 		var diff = destination.location - body.global_transform.origin
 		match destination.type:
 			'{WAYPOINT:{}}':
@@ -153,12 +162,10 @@ func _physics_process(delta):
 	else:
 		queued_teleports.pop_front()
 		is_teleporting = false
-		
 	physics_socket.set_location_physics(id,body.global_transform.origin)
 	#queued_input = Vector3.ZERO
 	
 func _process(delta):
-	
 	if !isSubbed:
 		#socket.input_subscribe(id)
 		var query = PayloadMapper.get_physical_stats(id)

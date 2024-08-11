@@ -101,6 +101,9 @@ func handle_json(json) -> bool:
 			{'NoInput':{'id': var id}}:
 				route_to_entity(id,json)
 				return false
+			{'Dir':{"id":var id , "vec":[var x ,var y ,var z]}}:
+				route_to_entity(id,json)
+				return false
 			{'Input':{"id":var id , "vec":[var x ,var y ,var z]}}:
 				route_to_entity(id,json)
 				return false
