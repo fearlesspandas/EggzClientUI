@@ -43,25 +43,27 @@ func _ready():
 		ind += 1
 	
 func spawn_interface(label:String):
-	match label.to_upper():
-		"TELEPORT":
-			assert(current_position != null)
-			var teleport_creator:TeleportCreator = TeleportCreator.new()
-			teleport_creator.client_id = client_id
-			teleport_creator.center = current_position
-			spawn.add_child(teleport_creator)
-			self.visible = false
-		"WAYPOINT":
-			assert(current_position != null)
-			var waypoint_creator:WaypointCreator = WaypointCreator.new()
-			waypoint_creator.client_id = client_id
-			waypoint_creator.center = current_position
-			spawn.add_child(waypoint_creator)
-			self.visible = false
-		"CLOSE":
-			self.visible = false
-		_:
-			pass
+	if current_position != Vector3():
+		match label.to_upper():
+			"TELEPORT":
+				assert(current_position != null)
+				var teleport_creator:TeleportCreator = TeleportCreator.new()
+				teleport_creator.client_id = client_id
+				teleport_creator.center = current_position
+				spawn.add_child(teleport_creator)
+				self.visible = false
+			"WAYPOINT":
+				assert(current_position != null)
+				var waypoint_creator:WaypointCreator = WaypointCreator.new()
+				waypoint_creator.client_id = client_id
+				waypoint_creator.center = current_position
+				spawn.add_child(waypoint_creator)
+				self.visible = false
+			"CLOSE":
+				self.visible = false
+			_:
+				pass
+		current_position = Vector3()
 			
 func _input(event):
 	if event is InputEventMouseButton and event.is_action_pressed("right_click"):

@@ -23,7 +23,7 @@ func _input(event):
 		var ray_target = to
 		var space_state = get_world().direct_space_state
 		var intersection = space_state.intersect_ray(ray_origin,ray_target)
-		if not intersection.empty():
+		if not intersection.empty() and intersection.collider != intersect_object:
 			intersect_position = intersection.position
 			intersect_object = intersection.collider
 			DataCache.add_data('camera','intersect_position',intersection.position)
@@ -35,6 +35,8 @@ func _input(event):
 			DataCache.remove_data('camera','intersect_object')
 			intersect_object= null
 			intersect_position = null
+		from = null
+		to = null
 	
 func _physics_process(delta):
 	pass

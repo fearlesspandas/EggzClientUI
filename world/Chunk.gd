@@ -18,6 +18,7 @@ var collision_shape:CollisionShape = CollisionShape.new()
 var shape:BoxShape = BoxShape.new()
 
 func _ready():
+	self.input_ray_pickable = false
 	shape.extents = Vector3(radius,radius,radius)
 	mesh.size = 2*shape.extents #- Vector3(20,20,20)
 	mesh.material = SpatialMaterial.new()

@@ -27,13 +27,14 @@ func _ready():
 	self.movement.body_ref = body
 	if is_npc:
 		destinations_active = true
-		timer.connect("timeout",self,"npc_polling")
+		timer.connect("timeout",self,"check_destinations")
 		timer.wait_time = 0.5
 		self.add_child(timer)
 		timer.start()
 	else: 
 		timer.connect("timeout",self,"timer_polling")
-		timer.wait_time = 0.5
+		timer.connect("timeout",self,"check_destinations")
+		timer.wait_time = 0.25
 		self.add_child(timer)
 		timer.start()
 	init_sockets()
@@ -47,7 +48,7 @@ func init_sockets():
 func timer_polling():
 	socket.set_lv(id,get_lv())
 	
-func npc_polling():
+func check_destinations():
 	socket.get_next_destination(id)
 	
 func _handle_message(msg,delta_accum):
@@ -56,6 +57,7 @@ func _handle_message(msg,delta_accum):
 			print_debug("gravity active " , active)
 			gravity_active = bool(active)
 		{'DestinationsActive':{'id': var id, 'is_active':var active}}:
+			print_debug("destinations active", active)
 			destinations_active = bool(active)
 		{'NoInput':{'id':var id}}:
 			movement.entity_stop(body)
@@ -156,8 +158,7 @@ func _physics_process(delta):
 	#queued_input = Vector3.ZERO
 	
 func _process(delta):
-	if !is_npc:
-		socket.get_next_destination(id)
+	
 	if !isSubbed:
 		#socket.input_subscribe(id)
 		var query = PayloadMapper.get_physical_stats(id)

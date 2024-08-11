@@ -61,6 +61,7 @@ func load_scene(id,secret):
 			self.rect_size.y - (max_speed_slider.rect_size.y * 2)
 		)
 	)
+	self.connect("is_active",max_speed_slider,"set_active")
 	self.add_child(max_speed_slider)
 	
 	ServerNetwork.init(profile.id,profile.secret,entity_management,"_on_data")
