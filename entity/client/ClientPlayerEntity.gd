@@ -7,6 +7,9 @@ class_name ClientPlayerEntity
 onready var message_controller:MessageController = MessageController.new()
 onready var username:Username = Username.new()
 onready var timer:Timer = Timer.new()
+onready var direction_timer:Timer = Timer.new()
+onready var location_timer:Timer = Timer.new()
+
 var isSubbed = false
 var is_npc = false
 var physics_socket:RustSocket
@@ -21,6 +24,15 @@ func _ready():
 	assert(socket != null)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
+	#direction_timer.wait_time = 0.25
+	#direction_timer.connect("timeout",self,"get_direction")
+	#self.add_child(direction_timer)
+	#ocation_timer.start()
+	#location_timer.wait_time = 0.5
+	#ocation_timer.connect("timeout",self,"get_location")
+	#elf.add_child(location_timer)
+	#location_timer.start()
+	
 	#if is_npc:
 	#	timer.connect("timeout",self,"poll_physics")
 	#	timer.wait_time = 0.25
@@ -35,10 +47,28 @@ func getSocket() -> ClientWebSocket:
 		return null
 	else:
 		return res 
+
+func get_direction():
+	physics_socket.get_dir_physics(id)
+	
+func get_location():
+	physics_socket.get_location_physics(id)
+
+var proc = 0
+var mod = 4
 func _process(delta):
 	#self.global_transform.origin = body.global_transform.origin
 	#if !is_npc:
-	poll_physics()
+	#poll_physics()
+	movement.entity_move_by_direction(delta,body)
+	
+	if proc % mod == 0:
+		get_direction()
+		proc = 0
+	if proc % mod == 2:
+		get_location()
+	proc += 1	
+	#physics_socket.get_dir_physics(id)
 		
 func poll_physics():
 	if physics_socket.connected:
@@ -51,6 +81,8 @@ func _handle_message(msg,delta_accum):
 				#print("client player entity received location ", Vector3(x,y,z))
 			movement.entity_move(delta_accum,Vector3(x,y,z),body)
 			pass
+		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
+			movement.entity_set_direction(Vector3(x,y,z))
 		{'Location':{'id':id,'location':[var x , var y , var z]}}:
 			var loc = Vector3(x,y,z)
 			#print("setting clientside location:",loc)

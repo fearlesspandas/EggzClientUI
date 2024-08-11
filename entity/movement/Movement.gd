@@ -16,9 +16,9 @@ func entity_move(delta,location:Vector3,body):
 	else:
 		pass
 
-func entity_move_by_gravity(delta,location:Vector3,body):
+func entity_move_by_gravity(id,delta,location:Vector3,body):
 	if self.has_method("move_by_gravity"):
-		this.move_by_gravity(delta,location,body)
+		this.move_by_gravity(id,delta,location,body)
 	else:
 		pass
 

@@ -26,7 +26,6 @@ func _ready():
 	spawn = body.global_transform.origin
 	self.add_child(message_controller)
 	self.movement.body_ref = body
-	self.movement.physics_socket = physics_socket
 	if is_npc:
 		destinations_active = true
 		timer.connect("timeout",self,"check_destinations")
@@ -50,6 +49,7 @@ func init_sockets():
 	assert(socket != null)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
+	self.movement.physics_socket = physics_socket
 	
 func timer_polling():
 	socket.set_lv(id,get_lv())
@@ -75,8 +75,8 @@ func _handle_message(msg,delta_accum):
 			#print("direction ", Vector3(x,y,z))
 			if not destinations_active:
 				movement.entity_set_direction(Vector3(x,y,z))
-			elif gravity_active:
-				movement.entity_apply_direction(Vector3(x,y,z))
+			#elif gravity_active:
+				#movement.entity_apply_direction(Vector3(x,y,z))
 				
 		{'Input':{"id":var id, "vec":[var x ,var y ,var z]}}:
 			#print_debug("got input" , x,y,z)
@@ -121,9 +121,14 @@ func _physics_process(delta):
 	physics_socket.get_dir_physics(id)
 	update_lv_internal(body,delta)
 	#movement.entity_apply_vector(delta,queued_input,body)
-	#var dir_ = movement.entity_get_direction()
-	#if (not dir_ == Vector3.ZERO) and lv == Vector3.ZERO:
-		#physics_socket.send_input(id,-dir_)
+	var dir_ = movement.entity_get_direction()
+	#if (dir_.length() > 10):
+	#	if lv.x < 0.5:
+	#		physics_socket.send_input(id,Vector3(-dir_.x,0,0))
+	#	if lv.y < 0.5:
+	#		physics_socket.send_input(id,Vector3(0,-dir_.y,0))
+	#	if lv.z < 0.5:
+	#		physics_socket.send_input(id,Vector3(0,0,-dir_.z))
 	movement.entity_move_by_direction(delta,body)
 	movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	if !queued_teleports.empty() and body is KinematicBody:
@@ -136,7 +141,7 @@ func _physics_process(delta):
 			'{WAYPOINT:{}}':
 				if diff.length() > epsilon:
 					if gravity_active:
-						movement.entity_move_by_gravity(delta,destination.location,body)
+						movement.entity_move_by_gravity(id,delta,destination.location,body)
 					else:
 						movement.entity_move(delta,destination.location,body)
 				else:
@@ -145,14 +150,14 @@ func _physics_process(delta):
 			'{TELEPORT:{}}':
 				if diff.length() > epsilon:
 					if gravity_active:
-						movement.entity_move_by_gravity(delta,destination.location,body)
+						movement.entity_move_by_gravity(id,delta,destination.location,body)
 					else:
 						movement.entity_move(delta,destination.location,body)
 				else:
 					destination = null
 			"{GRAVITY_BIND:{}}":
 				if diff.length() > epsilon:
-					movement.entity_move_by_gravity(delta,destination.location,body)
+					movement.entity_move_by_gravity(id,delta,destination.location,body)
 				else:
 					#movement.entity_stop(body)
 					destination = null

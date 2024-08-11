@@ -19,10 +19,9 @@ func _ready():
 	self.add_child(terrain_scanner)
 	input_timer.wait_time = 0.1
 	input_timer.connect("timeout",self,"muh_process")
-	self.add_child(input_timer)
-	input_timer.start()
-	#terrain_scanner.start()
-	#curserRay.connect("intersection_clicked",self,"handle_clicked")
+	#self.add_child(input_timer)
+	#input_timer.start()
+	
 
 func scan_for_terrain():
 	if is_active:
@@ -50,6 +49,7 @@ func _process(delta):
 		camera_root.global_transform.origin = body.global_transform.origin
 		var vec = get_input_vec2()
 		pointer.position(body.global_transform.origin - vec)
+		muh_process()
 		
 func muh_process():
 	if is_active:

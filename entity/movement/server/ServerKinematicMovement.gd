@@ -19,12 +19,20 @@ func move(delta,location:Vector3,body:KinematicBody):
 	dir = -diff* 0.0005 * 10000
 	body.move_and_slide(dir,Vector3.UP)
 		
-func move_by_gravity(delta,location:Vector3,body:KinematicBody):
+func move_by_gravity2(delta,location:Vector3,body:KinematicBody):
 	var diff_base:Vector3 = (body.global_transform.origin - location)
 	var diff:Vector3 = (body.global_transform.origin - location).normalized() * speed * delta
 	var diff2:Vector3 = diff_base * diff_base.length() * speed * delta
 	dir += -diff* 0.0005 * 100
 	body.move_and_slide(dir,Vector3.UP)
+
+func move_by_gravity(id,delta,location:Vector3,body:KinematicBody):
+	var diff_base:Vector3 = (body.global_transform.origin - location)
+	var diff:Vector3 = (body.global_transform.origin - location).normalized() * speed * delta
+	var diff2:Vector3 = diff_base * diff_base.length() * speed * delta
+	if dir.length() < 10:
+	#dir += -diff* 0.0005 * 100
+		physics_socket.send_input(id,-diff* 0.005 * 100)
 	
 func apply_vector(delta,vector:Vector3,body:KinematicBody):
 	#body.global_transform.origin += vector.normalized() * speed * delta * 0.1
@@ -36,7 +44,7 @@ func apply_vector(delta,vector:Vector3,body:KinematicBody):
 	body.move_and_slide(dir,Vector3.UP)
 
 func move_by_direction(delta,body:KinematicBody):
-	body.move_and_slide(dir * speed * delta * 0.5,Vector3.UP)
+	body.move_and_slide(dir * speed * 0.005,Vector3.UP)
 
 func get_direction() -> Vector3:
 	return dir

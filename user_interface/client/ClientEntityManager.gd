@@ -104,6 +104,9 @@ func route_to_entity(id:String,msg):
 		
 func handle_json(json) -> bool:
 	match json:
+		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
+			route_to_entity(id,json)
+			return false
 		{"SendLocation":{'id':var id, 'loc': var loc}}:
 			route_to_entity(id,loc)
 			return false
