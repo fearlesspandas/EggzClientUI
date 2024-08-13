@@ -29,6 +29,17 @@ func scan_for_terrain():
 		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,self.global_transform.origin)
 		
 func _input(event):
+	if is_active and event is InputEventKey and event.is_action_released("reverse_queue_destinations"):
+		var socket = ServerNetwork.get(client_id)
+		socket.set_destination_mode(id,"REVERSE")
+	if is_active and event is InputEventKey and event.is_action_released("pop_destinations"):
+		var socket = ServerNetwork.get(client_id)
+		socket.set_destination_mode(id,"POP")
+		print_debug("dest mode set to POP")
+	if is_active and event is InputEventKey and event.is_action_released("queue_destinations"):
+		var socket = ServerNetwork.get(client_id)
+		socket.set_destination_mode(id,"FORWARD")
+		print_debug("dest mode set to FORWARD")
 	if is_active and event is InputEventKey and event.is_action_released("toggle_gravity"):
 		var socket = ServerNetwork.get(client_id)
 		socket.toggle_gravity(id)

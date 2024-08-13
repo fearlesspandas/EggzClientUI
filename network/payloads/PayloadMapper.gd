@@ -56,6 +56,10 @@ func get_next_destination(globId:String):
 	
 func get_all_destinations(globId:String):
 	return {'GET_ALL_DESTINATIONS':{'id':globId}}	
+
+func set_destination_mode(globId:String,mode):
+	var obj = {mode:{}}
+	return {'SET_MODE_DESTINATIONS':{'id':globId,'mode':obj }}
 	
 func location_subscribe(id:String):
 	return {'SUBSCRIBE':{"query":{'GET_GLOB_LOCATION':{'id':id}}}}

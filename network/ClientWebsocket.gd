@@ -129,6 +129,9 @@ func get_next_destination(globId:String):
 	
 func get_all_destinations(globId:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_all_destinations(globId)).to_utf8())	
+
+func set_destination_mode(globId:String,mode):
+	send_payload(PayloadMapper.set_destination_mode(globId,mode))
 	
 func location_subscribe(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.location_subscribe(id)).to_utf8())	
