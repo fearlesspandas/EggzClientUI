@@ -146,9 +146,18 @@ func input_subscribe(id:String):
 	
 func get_input_physics(id:String):
 	send_payload(PayloadMapper.get_input_physics(id))
+
+func lock_input_physics(id:String):
+	send_payload(PayloadMapper.lock_input_physics(id))
+
+func unlock_input_physics(id:String):
+	send_payload(PayloadMapper.unlock_input_physics(id))
 	
 func get_dir_physics(id:String):
 	send_payload(PayloadMapper.get_dir_physics(id))
+
+func set_dir_physics(id:String,dir:Vector3):
+	send_payload(PayloadMapper.set_dir_physics(id,dir))
 
 func send_input(id:String,inputVec:Vector3):	
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.set_input_physics(id,inputVec)).to_utf8())

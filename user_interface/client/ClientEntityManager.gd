@@ -41,7 +41,7 @@ func inspect_terrain():
 	pass
 func set_player(player:Player):
 	self.player = player
-	ServerNetwork.get(client_id).get_top_level_terrain_in_distance(2048,player.global_transform.origin)
+	ServerNetwork.get(client_id).get_top_level_terrain_in_distance(ClientSettings.CHUNK_DISTANCE_ON_PLAYER_LOAD,player.global_transform.origin)
 	
 func set_active(active:bool):
 	is_active = active
@@ -198,12 +198,12 @@ func handle_json(json) -> bool:
 				#chunk.player = client_entities[client_id]
 				spawn.add_child(chunk)
 				terrain[uuid] = chunk
-				if chunk.is_within_chunk(player.body.global_transform.origin) or chunk.is_within_distance(player.body.global_transform.origin,1024):
+				if chunk.is_within_chunk(player.body.global_transform.origin) or chunk.is_within_distance(player.body.global_transform.origin,ClientSettings.LOAD_RECEIVED_CHUNK_IF_WITHIN):
 					chunk.load_terrain()
 			else:
 				#else case mainly handles when we run client and server in same game instancea
 				var chunk = terrain[uuid]
-				if chunk.is_within_chunk(player.body.global_transform.origin) or chunk.is_within_distance(player.body.global_transform.origin,1024):
+				if chunk.is_within_chunk(player.body.global_transform.origin) or chunk.is_within_distance(player.body.global_transform.origin,ClientSettings.LOAD_RECEIVED_CHUNK_IF_WITHIN):
 					chunk.load_terrain()
 			return true
 			

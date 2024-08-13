@@ -55,7 +55,7 @@ func muh_process():
 	if is_active:
 		#to not have to set this every frame we have to have timeout on physics server
 		var vec = get_input_vec2()
-		pointer.position(body.global_transform.origin - vec)
+		#pointer.position(body.global_transform.origin - vec)
 		physics_socket.send_input(id,get_input_vec2())
 		
 func get_input_vec(event) -> Vector3:

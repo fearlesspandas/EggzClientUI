@@ -62,7 +62,8 @@ func load_terrain():
 		#print_debug("Loading Area " , center, " " ,radius , " ",uuid)
 		ServerNetwork.get(client_id).get_cached_terrain(uuid)
 		self.has_loaded = true
-		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(4*radius,center)
+		var distance = ClientSettings.CHUNK_REQUEST_RADIUS_MULTIPLIER*radius
+		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(distance,center)
 		mesh_instance.visible = false
 		#timer.stop()
 		

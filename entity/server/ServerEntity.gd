@@ -65,19 +65,33 @@ func _handle_message(msg,delta_accum):
 		{'GravityActive':{'id': var id, 'is_active':var active}}:
 			print_debug("gravity active " , active)
 			gravity_active = bool(active)
+			if destinations_active and not gravity_active:
+				physics_socket.lock_input_physics(id)
+				print_debug("input locked " )
+			else:
+				physics_socket.unlock_input_physics(id)
+				print_debug("input unlocked")
 		{'DestinationsActive':{'id': var id, 'is_active':var active}}:
 			print_debug("destinations active", active)
 			destinations_active = bool(active)
+			if destinations_active and not gravity_active:
+				physics_socket.lock_input_physics(id)
+				print_debug("input locked")
+			else:
+				physics_socket.unlock_input_physics(id)
+				print_debug("input unlocked")
 		{'NoInput':{'id':var id}}:
 			movement.entity_stop(body)
 			#movement.entity_apply_vector(delta_accum,Vector3.ZERO,body)
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
 			#print("direction ", Vector3(x,y,z))
-			if not destinations_active:
-				movement.entity_set_direction(Vector3(x,y,z))
-			#elif gravity_active:
-				#movement.entity_apply_direction(Vector3(x,y,z))
-				
+			var dir = Vector3(x,y,z)
+			var max_speed = DataCache.cached(id,'max_speed')
+			if max_speed != null and dir.length() > max_speed:
+				dir = dir.normalized() * max_speed
+				physics_socket.set_dir_physics(id,dir)
+			if (not destinations_active) or gravity_active:
+				movement.entity_set_direction(dir)
 		{'Input':{"id":var id, "vec":[var x ,var y ,var z]}}:
 			#print_debug("got input" , x,y,z)
 			#movement.entity_apply_vector(delta_accum,Vector3(x,y,z),body)

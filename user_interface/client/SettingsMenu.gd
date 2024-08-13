@@ -1,16 +1,19 @@
-extends Node
+extends Control
 
+class_name SettingsMenu
+onready var camera_render_distance_input:TextEdit = TextEdit.new()
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
-
-
-# Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	self.rect_size = OS.window_size/2
+	self.set_position(OS.window_size/2 - self.rect_size/2)
+	camera_render_distance_input.rect_size = self.rect_size/2
+	self.add_child(camera_render_distance_input)
+	self.visible = false
+	
+func _process(delta):
+	if Input.is_action_just_pressed("ui_cancel"):
+		self.visible = not self.visible
+	
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func change_render_distance(value:float):
+	get_viewport().get_camera().far = value
