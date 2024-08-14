@@ -16,7 +16,6 @@ func add_destination(dest:Destination):
 	var element = DestinationListElement.new()
 	element.load_dest(dest)
 	all_destinations.push_back(element)
-	print_debug("destinations size ", all_destinations.size())
 	element.index = all_destinations.size()-1
 	self.add_child(element)
 	var position = Vector2(0,element.rect_size.y * element.index)
@@ -31,7 +30,6 @@ func erase_destinations():
 	all_destinations = []
 	
 func refresh_destinations(destinations):
-	print_debug("Refreshing destinations ", destinations)
 	erase_destinations()
 	for d in destinations:
 		add_destination(d)

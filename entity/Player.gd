@@ -1,6 +1,9 @@
 extends ClientPlayerEntity
 
 class_name Player
+signal set_destination_mode(mode)
+signal set_gravity_mode(mode)
+
 onready var camera_root =find_node("CameraRoot")
 onready var camera:Camera = camera_root.find_node("Camera")
 onready var curserRay:CursorRay = camera_root.find_node("CursorRay")
@@ -32,14 +35,15 @@ func _input(event):
 	if is_active and event is InputEventKey and event.is_action_released("reverse_queue_destinations"):
 		var socket = ServerNetwork.get(client_id)
 		socket.set_destination_mode(id,"REVERSE")
+		emit_signal("set_destination_mode","REVERSE")
 	if is_active and event is InputEventKey and event.is_action_released("pop_destinations"):
 		var socket = ServerNetwork.get(client_id)
 		socket.set_destination_mode(id,"POP")
-		print_debug("dest mode set to POP")
+		emit_signal("set_destination_mode","POP")
 	if is_active and event is InputEventKey and event.is_action_released("queue_destinations"):
 		var socket = ServerNetwork.get(client_id)
 		socket.set_destination_mode(id,"FORWARD")
-		print_debug("dest mode set to FORWARD")
+		emit_signal("set_destination_mode","FORWARD")
 	if is_active and event is InputEventKey and event.is_action_released("toggle_gravity"):
 		var socket = ServerNetwork.get(client_id)
 		socket.toggle_gravity(id)

@@ -8,7 +8,6 @@ onready var entity_scanner :EntityScannerTimer = EntityScannerTimer.new()
 onready var message_controller : MessageController = MessageController.new()
 onready var destinations:DestinationManager = DestinationManager.new()
 onready var destination_scanner : DestinationScannerTimer = DestinationScannerTimer.new()
-onready var terrain_scanner : Timer = Timer.new()
 
 var terrain_count = 0
 var viewport:Viewport #base node where initial map is added
@@ -19,26 +18,18 @@ var player:Player
 func _ready():
 	entity_scanner.wait_time = 3
 	entity_scanner.client_id = client_id
-	destination_scanner.wait_time = 5
+	destination_scanner.wait_time = 10
 	destination_scanner.client_id = client_id
-	terrain_scanner.wait_time = 5
-	terrain_scanner.connect("timeout",self,"inspect_terrain")
+	
 	destinations.entity_spawn = viewport
 	self.add_child(entity_scanner)
 	self.add_child(destination_scanner)
-	self.add_child(terrain_scanner)
 	self.add_child(message_controller)
 	entity_scanner.start()
 	destination_scanner.start()
-	terrain_scanner.start()
 	self.connect("spawned_player_character",self,"set_player")
 
 
-func inspect_terrain():
-	#for t in terrain.values():
-		#if t is Chunk and t.is_within_distance(player.global_transform.origin,t.radius):
-			#t.load_terrain()
-	pass
 func set_player(player:Player):
 	self.player = player
 	ServerNetwork.get(client_id).get_top_level_terrain_in_distance(ClientSettings.CHUNK_DISTANCE_ON_PLAYER_LOAD,player.global_transform.origin)
@@ -146,6 +137,9 @@ func handle_json(json) -> bool:
 					_:
 						print("ClientEntityManager could not parse glob type ", glob)
 			return res
+		{'ClearDestinations':{}}:
+			destinations.handle_message(json)
+			return false
 		{'NewDestination':{'id':var id, 'destination':var dests}}:
 			destinations.handle_message(json)
 			return false				

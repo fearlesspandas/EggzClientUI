@@ -14,6 +14,3 @@ func _process(delta):
 	if Input.is_action_just_pressed("ui_cancel"):
 		self.visible = not self.visible
 	
-
-func change_render_distance(value:float):
-	get_viewport().get_camera().far = value

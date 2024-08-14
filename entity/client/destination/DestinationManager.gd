@@ -3,10 +3,15 @@ extends Node
 class_name DestinationManager
 signal new_destination(destination)
 signal refresh_destinations(destinations)
+signal clear_destinations()
+
 var destinations = []
-var currentId = -1
 var entity_spawn:Viewport
 
+
+func _ready():
+	assert(entity_spawn != null)
+	
 func add_destination(dest:Destination):
 	destinations.append(dest)
 	
@@ -30,6 +35,9 @@ func destination(dest_type,location:Vector3,radius:float) -> Destination:
 	
 func handle_message(message):
 	match message:
+		{'ClearDestinations':{}}:
+			erase_dests()
+			emit_signal("clear_destinations")
 		{"AllDestinations":{"id":var id , "destinations":var dests}}:
 			_handle_message(dests)
 			emit_signal("refresh_destinations",destinations)

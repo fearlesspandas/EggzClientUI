@@ -104,6 +104,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/client/DestinationScannerTimer.gd"
 }, {
+"base": "Control",
+"class": "DestinationTypeIndicator",
+"language": "GDScript",
+"path": "res://user_interface/client/DestinationTypeIndicator.gd"
+}, {
 "base": "Node",
 "class": "EntityManagement",
 "language": "GDScript",
@@ -259,6 +264,7 @@ _global_script_class_icons={
 "DestinationListElement": "",
 "DestinationManager": "",
 "DestinationScannerTimer": "",
+"DestinationTypeIndicator": "",
 "EntityManagement": "",
 "EntityScannerTimer": "",
 "GameFileManager": "",

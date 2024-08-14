@@ -13,6 +13,7 @@ onready var position_indicator:PositionIndicator = PositionIndicator.new()
 onready var max_speed_slider:MaxSpeedSlider = MaxSpeedSlider.new()
 onready var click_menu:ClickMenu = ClickMenu.new()
 onready var destination_display:DestinationDisplay = DestinationDisplay.new()
+onready var destination_type_indicator:DestinationTypeIndicator = DestinationTypeIndicator.new()
 
 var profile_id:String
 var connection_ind_size = 30
@@ -56,6 +57,7 @@ func load_scene(id,secret):
 	
 	entity_management.destinations.connect("new_destination",destination_display,"add_destination")
 	entity_management.destinations.connect("refresh_destinations",destination_display,"refresh_destinations")
+	entity_management.destinations.connect("clear_destinations",destination_display,"erase_destinations")
 	self.add_child(destination_display)
 	
 	max_speed_slider.client_id = profile.id
@@ -77,27 +79,23 @@ func load_scene(id,secret):
 	connection_indicator.client_id = entity_management.client_id
 	self.add_child(connection_indicator)
 	
+	self.add_child(destination_type_indicator)
+	
+	#might not need this
 	entity_management.spawn_client_world(viewport,Vector3(0,-10,0))
 	entity_management.connect("spawned_player_character",position_indicator,"player_character_spawned")
-	#position_indicator.player = player
+	
 	position_indicator.rect_size = self.rect_size / 4
 	position_indicator.set_position(self.rect_size - position_indicator.rect_size)
 	self.add_child(position_indicator)
 	entity_management.connect("spawned_player_character",self,"player_character_spawned")
-	#var player = entity_management.create_character_entity_client(profile.id,Vector3(0,5,0),viewport)
-	
-	
-	
-	#self.connect("is_active",player,"set_active")
 	
 	ServerNetwork.get(profile.id).getAllGlobs()
-	#player.curserRay.connect("intersection_clicked",click_menu,"handle_clicked")
-	
-	#entity_management.entity_scanner.start()
 	
 func player_character_spawned(player:Player):
 	assert(player != null)
 	self.connect("is_active",player,"set_active")
+	player.connect("set_destination_mode",destination_type_indicator,"set_destination_mode")
 	ServerNetwork.get(player.id).get_top_level_terrain_in_distance(1000,player.global_transform.origin)
 	
 	

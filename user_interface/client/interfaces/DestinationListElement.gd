@@ -17,7 +17,8 @@ func load_dest(destination:Destination):
 	self.label.text = str(destination.location)
 	
 func _process(delta):
-	var size = Vector2(display.rect_size.x,display.rect_size.y/display.all_destinations.size())
+	var size_y = clamp(display.rect_size.y/display.all_destinations.size(),10,50)
+	var size = Vector2(display.rect_size.x,size_y)
 	self.rect_size = size
 	label.rect_size = self.rect_size / 2
 	var position = Vector2(0,self.rect_size.y * index)
