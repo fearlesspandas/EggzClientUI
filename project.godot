@@ -84,6 +84,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://entity/client/destination/Destination.gd"
 }, {
+"base": "Control",
+"class": "DestinationDisplay",
+"language": "GDScript",
+"path": "res://user_interface/client/interfaces/DestinationDisplay.gd"
+}, {
+"base": "ColorRect",
+"class": "DestinationListElement",
+"language": "GDScript",
+"path": "res://user_interface/client/interfaces/DestinationListElement.gd"
+}, {
 "base": "Node",
 "class": "DestinationManager",
 "language": "GDScript",
@@ -245,6 +255,8 @@ _global_script_class_icons={
 "Console": "",
 "CursorRay": "",
 "Destination": "",
+"DestinationDisplay": "",
+"DestinationListElement": "",
 "DestinationManager": "",
 "DestinationScannerTimer": "",
 "EntityManagement": "",
@@ -299,6 +311,7 @@ Subscriptions="*res://network/Subscriptions.gd"
 ProfileManager="*res://user_interface/launcher/ProfileManager.gd"
 TerrainScheduler="res://world/TerrainScheduler.gd"
 ClientSettings="*res://user_interface/client/ClientSettings.gd"
+ClientReferences="*res://user_interface/client/ClientReferences.gd"
 
 [input]
 

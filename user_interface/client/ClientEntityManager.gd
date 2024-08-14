@@ -19,7 +19,7 @@ var player:Player
 func _ready():
 	entity_scanner.wait_time = 3
 	entity_scanner.client_id = client_id
-	destination_scanner.wait_time = 1
+	destination_scanner.wait_time = 5
 	destination_scanner.client_id = client_id
 	terrain_scanner.wait_time = 5
 	terrain_scanner.connect("timeout",self,"inspect_terrain")
@@ -146,9 +146,11 @@ func handle_json(json) -> bool:
 					_:
 						print("ClientEntityManager could not parse glob type ", glob)
 			return res
-						
+		{'NewDestination':{'id':var id, 'destination':var dests}}:
+			destinations.handle_message(json)
+			return false				
 		{"AllDestinations":{"id":var id , "destinations":var dests}}:
-			destinations._handle_message(dests)
+			destinations.handle_message(json)
 			return false
 		{'LV':{'id':var id, 'lv':[var x , var y , var z]}}:
 			DataCache.add_data(id,'lv',Vector3(x,y,z))

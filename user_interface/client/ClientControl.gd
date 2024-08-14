@@ -12,6 +12,7 @@ onready var lv_indicator:LinearVelocityIndicator = LinearVelocityIndicator.new()
 onready var position_indicator:PositionIndicator = PositionIndicator.new()
 onready var max_speed_slider:MaxSpeedSlider = MaxSpeedSlider.new()
 onready var click_menu:ClickMenu = ClickMenu.new()
+onready var destination_display:DestinationDisplay = DestinationDisplay.new()
 
 var profile_id:String
 var connection_ind_size = 30
@@ -52,6 +53,10 @@ func load_scene(id,secret):
 	click_menu.client_id = profile.id
 	self.add_child(click_menu)
 	entity_management.connect("spawned_player_character",click_menu,"player_character_spawned")
+	
+	entity_management.destinations.connect("new_destination",destination_display,"add_destination")
+	entity_management.destinations.connect("refresh_destinations",destination_display,"refresh_destinations")
+	self.add_child(destination_display)
 	
 	max_speed_slider.client_id = profile.id
 	max_speed_slider.rect_size = self.rect_size / 4
@@ -103,6 +108,7 @@ func handle_new_entity(entity,parent,server_entity):
 
 func set_active(active: bool):
 	print_debug("setting is active for control:",active)
+	ClientReferences.set_viewport(self.viewport)
 	emit_signal("is_active",active)
 	
 func _process(delta):

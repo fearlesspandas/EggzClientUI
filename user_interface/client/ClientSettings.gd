@@ -24,8 +24,7 @@ func link_handler(handler:Node):
 	self.connect("chunk_request_radius_multiplier",handler,"chunk_request_radius_multiplier")
 	
 func camera_render_distance(value:float):
-	print("trying to set render")
-	var vp = get_viewport()
+	var vp = ClientReferences.viewport
 	if vp != null:
 		var cam = vp.get_camera()
 		if cam != null:

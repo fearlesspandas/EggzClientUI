@@ -1,15 +1,15 @@
 extends Node
 
 class_name DestinationManager
-signal new_dest(destination)
+signal new_destination(destination)
+signal refresh_destinations(destinations)
 var destinations = []
 var currentId = -1
 var entity_spawn:Viewport
 
-
 func add_destination(dest:Destination):
 	destinations.append(dest)
-
+	
 func erase_dests():
 	for dest in destinations:
 		entity_spawn.remove_child(dest)
@@ -18,18 +18,34 @@ func erase_dests():
 			dest = null
 	destinations = []
 	
+func spawn_dest(destination:Destination):
+	entity_spawn.add_child(destination)
+	
+func destination(dest_type,location:Vector3,radius:float) -> Destination:
+	var dest = Destination.new()
+	dest.type = dest_type
+	dest.location = location
+	dest.radius = radius
+	return dest
+	
+func handle_message(message):
+	match message:
+		{"AllDestinations":{"id":var id , "destinations":var dests}}:
+			_handle_message(dests)
+			emit_signal("refresh_destinations",destinations)
+		{'NewDestination':{'id':var id,'destination':{'dest_type' : var dest_type,'location': [var x, var y ,var z],'radius':var radius}}}:
+			var dest = destination(dest_type,Vector3(x,y,z),radius)
+			add_destination(dest)
+			spawn_dest(dest)
+			emit_signal("new_destination",dest)
+			
 func _handle_message(dests):
-	#print_debug("destinations:",destinations)
 	erase_dests()
 	for destination in dests:
 		match destination:
 			{'dest_type':var dest_type ,'location':[var x,var y, var z] , 'radius':var radius}:
-				var loc = Vector3(x,y,z)
-				var newDest = Destination.new()
-				newDest.type = dest_type
-				newDest.location = Vector3(x,y,z)
-				newDest.radius = radius
+				var newDest = destination(dest_type,Vector3(x,y,z),radius)
 				add_destination(newDest)
-				#print("adding new dest",destinations)
-				entity_spawn.add_child(newDest)
+				spawn_dest(newDest)
 	return destinations
+
