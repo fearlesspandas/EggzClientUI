@@ -2,15 +2,10 @@ extends Control
 
 class_name DestinationDisplay
 
-onready var colorRect:ColorRect = ColorRect.new()
-
 var all_destinations = []
 
 func _ready():
-	colorRect.color = Color.aqua
 	self.rect_size = OS.window_size/4
-	colorRect.rect_size = self.rect_size
-	#self.add_child(colorRect)
 	
 func add_destination(dest:Destination):
 	var element = DestinationListElement.new()

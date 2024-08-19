@@ -33,7 +33,7 @@ func _ready():
 func set_player(player:Player):
 	self.player = player
 	ServerNetwork.get(client_id).get_top_level_terrain_in_distance(ClientSettings.CHUNK_DISTANCE_ON_PLAYER_LOAD,player.global_transform.origin)
-	
+	ServerNetwork.get(client_id).set_destination_mode(client_id,"FORWARD")
 func set_active(active:bool):
 	is_active = active
 	entity_scanner.set_active(active)
@@ -137,6 +137,9 @@ func handle_json(json) -> bool:
 					_:
 						print("ClientEntityManager could not parse glob type ", glob)
 			return res
+		{'ModeSet':{'mode':var mode}}:
+			player.set_destination_mode(mode)
+			return false
 		{'ClearDestinations':{}}:
 			destinations.handle_message(json)
 			return false

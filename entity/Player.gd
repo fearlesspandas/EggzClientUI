@@ -30,7 +30,11 @@ func scan_for_terrain():
 	if is_active:
 		print_debug("Scanning for terrain for player " , client_id)
 		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,self.global_transform.origin)
-		
+
+func set_destination_mode(mode):
+	var mode_text = str(mode).replace("{","").replace("}","").replace(":","")
+	emit_signal("set_destination_mode",mode_text)
+
 func _input(event):
 	if is_active and event is InputEventKey and event.is_action_released("reverse_queue_destinations"):
 		var socket = ServerNetwork.get(client_id)

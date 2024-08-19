@@ -89,7 +89,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/client/interfaces/DestinationDisplay.gd"
 }, {
-"base": "ColorRect",
+"base": "Control",
 "class": "DestinationListElement",
 "language": "GDScript",
 "path": "res://user_interface/client/interfaces/DestinationListElement.gd"

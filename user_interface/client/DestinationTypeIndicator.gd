@@ -7,7 +7,6 @@ onready var destination_gravity_type : RichTextLabel = RichTextLabel.new()
 
 func _ready():
 	self.add_child(destination_direction_type)
-	destination_direction_type.text = "POP"
 	self.add_child(destination_gravity_type)
 	
 func _process(delta):
@@ -19,4 +18,4 @@ func _process(delta):
 	destination_direction_type.set_position(Vector2(0,destination_direction_type.rect_size.y))
 
 func set_destination_mode(mode):
-	destination_direction_type.text = mode
+	destination_direction_type.text = str(mode)
