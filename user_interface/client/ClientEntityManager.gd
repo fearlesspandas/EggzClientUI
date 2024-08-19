@@ -8,7 +8,6 @@ onready var entity_scanner :EntityScannerTimer = EntityScannerTimer.new()
 onready var message_controller : MessageController = MessageController.new()
 onready var destinations:DestinationManager = DestinationManager.new()
 onready var destination_scanner : DestinationScannerTimer = DestinationScannerTimer.new()
-
 var terrain_count = 0
 var viewport:Viewport #base node where initial map is added
 var spawn
@@ -20,8 +19,9 @@ func _ready():
 	entity_scanner.client_id = client_id
 	destination_scanner.wait_time = 10
 	destination_scanner.client_id = client_id
-	
 	destinations.entity_spawn = viewport
+	destinations.client_id = client_id
+	#self.add_child(destinations)
 	self.add_child(entity_scanner)
 	self.add_child(destination_scanner)
 	self.add_child(message_controller)
@@ -147,6 +147,9 @@ func handle_json(json) -> bool:
 			destinations.handle_message(json)
 			return false				
 		{"AllDestinations":{"id":var id , "destinations":var dests}}:
+			destinations.handle_message(json)
+			return false
+		{'NextIndex':{'id':var id, 'index':var index}}:
 			destinations.handle_message(json)
 			return false
 		{'LV':{'id':var id, 'lv':[var x , var y , var z]}}:

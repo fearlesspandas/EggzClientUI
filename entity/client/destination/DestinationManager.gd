@@ -4,13 +4,25 @@ class_name DestinationManager
 signal new_destination(destination)
 signal refresh_destinations(destinations)
 signal clear_destinations()
+signal index_set(next_index)
 
+
+var client_id
 var destinations = []
 var entity_spawn:Viewport
-
+var index
 
 func _ready():
 	assert(entity_spawn != null)
+	
+func poll_index():
+	ServerNetwork.get(client_id).get_next_destination_index(client_id)
+	
+#empty string id is a shorthand for global access
+func set_index(ind:int):
+	index = ind
+	emit_signal("index_set",index)
+	#DataCache.add_data("","index",index)
 	
 func add_destination(dest:Destination):
 	destinations.append(dest)
@@ -35,6 +47,8 @@ func destination(dest_type,location:Vector3,radius:float) -> Destination:
 	
 func handle_message(message):
 	match message:
+		{'NextIndex':{'id':var id, 'index':var index}}:
+			set_index(int(index))
 		{'ClearDestinations':{}}:
 			erase_dests()
 			emit_signal("clear_destinations")

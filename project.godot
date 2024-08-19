@@ -74,6 +74,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/launcher/Console.gd"
 }, {
+"base": "ColorRect",
+"class": "CurrentDestinationIndicator",
+"language": "GDScript",
+"path": "res://user_interface/client/interfaces/CurrentDestinationIndicator.gd"
+}, {
 "base": "RayCast",
 "class": "CursorRay",
 "language": "GDScript",
@@ -258,6 +263,7 @@ _global_script_class_icons={
 "ClientWebSocket": "",
 "ConnectionIndicator": "",
 "Console": "",
+"CurrentDestinationIndicator": "",
 "CursorRay": "",
 "Destination": "",
 "DestinationDisplay": "",

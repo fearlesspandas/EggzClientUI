@@ -58,6 +58,8 @@ func load_scene(id,secret):
 	entity_management.destinations.connect("new_destination",destination_display,"add_destination")
 	entity_management.destinations.connect("refresh_destinations",destination_display,"refresh_destinations")
 	entity_management.destinations.connect("clear_destinations",destination_display,"erase_destinations")
+	entity_management.destinations.connect("index_set",destination_display,"set_index")
+	
 	self.add_child(destination_display)
 	
 	max_speed_slider.client_id = profile.id

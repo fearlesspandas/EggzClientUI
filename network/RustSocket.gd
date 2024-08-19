@@ -83,67 +83,12 @@ func get_packet(use_default:bool = false):
 func send_payload(payload):
 	_client.get_peer(1).put_packet(JSON.print(payload).to_utf8())
 	
-func create_glob(id:String,location:Vector3):
-	#print("calling create glob")
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.create_glob(id,location)).to_utf8())
-
-func create_repair_egg(eggId:String,globId:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.create_repair_egg(eggId,globId)).to_utf8())
-
-func get_blob(id:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_blob(id)).to_utf8())
-
-func relate_eggs(id1:String,id2:String,globid:String,bidirectional:bool):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.relate_eggs(id1,id2,globid,bidirectional)).to_utf8())
-	
-func unrelate_eggs(id1:String,id2:String,globid:String,bidirectional:bool):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.unrelate_eggs(id1,id2,globid,bidirectional)).to_utf8())
-
-func tick_eggs():	
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.tick_eggs()).to_utf8())
-
-func getAllGlobs():
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getAllGlobs()).to_utf8())
-
-func getAllEggs():
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getAllEggs()).to_utf8())	
-
-func getGlobLocation(id:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getGlobLocation(id)).to_utf8())	
-
 func get_location_physics(id:String):
 	send_payload(PayloadMapper.getLocationPhysics(id))
-
-func setGlobLocation(id:String,location:Vector3):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.setGlobLocation(id,location)).to_utf8())	
 
 func set_location_physics(id:String,location:Vector3):
 	send_payload(PayloadMapper.setLocationPhysics(id,location))
 
-func setGlobRotation(id,rotation):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.setGlobRotation(id,rotation)).to_utf8())	
-				
-func start_egg(eggId,globId):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.start_egg(eggId,globId)).to_utf8())	
-
-func getAllEntityIds():
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getAllEntityIds()).to_utf8())	
-	
-func add_destination(globId:String,location:Vector3,type:String,radius:float):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.add_destination(globId,location,type,radius)).to_utf8())
-	
-func get_next_destination(globId:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_next_destination(globId)).to_utf8())
-	
-func get_all_destinations(globId:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_all_destinations(globId)).to_utf8())
-	
-func location_subscribe(id:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.location_subscribe(id)).to_utf8())
-
-func input_subscribe(id:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.input_subscribe(id)).to_utf8())
-	
 func get_input_physics(id:String):
 	send_payload(PayloadMapper.get_input_physics(id))
 
@@ -161,30 +106,3 @@ func set_dir_physics(id:String,dir:Vector3):
 
 func send_input(id:String,inputVec:Vector3):	
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.set_input_physics(id,inputVec)).to_utf8())
-
-func clear_destinations(id:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.clear_destinations(id)).to_utf8())
-
-func set_lv(id:String,lv:Vector3):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.set_lv(id,lv)).to_utf8())
-
-func lazy_lv(id:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.lazy_lv(id)).to_utf8())
-
-func adjust_stats(id:String,delta):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.adjust_stats(id,delta)).to_utf8())
-
-func get_physical_stats(id:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_physical_stats(id)).to_utf8())
-
-func subscribe_general(query):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.subscribe_general(query)).to_utf8())
-
-func get_all_terrain(id:String,nonrelative:bool):
-	send_payload(PayloadMapper.get_all_terrain(id,nonrelative))
-	
-func create_terrain(id:String,location:Vector3):
-	send_payload(PayloadMapper.create_terrain(id,location))
-
-func get_all_terrain_within_player_distance(id:String,radius:float):
-	send_payload(PayloadMapper.get_terrain_within_player_distance(id,radius))

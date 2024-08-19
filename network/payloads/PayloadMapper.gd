@@ -53,6 +53,9 @@ func add_destination(globId:String,location:Vector3,type:String,radius:float = 5
 	
 func get_next_destination(globId:String):
 	return {'GET_NEXT_DESTINATION':{'id':globId}}	
+
+func get_next_destination_index(globId:String):
+	return {'GET_NEXT_INDEX':{'id':globId}}	
 	
 func get_all_destinations(globId:String):
 	return {'GET_ALL_DESTINATIONS':{'id':globId}}	

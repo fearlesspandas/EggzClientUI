@@ -127,6 +127,9 @@ func add_destination(globId:String,location:Vector3,type:String,radius:float):
 func get_next_destination(globId:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_next_destination(globId)).to_utf8())	
 	
+func get_next_destination_index(globId:String):
+	send_payload(PayloadMapper.get_next_destination_index(globId))
+	
 func get_all_destinations(globId:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_all_destinations(globId)).to_utf8())	
 
