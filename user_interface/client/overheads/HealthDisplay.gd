@@ -14,7 +14,7 @@ func _ready():
 	font.outline_color = Color.red
 	font.outline_size = 5
 	text_mesh.font = font
-	self.global_transform.origin += Vector3.UP * 2
+	self.global_transform.origin += Vector3.UP * 4
 	self.mesh = text_mesh
 
 

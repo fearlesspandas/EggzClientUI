@@ -119,22 +119,20 @@ func handle_json(json) -> bool:
 						#in spite of being in different viewports
 						if !client_entities.has(id) and id == client_id:
 							print_debug("creating entity , ", id ," in client id:",client_id, spawn)
-							#ServerNetwork.bind(client_id,id,true)
-							#print_debug("REQUESTING CHUNKS FOR PLAYER")
 							var spawned_character = create_character_entity_client(id,Vector3(x,y,z),viewport)
-							#ServerNetwork.get(client_id).get_top_level_terrain_in_distance(2048,Vector3(x,y,z))
 							spawned_character.set_active(self.is_active)
+							spawned_character.set_health(health)
 							res = true
-							
 						if !client_entities.has(id) and client_id != id and (!ServerNetwork.sockets.has(id) or !ServerNetwork.physics_sockets.has(id)):
 							print_debug("creating entity , ", id ," in client id:",client_id, spawn)
-							#ServerNetwork.bind(client_id,id,true)
-							#ServerNetwork.get(client_id).get_top_level_terrain_in_distance(2048,Vector3(x,y,z))
 							var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
+							if spawned_character is ClientPlayerEntity:
+								spawned_character.set_health(health)
 							res = true
 					{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 						if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
-							spawn_npc_character_entity_client(id,Vector3(x,y,z))
+							var npc = spawn_npc_character_entity_client(id,Vector3(x,y,z))
+							npc.set_health(health)
 					_:
 						print("ClientEntityManager could not parse glob type ", glob)
 			return res
@@ -156,9 +154,10 @@ func handle_json(json) -> bool:
 		{'LV':{'id':var id, 'lv':[var x , var y , var z]}}:
 			DataCache.add_data(id,'lv',Vector3(x,y,z))
 			return false
-		{'PhysStat':{'id':var id, 'max_speed':var max_speed}}:
+		{'PhysStat':{'id':var id, 'max_speed':var max_speed,'speed':var speed}}:
 			#print("client entity manmager received physstat", max_speed)
 			DataCache.add_data(id,'max_speed',max_speed)
+			
 			return false
 		{'TerrainUnitm':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
 			var keys = entity_map.keys()

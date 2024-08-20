@@ -28,7 +28,7 @@ func _input(event):
 			delta -= 1
 		var socket = ServerNetwork.get(client_id)
 		if socket != null and delta != 0:
-			var stats = {'speed_delta':delta}
+			var stats = {'max_speed_delta':delta,'speed_delta':0}
 			socket.adjust_stats(client_id,stats)
 		
 		
@@ -39,15 +39,8 @@ func _process(delta):
 		if m != null:
 			self.tick_count = ceil(2 * m)
 			self.value = m
-		if ! is_subbed:
-			var socket = ServerNetwork.get(client_id)
-			if socket!= null:
-				#print("max speed slider sending phys stats subscribe",client_id)
-				var query = PayloadMapper.get_physical_stats(client_id)
-				#print("max speed slider sending phys stats subscribe",client_id,query)
-				#socket.subscribe_general(query)
-				socket.get_physical_stats(client_id)
-			#is_subbed = true
 	
 func set_active(active:bool):
 	is_active = active
+	if is_active:
+		ServerNetwork.get(client_id).get_physical_stats(client_id)

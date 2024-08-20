@@ -132,8 +132,7 @@ func handle_json(json) -> bool:
 			{'NoLocation':{'id':var id}}:
 				route_to_entity(id,json)
 				return false
-			{'PhysStat':{'id':var id, 'max_speed':var max_speed}}:
-				#print("server entity manmager received physstat", max_speed)
+			{'PhysStat':{'id':var id, 'max_speed':var max_speed,'speed':var speed}}:
 				DataCache.add_data(id,'max_speed',max_speed)
 				return false
 			{'TerrainUnitM':{'entities':var entity_map,'location':var location, 'uuid':var uuid}}:

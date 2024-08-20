@@ -51,6 +51,7 @@ func move_by_direction(delta,body:KinematicBody):
 
 func get_direction() -> Vector3:
 	return dir
+	
 func apply_direction(direction:Vector3):
 	dir += direction.normalized()
 

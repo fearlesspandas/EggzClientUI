@@ -8,6 +8,7 @@ onready var destination_gravity_type : RichTextLabel = RichTextLabel.new()
 func _ready():
 	self.add_child(destination_direction_type)
 	self.add_child(destination_gravity_type)
+	self.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 func _process(delta):
 	self.rect_size = OS.window_size/5

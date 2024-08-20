@@ -40,10 +40,10 @@ func _ready():
 		self.add_child(timer)
 		timer.start()
 		
-		health_add_timer.connect("timeout",self,"add_health")
-		health_add_timer.wait_time = 2
-		self.add_child(health_add_timer)
-		health_add_timer.start()		
+		#health_add_timer.connect("timeout",self,"add_health")
+		#health_add_timer.wait_time = 2
+		#self.add_child(health_add_timer)
+		#health_add_timer.start()		
 	init_sockets()
 	
 func init_sockets():
@@ -53,8 +53,8 @@ func init_sockets():
 	assert(physics_socket != null)
 	self.movement.physics_socket = physics_socket
 
-func add_health():
-	socket.add_health(id,10)
+#func add_health():
+#	socket.add_health(id,10)
 	
 func timer_polling():
 	socket.set_lv(id,get_lv())
@@ -131,7 +131,10 @@ func get_lv() -> Vector3:
 		return Vector3.ZERO
 		
 func _physics_process(delta):
-	#physics_socket.get_input_physics(id)
+	if body is KinematicBody and !is_npc:
+		var coll:KinematicCollision = body.get_last_slide_collision()
+		if coll != null and coll.collider.has_method("handle_collision"):
+			coll.collider.handle_collision(client_id,id)
 	physics_socket.get_dir_physics(id)
 	update_lv_internal(body,delta)
 	#movement.entity_apply_vector(delta,queued_input,body)
@@ -177,7 +180,7 @@ func _physics_process(delta):
 func _process(delta):
 	if !isSubbed:
 		var query = PayloadMapper.get_physical_stats(id)
-		socket.subscribe_general(query)
+		socket.get_physical_stats(id)
 		if !is_npc:
 			socket.toggle_destinations(id)
 		isSubbed = true

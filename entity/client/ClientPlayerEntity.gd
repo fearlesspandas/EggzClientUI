@@ -23,21 +23,7 @@ func _ready():
 	assert(socket != null)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
-	#direction_timer.wait_time = 0.25
-	#direction_timer.connect("timeout",self,"get_direction")
-	#self.add_child(direction_timer)
-	#ocation_timer.start()
-	#location_timer.wait_time = 0.5
-	#ocation_timer.connect("timeout",self,"get_location")
-	#elf.add_child(location_timer)
-	#location_timer.start()
-	
-	#if is_npc:
-	#	timer.connect("timeout",self,"poll_physics")
-	#	timer.wait_time = 0.25
-	#	self.add_child(timer)
-	#	timer.start()
-	pass # Replace with function entity.
+	pass
 	
 func getSocket() -> ClientWebSocket:
 	#print("entity socket",id)
@@ -46,7 +32,10 @@ func getSocket() -> ClientWebSocket:
 		return null
 	else:
 		return res 
-
+	
+func set_health(value:float):
+	health.set_value(value)
+	
 func get_direction():
 	physics_socket.get_dir_physics(id)
 	
@@ -56,19 +45,14 @@ func get_location():
 var proc = 0
 var mod = 4
 func _process(delta):
-	#self.global_transform.origin = body.global_transform.origin
-	#if !is_npc:
-	#poll_physics()
 	movement.entity_move_by_direction(delta,body)
-	
 	if proc % mod == 0:
 		get_direction()
 		proc = 0
 	if proc % mod == 2:
 		get_location()
-	proc += 1	
-	#physics_socket.get_dir_physics(id)
-		
+	proc += 1
+	
 func poll_physics():
 	if physics_socket.connected:
 		physics_socket.get_location_physics(id)
@@ -83,7 +67,7 @@ func _handle_message(msg,delta_accum):
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
 			movement.entity_set_direction(Vector3(x,y,z))
 		{'HealthSet':{'id':var id,'value':var value}}:
-			health.set_value(value)
+			set_health(value)
 		#deprecated
 		{'Location':{'id':id,'location':[var x , var y , var z]}}:
 			var loc = Vector3(x,y,z)
