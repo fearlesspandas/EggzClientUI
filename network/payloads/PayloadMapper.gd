@@ -27,6 +27,12 @@ func getAllGlobs():
 func getAllEggs():
 	return {'GET_ALL_EGGZ':{}}	
 
+func add_health(id:String,value:float):
+	return {'ADD_HEALTH' : {'id':id,'value':value}}
+
+func remove_health(id:String,value:float):
+	return {'ADD_HEALTH' : {'id':id,'value':value}}
+
 func getGlobLocation(id:String):
 	return {'GET_GLOB_LOCATION':{'id':str(id)}}	
 

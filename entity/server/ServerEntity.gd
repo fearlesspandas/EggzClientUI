@@ -3,8 +3,9 @@ class_name ServerEntity
 
 onready var message_controller:MessageController = MessageController.new()
 onready var timer:Timer = Timer.new()
-onready var direction_timer:Timer = Timer.new()
+onready var health_add_timer: Timer = Timer.new()
 onready var spawn
+
 var socket:ClientWebSocket
 var physics_socket:RustSocket
 var requested_dest = false
@@ -38,10 +39,11 @@ func _ready():
 		timer.wait_time = 0.25
 		self.add_child(timer)
 		timer.start()
-	direction_timer.wait_time = 0.2
-	direction_timer.connect("timeout",self,"check_dir")
-	#self.add_child(direction_timer)
-	#direction_timer.start()
+		
+		health_add_timer.connect("timeout",self,"add_health")
+		health_add_timer.wait_time = 2
+		self.add_child(health_add_timer)
+		health_add_timer.start()		
 	init_sockets()
 	
 func init_sockets():
@@ -50,6 +52,9 @@ func init_sockets():
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
 	self.movement.physics_socket = physics_socket
+
+func add_health():
+	socket.add_health(id,10)
 	
 func timer_polling():
 	socket.set_lv(id,get_lv())
@@ -82,7 +87,6 @@ func _handle_message(msg,delta_accum):
 				print_debug("input unlocked")
 		{'NoInput':{'id':var id}}:
 			movement.entity_stop(body)
-			#movement.entity_apply_vector(delta_accum,Vector3.ZERO,body)
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
 			#print("direction ", Vector3(x,y,z))
 			var dir = Vector3(x,y,z)
@@ -93,8 +97,6 @@ func _handle_message(msg,delta_accum):
 			if (not destinations_active) or gravity_active:
 				movement.entity_set_direction(dir)
 		{'Input':{"id":var id, "vec":[var x ,var y ,var z]}}:
-			#print_debug("got input" , x,y,z)
-			#movement.entity_apply_vector(delta_accum,Vector3(x,y,z),body)
 			queued_input = Vector3(x,y,z)
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
 			body.global_transform.origin = location
@@ -117,7 +119,6 @@ func _handle_message(msg,delta_accum):
 func freeze():
 	body.global_transform.origin = spawn
 	
-	
 func update_lv_internal(body,delta):
 	if last_pos != null:
 		lv = (body.global_transform.origin - last_pos)/delta
@@ -130,19 +131,11 @@ func get_lv() -> Vector3:
 		return Vector3.ZERO
 		
 func _physics_process(delta):
-
 	#physics_socket.get_input_physics(id)
 	physics_socket.get_dir_physics(id)
 	update_lv_internal(body,delta)
 	#movement.entity_apply_vector(delta,queued_input,body)
 	var dir_ = movement.entity_get_direction()
-	#if (dir_.length() > 10):
-	#	if lv.x < 0.5:
-	#		physics_socket.send_input(id,Vector3(-dir_.x,0,0))
-	#	if lv.y < 0.5:
-	#		physics_socket.send_input(id,Vector3(0,-dir_.y,0))
-	#	if lv.z < 0.5:
-	#		physics_socket.send_input(id,Vector3(0,0,-dir_.z))
 	movement.entity_move_by_direction(delta,body)
 	movement.entity_set_max_speed(DataCache.cached(id,'max_speed'))
 	if !queued_teleports.empty() and body is KinematicBody:
@@ -159,7 +152,6 @@ func _physics_process(delta):
 					else:
 						movement.entity_move(delta,destination.location,body)
 				else:
-					#movement.entity_stop(body)
 					destination = null
 			'{TELEPORT:{}}':
 				if diff.length() > epsilon:
@@ -173,7 +165,6 @@ func _physics_process(delta):
 				if diff.length() > epsilon:
 					movement.entity_move_by_gravity(id,delta,destination.location,body)
 				else:
-					#movement.entity_stop(body)
 					destination = null
 					
 			_:
@@ -182,18 +173,14 @@ func _physics_process(delta):
 		queued_teleports.pop_front()
 		is_teleporting = false
 	physics_socket.set_location_physics(id,body.global_transform.origin)
-	#queued_input = Vector3.ZERO
 	
 func _process(delta):
 	if !isSubbed:
-		#socket.input_subscribe(id)
 		var query = PayloadMapper.get_physical_stats(id)
-		#if socket!=null:
 		socket.subscribe_general(query)
 		if !is_npc:
 			socket.toggle_destinations(id)
 		isSubbed = true
-		#print_debug("subbing to input for id", id)
 
 
 func _input(event):

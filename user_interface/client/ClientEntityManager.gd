@@ -89,9 +89,10 @@ func _on_physics_data():
 	#print_debug("physics received: " , cmd)
 	
 func route_to_entity(id:String,msg):
-	var s = client_entities[id]
-	if s!= null:
-		s.message_controller.add_to_queue(msg)
+	if client_entities.has(id):
+		var s = client_entities[id]
+		if s!= null:
+			s.message_controller.add_to_queue(msg)
 		
 func handle_json(json) -> bool:
 	match json:
@@ -167,10 +168,8 @@ func handle_json(json) -> bool:
 				var mesh = AssetMapper.matchMesh(resource_id)
 				var asset = AssetMapper.matchAsset(resource_id)
 				for i in range(0,entity_map[k]):
-					#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
 					spawn_terrain(str(uuid),loc,spawn,mesh,false)
 					spawn_terrain(str(uuid),loc,spawn,asset,false)
-					
 			return true
 		{'TerrainRegionm':{'terrain':var innerterain}}:
 			for it in innerterain:

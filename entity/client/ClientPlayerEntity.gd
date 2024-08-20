@@ -6,9 +6,7 @@ class_name ClientPlayerEntity
 
 onready var message_controller:MessageController = MessageController.new()
 onready var username:Username = Username.new()
-onready var timer:Timer = Timer.new()
-onready var direction_timer:Timer = Timer.new()
-onready var location_timer:Timer = Timer.new()
+onready var health:HealthDisplay = HealthDisplay.new()
 
 var isSubbed = false
 var is_npc = false
@@ -19,6 +17,7 @@ func _ready():
 	username.init_id()
 	Subscriptions.subscribe(username.id,id)
 	body.add_child(username)
+	body.add_child(health)
 	self.add_child(message_controller)
 	socket = ServerNetwork.get(client_id)
 	assert(socket != null)
@@ -83,6 +82,9 @@ func _handle_message(msg,delta_accum):
 			pass
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
 			movement.entity_set_direction(Vector3(x,y,z))
+		{'HealthSet':{'id':var id,'value':var value}}:
+			health.set_value(value)
+		#deprecated
 		{'Location':{'id':id,'location':[var x , var y , var z]}}:
 			var loc = Vector3(x,y,z)
 			#print("setting clientside location:",loc)
@@ -91,4 +93,4 @@ func _handle_message(msg,delta_accum):
 			#movement.entity_move(delta_accum,loc,body)
 			pass
 		_ :
-			pass
+			print_debug("no handler found for msg " , msg)

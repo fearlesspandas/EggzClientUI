@@ -106,6 +106,12 @@ func getAllGlobs():
 func getAllEggs():
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getAllEggs()).to_utf8())	
 
+func add_health(id:String,value:float):
+	send_payload(PayloadMapper.add_health(id,value))
+
+func remove_health(id:String,value:float):
+	send_payload(PayloadMapper.remove_health(id,value))
+
 func getGlobLocation(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.getGlobLocation(id)).to_utf8())	
 	
