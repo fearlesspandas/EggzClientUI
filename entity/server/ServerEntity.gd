@@ -100,12 +100,13 @@ func _handle_message(msg,delta_accum):
 			queued_input = Vector3(x,y,z)
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
 			body.global_transform.origin = location
-		{'NextDestination':{'id': var id, 'destination': {'dest_type':var dest_type, 'location':[var x, var y , var z] , 'radius': var radius}}}:
+		{'NextDestination':{'id': var id, 'destination': {'uuid':var uuid, 'dest_type':var dest_type, 'location':[var x, var y , var z] , 'radius': var radius}}}:
 			requested_dest = false
 			destination = Destination.new()
 			destination.location = Vector3(x,y,z)
 			destination.type = dest_type
 			destination.radius = radius
+			destination.uuid = uuid
 		{'TeleportToNext':{'id':var id, 'location':[var x, var y ,var z]}}:
 			print_debug("teleporting " , x,y,z)
 			queued_teleports.push_front(Vector3(x,y,z))

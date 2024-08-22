@@ -6,6 +6,7 @@ var client_id
 var is_active:bool = false
 func _ready():
 	self.connect("timeout",self,"poll_for_entities")
+	#ServerNetwork.get(client_id).get_all_destinations(client_id)
 	pass
 
 func poll_for_entities():

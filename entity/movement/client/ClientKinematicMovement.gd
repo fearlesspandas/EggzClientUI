@@ -19,7 +19,7 @@ func set_direction(direction:Vector3):
 	dir = direction
 
 func move_by_direction(delta,body:KinematicBody):
-	body.move_and_slide(dir * speed  * 0.005,Vector3.UP)
+	body.move_and_slide(dir * delta,Vector3.UP)
 
 func _ready():
 	pass # Replace with function body.

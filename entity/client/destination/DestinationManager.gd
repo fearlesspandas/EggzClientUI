@@ -15,6 +15,7 @@ var index
 func _ready():
 	assert(entity_spawn != null)
 	
+	
 func poll_index():
 	ServerNetwork.get(client_id).get_next_destination_index(client_id)
 	
@@ -38,11 +39,12 @@ func erase_dests():
 func spawn_dest(destination:Destination):
 	entity_spawn.add_child(destination)
 	
-func destination(dest_type,location:Vector3,radius:float) -> Destination:
+func destination(uuid:String,dest_type,location:Vector3,radius:float) -> Destination:
 	var dest = Destination.new()
 	dest.type = dest_type
 	dest.location = location
 	dest.radius = radius
+	dest.uuid = uuid
 	return dest
 	
 func handle_message(message):
@@ -55,8 +57,8 @@ func handle_message(message):
 		{"AllDestinations":{"id":var id , "destinations":var dests}}:
 			_handle_message(dests)
 			emit_signal("refresh_destinations",destinations)
-		{'NewDestination':{'id':var id,'destination':{'dest_type' : var dest_type,'location': [var x, var y ,var z],'radius':var radius}}}:
-			var dest = destination(dest_type,Vector3(x,y,z),radius)
+		{'NewDestination':{'id':var id,'destination':{'uuid':var uuid, 'dest_type' : var dest_type,'location': [var x, var y ,var z],'radius':var radius}}}:
+			var dest = destination(uuid,dest_type,Vector3(x,y,z),radius)
 			add_destination(dest)
 			spawn_dest(dest)
 			emit_signal("new_destination",dest)
@@ -65,9 +67,11 @@ func _handle_message(dests):
 	erase_dests()
 	for destination in dests:
 		match destination:
-			{'dest_type':var dest_type ,'location':[var x,var y, var z] , 'radius':var radius}:
-				var newDest = destination(dest_type,Vector3(x,y,z),radius)
+			{'uuid':var uuid, 'dest_type':var dest_type ,'location':[var x,var y, var z] , 'radius':var radius}:
+				var newDest = destination(uuid,dest_type,Vector3(x,y,z),radius)
 				add_destination(newDest)
 				spawn_dest(newDest)
+			_:
+				assert(false)
 	return destinations
 

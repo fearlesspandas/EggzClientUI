@@ -9,7 +9,7 @@ onready var material:SpatialMaterial = SpatialMaterial.new()
 var location:Vector3
 var type:String
 var radius:float
-
+var uuid:String
 func _ready():
 	material.albedo_color = Color.red
 	match type:

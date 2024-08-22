@@ -63,6 +63,7 @@ func _handle_message(msg,delta_accum):
 			#if not is_npc:
 				#print("client player entity received location ", Vector3(x,y,z))
 			movement.entity_move(delta_accum,Vector3(x,y,z),body)
+			
 			pass
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
 			movement.entity_set_direction(Vector3(x,y,z))

@@ -34,6 +34,8 @@ func set_player(player:Player):
 	self.player = player
 	ServerNetwork.get(client_id).get_top_level_terrain_in_distance(ClientSettings.CHUNK_DISTANCE_ON_PLAYER_LOAD,player.global_transform.origin)
 	ServerNetwork.get(client_id).set_destination_mode(client_id,"FORWARD")
+	ServerNetwork.get(client_id).get_all_destinations(client_id)
+	#ServerNetwork.get(client_id).get_next_destination_index(client_id)
 func set_active(active:bool):
 	is_active = active
 	entity_scanner.set_active(active)
@@ -136,6 +138,7 @@ func handle_json(json) -> bool:
 						#	var spawned_character = create_character_entity_client(id,Vector3(x,y,z),viewport)
 						#	spawned_character.set_active(self.is_active)
 						#	spawned_character.set_health(health)
+						#	res = true
 						#	res = true
 					{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 						if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
