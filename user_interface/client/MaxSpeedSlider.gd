@@ -28,17 +28,18 @@ func _input(event):
 			delta -= 1
 		var socket = ServerNetwork.get(client_id)
 		if socket != null and delta != 0:
-			var stats = {'max_speed_delta':delta,'speed_delta':0}
+			var stats = {'max_speed_delta':delta,'speed_delta':delta}
 			socket.adjust_stats(client_id,stats)
 		
 		
 func _process(delta):
 	if is_active:
 		var m = DataCache.cached(client_id,'max_speed')
+		var s = DataCache.cached(client_id,'speed')
 		#print("max speed slider, cache " , m)
 		if m != null:
 			self.tick_count = ceil(2 * m)
-			self.value = m
+			self.value = s
 	
 func set_active(active:bool):
 	is_active = active

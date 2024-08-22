@@ -90,7 +90,7 @@ func _handle_message(msg,delta_accum):
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
 			#print("direction ", Vector3(x,y,z))
 			var dir = Vector3(x,y,z)
-			var max_speed = DataCache.cached(id,'max_speed')
+			var max_speed = DataCache.cached(id,'speed')
 			if max_speed != null and dir.length() > max_speed:
 				dir = dir.normalized() * max_speed
 				physics_socket.set_dir_physics(id,dir)

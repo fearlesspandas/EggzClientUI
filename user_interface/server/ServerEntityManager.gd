@@ -134,6 +134,7 @@ func handle_json(json) -> bool:
 				return false
 			{'PhysStat':{'id':var id, 'max_speed':var max_speed,'speed':var speed}}:
 				DataCache.add_data(id,'max_speed',max_speed)
+				DataCache.add_data(id,'speed',speed)
 				return false
 			{'TerrainUnitM':{'entities':var entity_map,'location':var location, 'uuid':var uuid}}:
 				var keys = entity_map.keys()

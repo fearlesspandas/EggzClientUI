@@ -157,6 +157,7 @@ func handle_json(json) -> bool:
 		{'PhysStat':{'id':var id, 'max_speed':var max_speed,'speed':var speed}}:
 			#print("client entity manmager received physstat", max_speed)
 			DataCache.add_data(id,'max_speed',max_speed)
+			DataCache.add_data(id,'speed',speed)
 			
 			return false
 		{'TerrainUnitm':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
