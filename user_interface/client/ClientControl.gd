@@ -93,6 +93,8 @@ func load_scene(id,secret):
 	entity_management.connect("spawned_player_character",self,"player_character_spawned")
 	
 	ServerNetwork.get(profile.id).getAllGlobs()
+	#self.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	#viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 func player_character_spawned(player:Player):
 	assert(player != null)

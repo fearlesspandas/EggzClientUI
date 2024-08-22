@@ -11,12 +11,19 @@ var label_z:RichTextLabel = RichTextLabel.new()
 var index:int
 func _init():
 	bgRect.color = Color.lightslategray
+	bgRect.mouse_filter = Control.MOUSE_FILTER_PASS
+	colorRect.mouse_filter = Control.MOUSE_FILTER_PASS
+	label_x.mouse_filter = Control.MOUSE_FILTER_PASS
+	label_y.mouse_filter = Control.MOUSE_FILTER_PASS
+	label_z.mouse_filter = Control.MOUSE_FILTER_PASS
 	self.add_child(bgRect)
 	self.add_child(colorRect)
 	self.label_x.scroll_active = false
 	self.label_y.scroll_active = false
 	self.label_z.scroll_active = false
 	self.label_x.visible_characters = 7
+	self.label_y.visible_characters = 7
+	self.label_z.visible_characters = 7
 	self.add_child(label_x)
 	self.add_child(label_y)
 	self.add_child(label_z)
@@ -24,8 +31,15 @@ func _init():
 
 func _ready():
 	assert(index != null)
+	self.connect("mouse_entered",self,"entered")
+	self.connect("mouse_exited",self,"exited")
 	pass
 	
+func entered():
+	bgRect.color = Color.white
+func exited():
+	bgRect.color = Color.lightslategray
+		
 func load_dest(destination:Destination):
 	self.colorRect.color = destination.material.albedo_color
 	self.label_x.text = str(round(destination.location.x))
