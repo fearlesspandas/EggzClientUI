@@ -14,7 +14,7 @@ func handle_collision(client_id:String,player_id:String):
 	if available_health > 0:
 		ServerNetwork.get(client_id).add_health(player_id,available_health)
 		var stats = {'max_speed_delta':available_health,'speed_delta':0}
-		ServerNetwork.get(client_id).adjust_stats(player_id,stats)
+		ServerNetwork.get(client_id).adjust_max_speed(player_id,available_health)
 		available_health = 0
 	health_replenish_timer.start()
 

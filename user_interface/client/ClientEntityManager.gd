@@ -129,6 +129,14 @@ func handle_json(json) -> bool:
 							if spawned_character is ClientPlayerEntity:
 								spawned_character.set_health(health)
 							res = true
+						#if client_entities.has(id):
+						#	var character:ClientPlayerEntity = client_entities[id]
+						#	spawn.remove_child(character)
+						#	character.call_deferred('free')
+						#	var spawned_character = create_character_entity_client(id,Vector3(x,y,z),viewport)
+						#	spawned_character.set_active(self.is_active)
+						#	spawned_character.set_health(health)
+						#	res = true
 					{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 						if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
 							var npc = spawn_npc_character_entity_client(id,Vector3(x,y,z))

@@ -167,7 +167,11 @@ func lazy_lv(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.lazy_lv(id)).to_utf8())
 
 func adjust_stats(id:String,delta):
+	#assert(delta.has("max_speed") and delta.has("speed"))
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.adjust_stats(id,delta)).to_utf8())
+
+func adjust_max_speed(id:String,delta:float):
+	send_payload(PayloadMapper.adjust_max_speed(id,delta))
 
 func get_physical_stats(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_physical_stats(id)).to_utf8())
