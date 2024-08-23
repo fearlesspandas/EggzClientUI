@@ -18,7 +18,7 @@ func _ready():
 	
 func poll_index():
 	ServerNetwork.get(client_id).get_next_destination_index(client_id)
-	
+
 #empty string id is a shorthand for global access
 func set_index(ind:int):
 	index = ind
@@ -27,6 +27,9 @@ func set_index(ind:int):
 	
 func add_destination(dest:Destination):
 	destinations.append(dest)
+
+func delete_destination(uuid:String):
+	ServerNetwork.get(client_id).delete_destination(client_id,uuid)
 	
 func erase_dests():
 	for dest in destinations:

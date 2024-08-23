@@ -141,6 +141,9 @@ func get_all_destinations(globId:String):
 
 func set_destination_mode(globId:String,mode):
 	send_payload(PayloadMapper.set_destination_mode(globId,mode))
+
+func delete_destination(id,uuid:String):
+	send_payload(PayloadMapper.delete_destination(id,uuid))
 	
 func location_subscribe(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.location_subscribe(id)).to_utf8())	

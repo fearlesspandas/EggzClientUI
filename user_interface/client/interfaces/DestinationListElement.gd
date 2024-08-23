@@ -1,10 +1,12 @@
 extends Control
 class_name DestinationListElement
-
+signal delete_destination(uuid)
 onready var display = get_parent()
 
 var bgRect:ColorRect = ColorRect.new()
 var colorRect:ColorRect = ColorRect.new()
+var uuid:String
+var delete_button:Button = Button.new()
 var label_x:RichTextLabel = RichTextLabel.new()
 var label_y:RichTextLabel = RichTextLabel.new()
 var label_z:RichTextLabel = RichTextLabel.new()
@@ -13,6 +15,7 @@ func _init():
 	bgRect.color = Color.lightslategray
 	bgRect.mouse_filter = Control.MOUSE_FILTER_PASS
 	colorRect.mouse_filter = Control.MOUSE_FILTER_PASS
+	delete_button.mouse_filter =Control.MOUSE_FILTER_PASS
 	label_x.mouse_filter = Control.MOUSE_FILTER_PASS
 	label_y.mouse_filter = Control.MOUSE_FILTER_PASS
 	label_z.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -24,6 +27,9 @@ func _init():
 	self.label_x.visible_characters = 7
 	self.label_y.visible_characters = 7
 	self.label_z.visible_characters = 7
+	delete_button.text = "X"
+	delete_button.connect("button_up",self,"delete_dest")
+	self.add_child(delete_button)
 	self.add_child(label_x)
 	self.add_child(label_y)
 	self.add_child(label_z)
@@ -34,13 +40,18 @@ func _ready():
 	self.connect("mouse_entered",self,"entered")
 	self.connect("mouse_exited",self,"exited")
 	pass
-	
+
+
+func delete_dest():
+	emit_signal("delete_destination",uuid)
+
 func entered():
 	bgRect.color = Color.white
 func exited():
 	bgRect.color = Color.lightslategray
 		
 func load_dest(destination:Destination):
+	self.uuid = destination.uuid
 	self.colorRect.color = destination.material.albedo_color
 	self.label_x.text = str(round(destination.location.x))
 	self.label_y.text = str(round(destination.location.y))
@@ -53,10 +64,11 @@ func _process(delta):
 	self.bgRect.rect_size = self.rect_size
 	var border_size = 2
 	self.colorRect.rect_size = self.rect_size - 2 * Vector2(border_size,border_size)
-	var text_size = Vector2(self.rect_size.x/3,self.rect_size.y - 2*border_size)
+	var text_size = Vector2(self.rect_size.x/4,self.rect_size.y - 2*border_size)
 	label_x.rect_size = text_size
 	label_y.rect_size = text_size
 	label_z.rect_size = text_size
+	delete_button.rect_size = text_size
 	#set positions
 	var position = Vector2(0,self.rect_size.y * index)
 	self.set_position(position)
@@ -64,3 +76,4 @@ func _process(delta):
 	self.label_x.set_position(Vector2(border_size,border_size))
 	self.label_y.set_position(Vector2(self.label_x.rect_size.x,0) + Vector2(border_size,border_size))
 	self.label_z.set_position(Vector2(self.label_x.rect_size.x,0) + Vector2(self.label_y.rect_size.x,0) + Vector2(border_size,border_size))
+	self.delete_button.set_position(Vector2(self.label_z.rect_position.x + self.label_z.rect_size.x,0) + Vector2(border_size,border_size))

@@ -69,6 +69,9 @@ func get_all_destinations(globId:String):
 func set_destination_mode(globId:String,mode):
 	var obj = {mode:{}}
 	return {'SET_MODE_DESTINATIONS':{'id':globId,'mode':obj }}
+
+func delete_destination(id:String,uuid:String):
+	return {'DELETE_DESTINATION':{'id':id,'uuid':uuid}}	
 	
 func location_subscribe(id:String):
 	return {'SUBSCRIBE':{"query":{'GET_GLOB_LOCATION':{'id':id}}}}
