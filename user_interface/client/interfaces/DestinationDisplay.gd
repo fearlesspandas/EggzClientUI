@@ -2,7 +2,7 @@ extends Control
 
 class_name DestinationDisplay
 signal delete_destination(uuid)
-
+onready var reposition_index_timer:Timer = Timer.new()
 
 var all_destinations = {}
 var index:int
@@ -12,9 +12,13 @@ func _ready():
 	self.rect_size = OS.window_size/4
 	#self.position_indicator.rect_size = self.rect_size/16
 	self.add_child(position_indicator)
-
+	#reposition_index_timer.wait_time = 1
+	#reposition_index_timer.connect("timeout",self,"reposition_index_indicator")
+	#self.add_child(reposition_index_timer)
+	#sreposition_index_timer.start()
+	
 func reposition_index_indicator():
-	if index!= null and all_destinations.size() > 0:
+	if index!= null and all_destinations.values().size() > 0:
 		position_indicator.visible = true
 		var element_pos = all_destinations.values()[index]
 		var size = Vector2(self.rect_size.x/16,element_pos.rect_size.y)
@@ -39,6 +43,14 @@ func add_destination(dest:Destination):
 
 func delete_destination(uuid):
 	emit_signal("delete_destination",uuid)
+
+func destination_deleted(uuid):
+	var dest_model = all_destinations[uuid]
+	all_destinations.erase(uuid)
+	self.remove_child(dest_model)
+	dest_model.call_deferred('free')
+	refresh_idexes()
+	#refresh_destinations(all_destinations)
 	
 func add_destination_if_not_present(dest:Destination):
 	if all_destinations.has(dest.uuid):
@@ -48,15 +60,15 @@ func add_destination_if_not_present(dest:Destination):
 	#reposition_index_indicator()
 	
 func erase_destinations():
-	for dest in all_destinations:
+	for dest in all_destinations.values():
 		self.remove_child(dest)
 		if dest != null:
 			dest.call_deferred("free")
 			dest = null
-	all_destinations = []
+	all_destinations = {}
 	#position_indicator.visible = false
 
-func erase_destinations_if_not_present(incoming_destinations:Array):
+func erase_destinations_if_not_present(incoming_destinations:Dictionary):
 	var incoming_uuid = {}
 	for dest in incoming_destinations:
 		if dest is Destination:
@@ -65,30 +77,35 @@ func erase_destinations_if_not_present(incoming_destinations:Array):
 		if incoming_uuid.has(dest.uuid):
 			pass
 		else:
+			all_destinations.erase(dest.uuid)
 			self.remove_child(dest)
 			if dest != null:
 				dest.call_deferred("free")
 				dest = null
-			all_destinations.erase(dest.uuid)
+			
 	#position_indicator.visible = false
 	
-func refresh_destinations(destinations):
+func refresh_destinations(destinations:Dictionary):
 	#reposition_index_indicator()
 	#erase_destinations()
 	erase_destinations_if_not_present(destinations)
-	for d in destinations:
+	for d in destinations.values():
 		add_destination_if_not_present(d)
-	reposition_index_indicator()
+	#reposition_index_indicator()
 
+
+func refresh_idexes():
+	var dests = all_destinations.values()
+	for i in range(0,dests.size()):
+		var dest = dests[i]
+		dest.index = i
+		
 func set_index(ind:int):
 	index = ind
 	reposition_index_indicator()
 	
 func _process(delta):
-	#var index = DataCache.cached("","index")
-	#if index != null:
-	#	self.index = index
-	#reposition_index_indicator()
+	reposition_index_indicator()
 	self.rect_size = OS.window_size/4
 	self.set_position(Vector2(
 		OS.window_size.x - self.rect_size.x,

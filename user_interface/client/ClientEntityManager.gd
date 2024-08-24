@@ -150,7 +150,16 @@ func handle_json(json) -> bool:
 		{'ModeSet':{'mode':var mode}}:
 			player.set_destination_mode(mode)
 			return false
+		{'DestinationsActive':{'id':var id, 'is_active':var active}}:
+			player.set_destinations_active(active)
+			return false
+		{'GravityActive':{'id':var id, 'is_active':var active}}:
+			player.set_gravity_active(active)
+			return false
 		{'ClearDestinations':{}}:
+			destinations.handle_message(json)
+			return false
+		{'DeleteDestination':{'id':var id, 'uuid':var uuid}}:
 			destinations.handle_message(json)
 			return false
 		{'NewDestination':{'id':var id, 'destination':var dests}}:

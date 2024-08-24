@@ -5,20 +5,16 @@ signal new_destination(destination)
 signal refresh_destinations(destinations)
 signal clear_destinations()
 signal index_set(next_index)
-
+signal destination_deleted(uuid)
 
 var client_id
-var destinations = []
+var destinations = {}
 var entity_spawn:Viewport
 var index
 
 func _ready():
 	assert(entity_spawn != null)
 	
-	
-func poll_index():
-	ServerNetwork.get(client_id).get_next_destination_index(client_id)
-
 #empty string id is a shorthand for global access
 func set_index(ind:int):
 	index = ind
@@ -26,18 +22,25 @@ func set_index(ind:int):
 	#DataCache.add_data("","index",index)
 	
 func add_destination(dest:Destination):
-	destinations.append(dest)
+	destinations[dest.uuid] = dest
 
 func delete_destination(uuid:String):
 	ServerNetwork.get(client_id).delete_destination(client_id,uuid)
 	
+func destination_deleted(uuid:String):
+	var dest = destinations[uuid]
+	destinations.erase(uuid)
+	entity_spawn.remove_child(dest)
+	dest.call_deferred('free')
+	emit_signal("destination_deleted",uuid)
+	
 func erase_dests():
-	for dest in destinations:
+	for dest in destinations.values():
 		entity_spawn.remove_child(dest)
 		if dest != null:
 			dest.call_deferred("free")
 			dest = null
-	destinations = []
+	destinations = {}
 	
 func spawn_dest(destination:Destination):
 	entity_spawn.add_child(destination)
@@ -52,6 +55,8 @@ func destination(uuid:String,dest_type,location:Vector3,radius:float) -> Destina
 	
 func handle_message(message):
 	match message:
+		{'DeleteDestination':{'id':var id, 'uuid':var uuid}}:
+			destination_deleted(uuid)
 		{'NextIndex':{'id':var id, 'index':var index}}:
 			set_index(int(index))
 		{'ClearDestinations':{}}:

@@ -59,6 +59,7 @@ func load_scene(id,secret):
 	entity_management.destinations.connect("refresh_destinations",destination_display,"refresh_destinations")
 	entity_management.destinations.connect("clear_destinations",destination_display,"erase_destinations")
 	entity_management.destinations.connect("index_set",destination_display,"set_index")
+	entity_management.destinations.connect("destination_deleted",destination_display,"destination_deleted")
 	
 	destination_display.connect("delete_destination",entity_management.destinations,"delete_destination")
 	self.add_child(destination_display)
@@ -101,6 +102,8 @@ func player_character_spawned(player:Player):
 	assert(player != null)
 	self.connect("is_active",player,"set_active")
 	player.connect("set_destination_mode",destination_type_indicator,"set_destination_mode")
+	player.connect("set_destinations_active",destination_type_indicator,"set_destinations_active")
+	player.connect("set_gravity_active",destination_type_indicator,"set_gravity_active")
 	ServerNetwork.get(player.id).get_top_level_terrain_in_distance(1000,player.global_transform.origin)
 	
 	
@@ -118,10 +121,10 @@ func _process(delta):
 	if (self.rect_size - OS.get_window_safe_area().size).length() > 5:
 		self.set_size(OS.get_window_safe_area().size,true)
 		viewport_container.set_size(self.rect_size,true)
-		max_speed_slider.rect_size = self.rect_size / 4
-		max_speed_slider.set_position(
-			Vector2(
-				self.rect_size.x - max_speed_slider.rect_size.x,
-				self.rect_size.y - (max_speed_slider.rect_size.y * 2)
-			)
-		)
+		#max_speed_slider.rect_size = self.rect_size / 4
+		#max_speed_slider.set_position(
+		#	Vector2(
+		#		self.rect_size.x - max_speed_slider.rect_size.x,
+		#		self.rect_size.y - (max_speed_slider.rect_size.y * 2)
+		#	)
+		#)
