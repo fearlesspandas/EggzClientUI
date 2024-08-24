@@ -142,6 +142,12 @@ func get_all_destinations(globId:String):
 func set_destination_mode(globId:String,mode):
 	send_payload(PayloadMapper.set_destination_mode(globId,mode))
 
+func set_destination_active(globId:String,value:bool):
+	send_payload(PayloadMapper.set_destinations_active(globId,value))
+
+func set_gravitate(globId:String,value:bool):
+	send_payload(PayloadMapper.set_gravitate(globId,value))
+
 func delete_destination(id,uuid:String):
 	send_payload(PayloadMapper.delete_destination(id,uuid))
 	

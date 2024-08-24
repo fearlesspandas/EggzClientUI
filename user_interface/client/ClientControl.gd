@@ -104,14 +104,7 @@ func player_character_spawned(player:Player):
 	player.connect("set_destination_mode",destination_type_indicator,"set_destination_mode")
 	player.connect("set_destinations_active",destination_type_indicator,"set_destinations_active")
 	player.connect("set_gravity_active",destination_type_indicator,"set_gravity_active")
-	ServerNetwork.get(player.id).get_top_level_terrain_in_distance(1000,player.global_transform.origin)
 	
-	
-func handle_new_entity(entity,parent,server_entity):
-	print("new entity in clientControl")
-	pass
-
-
 func set_active(active: bool):
 	print_debug("setting is active for control:",active)
 	ClientReferences.set_viewport(self.viewport)

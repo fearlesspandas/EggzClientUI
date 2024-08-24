@@ -71,19 +71,19 @@ func _handle_message(msg,delta_accum):
 			print_debug("gravity active " , active)
 			gravity_active = bool(active)
 			if destinations_active and not gravity_active:
-				physics_socket.lock_input_physics(id)
+				#physics_socket.lock_input_physics(id)
 				print_debug("input locked " )
 			else:
-				physics_socket.unlock_input_physics(id)
+				#physics_socket.unlock_input_physics(id)
 				print_debug("input unlocked")
 		{'DestinationsActive':{'id': var id, 'is_active':var active}}:
 			print_debug("destinations active", active)
 			destinations_active = bool(active)
 			if destinations_active and not gravity_active:
-				physics_socket.lock_input_physics(id)
+				#physics_socket.lock_input_physics(id)
 				print_debug("input locked")
 			else:
-				physics_socket.unlock_input_physics(id)
+				#physics_socket.unlock_input_physics(id)
 				print_debug("input unlocked")
 		{'NoInput':{'id':var id}}:
 			movement.entity_stop(body)
@@ -182,8 +182,8 @@ func _process(delta):
 	if !isSubbed:
 		var query = PayloadMapper.get_physical_stats(id)
 		socket.get_physical_stats(id)
-		if !is_npc:
-			socket.toggle_destinations(id)
+		#if !is_npc:
+			#socket.toggle_destinations(id)
 		isSubbed = true
 
 

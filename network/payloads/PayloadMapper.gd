@@ -70,6 +70,12 @@ func set_destination_mode(globId:String,mode):
 	var obj = {mode:{}}
 	return {'SET_MODE_DESTINATIONS':{'id':globId,'mode':obj }}
 
+func set_destinations_active(id:String,value:bool):
+	return {'SET_ACTIVE':{'id':id,'value':value}}	
+
+func set_gravitate(id:String,value:bool):
+	return {'SET_GRAVITATE':{'id':id,'value':value}}	
+
 func delete_destination(id:String,uuid:String):
 	return {'DELETE_DESTINATION':{'id':id,'uuid':uuid}}	
 	

@@ -34,6 +34,8 @@ func set_player(player:Player):
 	self.player = player
 	ServerNetwork.get(client_id).get_top_level_terrain_in_distance(ClientSettings.CHUNK_DISTANCE_ON_PLAYER_LOAD,player.global_transform.origin)
 	ServerNetwork.get(client_id).set_destination_mode(client_id,"FORWARD")
+	ServerNetwork.get(client_id).set_destination_active(client_id,false)
+	ServerNetwork.get(client_id).set_gravitate(client_id,false)
 	ServerNetwork.get(client_id).get_all_destinations(client_id)
 	
 func set_active(active:bool):
