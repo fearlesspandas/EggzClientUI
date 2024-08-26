@@ -158,6 +158,9 @@ func handle_json(json) -> bool:
 		{'GravityActive':{'id':var id, 'is_active':var active}}:
 			player.set_gravity_active(active)
 			return false
+		{'ActiveDestination':{'id':var id, 'destination':var uuid}}:
+			destinations.handle_message(json)
+			return false
 		{'ClearDestinations':{}}:
 			destinations.handle_message(json)
 			return false

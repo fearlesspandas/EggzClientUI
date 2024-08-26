@@ -2,6 +2,7 @@ extends Control
 
 class_name DestinationDisplay
 signal delete_destination(uuid)
+signal set_active_destination(uuid)
 onready var reposition_index_timer:Timer = Timer.new()
 
 var all_destinations = {}
@@ -16,7 +17,18 @@ func _ready():
 	#reposition_index_timer.connect("timeout",self,"reposition_index_indicator")
 	#self.add_child(reposition_index_timer)
 	#sreposition_index_timer.start()
-	
+
+func reposition_index_by_id(uuid):
+	for dest in all_destinations.values():
+		if dest is Destination and dest.uuid == uuid:
+			var size = Vector2(self.rect_size.x/16,dest.rect_size.y)
+			position_indicator.rect_size = size
+			var position = Vector2(
+				dest.get_position().x - size.x,
+				dest.get_position().y
+			)
+			position_indicator.set_position(position)
+			
 func reposition_index_indicator():
 	if index!= null and all_destinations.values().size() > 0:
 		position_indicator.visible = true
@@ -39,11 +51,15 @@ func add_destination(dest:Destination):
 	element.index = all_destinations.size()-1
 	self.add_child(element)
 	element.connect("delete_destination",self,"delete_destination")
+	element.connect("set_active_destination",self,"set_active_destination")
 	#reposition_index_indicator()
 
 func delete_destination(uuid):
 	emit_signal("delete_destination",uuid)
-
+	
+func set_active_destination(uuid):
+	emit_signal("set_active_destination",uuid)
+	
 func destination_deleted(uuid):
 	var dest_model = all_destinations[uuid]
 	all_destinations.erase(uuid)
@@ -100,10 +116,13 @@ func refresh_idexes():
 		var dest = dests[i]
 		dest.index = i
 		
-func set_index(ind:int):
+func set_index(ind:int,uuid):
 	index = ind
-	reposition_index_indicator()
-	
+	if uuid == null:
+		reposition_index_indicator()
+	else:
+		print_debug("set index" , uuid)
+		reposition_index_by_id(uuid)
 func _process(delta):
 	reposition_index_indicator()
 	self.rect_size = OS.window_size/4

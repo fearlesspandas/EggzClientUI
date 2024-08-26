@@ -4,7 +4,7 @@ class_name DestinationManager
 signal new_destination(destination)
 signal refresh_destinations(destinations)
 signal clear_destinations()
-signal index_set(next_index)
+signal index_set(next_index,uuid)
 signal destination_deleted(uuid)
 
 var client_id
@@ -15,18 +15,28 @@ var index
 func _ready():
 	assert(entity_spawn != null)
 	
-#empty string id is a shorthand for global access
-func set_index(ind:int):
+func make_destination_active(uuid):
+	var res:Destination
+	for i in range(0,destinations.values().size()):
+		var dest = destinations.values()[i] 
+		if dest is Destination and dest.uuid == uuid:
+			res = dest
+			print_debug(i,uuid)
+			set_index(i,uuid)
+
+func set_index(ind:int,uuid = null):
 	index = ind
-	emit_signal("index_set",index)
-	#DataCache.add_data("","index",index)
-	
+	emit_signal("index_set",index,uuid)
+
 func add_destination(dest:Destination):
 	destinations[dest.uuid] = dest
 
 func delete_destination(uuid:String):
 	ServerNetwork.get(client_id).delete_destination(client_id,uuid)
 	
+func set_active_destination(uuid:String):
+	ServerNetwork.get(client_id).set_active_destination(client_id,uuid)
+
 func destination_deleted(uuid:String):
 	var dest = destinations[uuid]
 	destinations.erase(uuid)
@@ -55,6 +65,8 @@ func destination(uuid:String,dest_type,location:Vector3,radius:float) -> Destina
 	
 func handle_message(message):
 	match message:
+		{'ActiveDestination':{'id':var id, 'destination':var uuid}}:
+			make_destination_active(uuid)
 		{'DeleteDestination':{'id':var id, 'uuid':var uuid}}:
 			destination_deleted(uuid)
 		{'NextIndex':{'id':var id, 'index':var index}}:

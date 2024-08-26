@@ -58,27 +58,30 @@ func add_destination(globId:String,location:Vector3,type:String,radius:float = 5
 	return {'ADD_DESTINATION':{'id':globId,'dest':destination(type,location,radius)}}
 	
 func get_next_destination(globId:String):
-	return {'GET_NEXT_DESTINATION':{'id':globId}}	
+	return {'GET_NEXT_DESTINATION':{'id':globId}}
 
 func get_next_destination_index(globId:String):
-	return {'GET_NEXT_INDEX':{'id':globId}}	
+	return {'GET_NEXT_INDEX':{'id':globId}}
 	
 func get_all_destinations(globId:String):
-	return {'GET_ALL_DESTINATIONS':{'id':globId}}	
+	return {'GET_ALL_DESTINATIONS':{'id':globId}}
 
 func set_destination_mode(globId:String,mode):
 	var obj = {mode:{}}
 	return {'SET_MODE_DESTINATIONS':{'id':globId,'mode':obj }}
 
 func set_destinations_active(id:String,value:bool):
-	return {'SET_ACTIVE':{'id':id,'value':value}}	
+	return {'SET_ACTIVE':{'id':id,'value':value}}
 
 func set_gravitate(id:String,value:bool):
-	return {'SET_GRAVITATE':{'id':id,'value':value}}	
+	return {'SET_GRAVITATE':{'id':id,'value':value}}
 
 func delete_destination(id:String,uuid:String):
-	return {'DELETE_DESTINATION':{'id':id,'uuid':uuid}}	
-	
+	return {'DELETE_DESTINATION':{'id':id,'uuid':uuid}}
+
+func set_active_destination(id:String,uuid:String):
+	return {'SET_ACTIVE_DESTINATION':{'id':id,'destination_id':uuid}}
+
 func location_subscribe(id:String):
 	return {'SUBSCRIBE':{"query":{'GET_GLOB_LOCATION':{'id':id}}}}
 	

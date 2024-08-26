@@ -1,6 +1,8 @@
 extends Control
 class_name DestinationListElement
 signal delete_destination(uuid)
+signal set_active_destination(uuid)
+
 onready var display = get_parent()
 
 var bgRect:ColorRect = ColorRect.new()
@@ -11,6 +13,7 @@ var label_x:RichTextLabel = RichTextLabel.new()
 var label_y:RichTextLabel = RichTextLabel.new()
 var label_z:RichTextLabel = RichTextLabel.new()
 var index:int
+var hovering
 func _init():
 	bgRect.color = Color.lightslategray
 	bgRect.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -41,13 +44,20 @@ func _ready():
 	self.connect("mouse_exited",self,"exited")
 	pass
 
-
+func _input(event):
+	if event is InputEventMouseButton:
+		if event.button_index == 1 and event.is_action_released("left_click") and hovering:
+			print_debug("Setting active uuid " , self.uuid)
+			emit_signal("set_active_destination",self.uuid)
+			
 func delete_dest():
 	emit_signal("delete_destination",uuid)
 
 func entered():
+	hovering = true
 	bgRect.color = Color.white
 func exited():
+	hovering = false
 	bgRect.color = Color.lightslategray
 		
 func load_dest(destination:Destination):

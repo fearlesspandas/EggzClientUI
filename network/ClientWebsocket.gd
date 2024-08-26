@@ -150,7 +150,10 @@ func set_gravitate(globId:String,value:bool):
 
 func delete_destination(id,uuid:String):
 	send_payload(PayloadMapper.delete_destination(id,uuid))
-	
+
+func set_active_destination(id,uuid:String):
+	send_payload(PayloadMapper.set_active_destination(id,uuid))
+
 func location_subscribe(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.location_subscribe(id)).to_utf8())	
 
