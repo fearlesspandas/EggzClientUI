@@ -23,6 +23,8 @@ func _ready():
 	assert(socket != null)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
+	if is_npc:
+		mod = 8
 	pass
 	
 func getSocket() -> ClientWebSocket:
@@ -43,13 +45,16 @@ func get_location():
 	physics_socket.get_location_physics(id)
 
 var proc = 0
-var mod = 4
+var mod = 2
+
 func _process(delta):
-	movement.entity_move_by_direction(delta,body)
+	#movement.entity_move_by_direction(delta,body)
+	#get_location()
 	if proc % mod == 0:
-		get_direction()
+		#get_direction()
+		get_location()
 		proc = 0
-	if proc % mod == 2:
+	if proc % mod == ceil(mod/2):
 		get_location()
 	proc += 1
 	

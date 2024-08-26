@@ -21,7 +21,7 @@ func _ready():
 func reposition_index_by_id(uuid):
 	for dest in all_destinations.values():
 		if dest is Destination and dest.uuid == uuid:
-			var size = Vector2(self.rect_size.x/16,dest.rect_size.y)
+			var size = Vector2(self.rect_size.x/64,dest.rect_size.y)
 			position_indicator.rect_size = size
 			var position = Vector2(
 				dest.get_position().x - size.x,
@@ -32,8 +32,8 @@ func reposition_index_by_id(uuid):
 func reposition_index_indicator():
 	if index!= null and all_destinations.values().size() > 0:
 		position_indicator.visible = true
-		var element_pos = all_destinations.values()[index]
-		var size = Vector2(self.rect_size.x/16,element_pos.rect_size.y)
+		var element_pos = all_destinations.values()[min(index,all_destinations.values().size()-1)]
+		var size = Vector2(self.rect_size.x/64,element_pos.rect_size.y)
 		position_indicator.rect_size = size
 		var position = Vector2(
 			element_pos.get_position().x - size.x,

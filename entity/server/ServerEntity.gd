@@ -142,7 +142,7 @@ func _physics_process(delta):
 	var dir_ = movement.entity_get_direction()
 	movement.entity_move_by_direction(delta,body)
 	movement.entity_set_max_speed(DataCache.cached(id,'speed'))
-	if !queued_teleports.empty() and body is KinematicBody:
+	if !queued_teleports.empty() and body is KinematicBody and destinations_active:
 		var t = queued_teleports.pop_front()
 		var dir = (t - body.global_transform.origin)#.normalized()
 		body.translate(dir)
