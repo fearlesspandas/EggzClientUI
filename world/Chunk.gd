@@ -41,7 +41,8 @@ func _ready():
 	self.set_collision_layer_bit(11,true)
 	self.set_collision_mask_bit(11,true)
 	self.global_transform.origin = center
-	#print_debug("creating chunk ",center , " ", radius , " ", uuid)
+	if self.is_empty:
+		print_debug("creating chunk ",center , " ", radius , " ", uuid)
 	self.connect("body_entered",self,"body_entered_print")
 	pass
 	
