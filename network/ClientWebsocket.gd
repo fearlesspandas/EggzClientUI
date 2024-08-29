@@ -205,6 +205,9 @@ func get_top_level_terrain():
 
 func get_top_level_terrain_in_distance(distance:float, location:Vector3):
 	send_payload(PayloadMapper.get_top_level_terrain_within_distance(distance,location))
+
+func fill_empty_chunk(uuid:String,trigger_entity:String):
+	send_payload(PayloadMapper.fill_empty_chunk(uuid,trigger_entity))
 	
 func get_cached_terrain(uuid:String):
 	send_payload(PayloadMapper.get_cached_terrain(uuid))

@@ -89,9 +89,10 @@ func _on_physics_data():
 	message_controller.add_to_queue(cmd)
 	
 func route_to_entity(id:String,msg):
-	var s = server_entities[id]
-	if s!= null:
-		s.message_controller.add_to_queue(msg)
+	if server_entities.has(id):
+		var s = server_entities[id]
+		if s!= null:
+			s.message_controller.add_to_queue(msg)
 		
 func handle_json(json) -> bool:
 	match json:
@@ -173,6 +174,7 @@ func handle_json(json) -> bool:
 					chunk.center = Vector3(x,y,z)
 					chunk.radius = radius
 					chunk.is_empty = false
+					chunk.is_server = true
 					terrain[uuid] = chunk
 					spawn.add_child(chunk)
 				return true
@@ -185,6 +187,7 @@ func handle_json(json) -> bool:
 					chunk.center = Vector3(x,y,z)
 					chunk.radius = radius
 					chunk.is_empty = true
+					chunk.is_server = true
 					terrain[uuid] = chunk
 					spawn.add_child(chunk)
 				return false

@@ -214,6 +214,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://entity/server/ServerEntity.gd"
 }, {
+"base": "KinematicBody",
+"class": "ServerEntityKinematicBody",
+"language": "GDScript",
+"path": "res://entity/server/ServerEntityKinematicBody.gd"
+}, {
 "base": "EntityManagement",
 "class": "ServerEntityManager",
 "language": "GDScript",
@@ -296,6 +301,7 @@ _global_script_class_icons={
 "ServerBody": "",
 "ServerControl": "",
 "ServerEntity": "",
+"ServerEntityKinematicBody": "",
 "ServerEntityManager": "",
 "ServerKinematicMovement": "",
 "ServerRigidMovement": "",

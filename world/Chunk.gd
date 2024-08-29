@@ -58,14 +58,24 @@ func chunk_is_not_visible():
 	#print_debug("Chunk is NOT visible ", uuid)
 	
 func body_entered_print(body):
-	if self.is_empty:
-		print("body entered " + uuid+ " : " + str(body))
+	if self.is_empty and self.is_server:
+		if body is ServerEntityKinematicBody:
+			print("body entered " + uuid+ " : " + str(body.parent.id))
+			fill_empty_terrain(body.parent.id)
 	else:
 		load_terrain()
 		self.has_loaded = true
 	
+func fill_empty_terrain(trigger_entity_id:String):
+	#assert(false)
+	if self.is_empty and not self.has_loaded:
+		ServerNetwork.get(client_id).fill_empty_chunk(uuid,trigger_entity_id)
+		#assert(false)
+		self.has_loaded = true
+		mesh_instance.visible = false
+
 func load_terrain():
-	if !self.has_loaded:
+	if !self.has_loaded and !self.is_empty:
 		#print_debug("Loading Area " , center, " " ,radius , " ",uuid)
 		ServerNetwork.get(client_id).get_cached_terrain(uuid)
 		self.has_loaded = true

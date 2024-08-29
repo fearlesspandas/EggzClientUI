@@ -151,6 +151,9 @@ func get_top_level_terrain():
 func get_top_level_terrain_within_distance(distance:float,location:Vector3):
 	return {'GET_TOP_LEVEL_TERRAIN_IN_DISTANCE':{'loc':[location.x,location.y,location.z],'distance':distance}}
 
+func fill_empty_chunk(uuid:String,trigger_entity:String):
+	return {'FILL_EMPTY_CHUNK':{'id':uuid,'trigger_entity':trigger_entity}}
+	
 func get_cached_terrain(uuid:String):
 	return {'GET_CACHED_TERRAIN':{"id":uuid}}
 
