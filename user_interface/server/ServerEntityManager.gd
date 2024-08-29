@@ -172,9 +172,22 @@ func handle_json(json) -> bool:
 					chunk.spawn = spawn
 					chunk.center = Vector3(x,y,z)
 					chunk.radius = radius
+					chunk.is_empty = false
 					terrain[uuid] = chunk
 					spawn.add_child(chunk)
 				return true
+			{'EmptyChunk':{'uuid':var uuid, 'location': [var x ,var y ,var z], 'radius': var radius}}:
+				if !terrain.has(uuid):
+					var chunk = Chunk.new()
+					chunk.client_id = client_id
+					chunk.uuid = uuid
+					chunk.spawn = spawn
+					chunk.center = Vector3(x,y,z)
+					chunk.radius = radius
+					chunk.is_empty = true
+					terrain[uuid] = chunk
+					spawn.add_child(chunk)
+				return false
 			{'TerrainSet':var terrain_set}:
 				#print_debug("SERVER_ENTITY_terrain", terrain)
 				match terrain_set:

@@ -232,7 +232,18 @@ func handle_json(json) -> bool:
 				if chunk.is_within_chunk(player.body.global_transform.origin) or chunk.is_within_distance(player.body.global_transform.origin,ClientSettings.LOAD_RECEIVED_CHUNK_IF_WITHIN):
 					chunk.load_terrain()
 			return true
-			
+		{'EmptyChunk':{'uuid':var uuid, 'location': [var x ,var y ,var z], 'radius': var radius}}:
+			if !terrain.has(uuid):
+				var chunk = Chunk.new()
+				chunk.client_id = client_id
+				chunk.uuid = uuid
+				chunk.spawn = spawn
+				chunk.center = Vector3(x,y,z)
+				chunk.radius = radius
+				chunk.is_empty = true
+				terrain[uuid] = chunk
+				spawn.add_child(chunk)
+			return false
 		{'TerrainSet':var terrain_set}:
 			print_debug("USING OLD TERRAIN")
 			match terrain_set:
