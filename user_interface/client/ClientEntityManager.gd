@@ -39,6 +39,13 @@ func set_player(player:Player):
 	ServerNetwork.get(client_id).set_gravitate(client_id,false)
 	ServerNetwork.get(client_id).get_all_destinations(client_id)
 	
+func split_chunks(radius,max_size):
+	assert(radius > max_size)
+	var num_chunk = (radius - radius%max_size)/max_size + 1
+	for i in range(0,num_chunk):
+		#create smaller chunk
+		pass
+		
 func set_active(active:bool):
 	is_active = active
 	entity_scanner.set_active(active)

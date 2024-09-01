@@ -26,7 +26,7 @@ func _ready():
 	if is_empty:
 		mesh.material.albedo_color = Color.red
 	else:
-		mesh.material.albedo_color = Color.darkgray
+		mesh.material.albedo_color = Color.black
 	mesh_instance.mesh = mesh
 	#if self.is_empty:
 	if !self.is_server:
