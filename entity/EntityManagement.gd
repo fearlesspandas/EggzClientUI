@@ -11,15 +11,13 @@ var terrain = {}
 
 func _ready():
 	pass # Replace with function body.
-#does not request a new entity be created serverside, whereas create_entity requests
-#that a new entity is also spawned on the server
+
 func spawn_entity(id:String,location:Vector3,parent:Node,resource:Resource,create_as_server_entity:bool):
 	var res = load(resource.resource_path).instance()
 	if create_as_server_entity:
 		server_entities[id] = res
 	else:
 		client_entities[id] = res
-	#ServerNetwork.setGlobLocation(id,location)
 	if res.has_method("init_with_id"):
 		res.init_with_id(id,client_id)
 	parent.add_child(res)
@@ -33,6 +31,8 @@ func spawn_terrain(id:String,location:Vector3,parent:Node,resource:Resource,crea
 	terrain[id] = res
 	parent.add_child(res)
 	res.global_transform.origin = location
+	if res.has_method("init_with_id"):
+		res.init_with_id(id)
 	emit_signal("terrain_created",res,parent,create_as_server_entity)
 	return res
 
@@ -50,9 +50,9 @@ func spawn_player_client(id:String,location:Vector3,parent:Node):
 	var res:Player = AssetMapper.matchAsset(AssetMapper.player_model).instance()
 	if res.has_method("init_with_id"):
 		res.init_with_id(id,client_id)
-	
 	parent.add_child(res)
 	#res.camera.make_current()
 	client_entities[id] = res
 	res.global_transform.origin = location
 	return res
+

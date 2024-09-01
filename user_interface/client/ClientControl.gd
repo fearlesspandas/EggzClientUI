@@ -14,7 +14,7 @@ onready var max_speed_slider:MaxSpeedSlider = MaxSpeedSlider.new()
 onready var click_menu:ClickMenu = ClickMenu.new()
 onready var destination_display:DestinationDisplay = DestinationDisplay.new()
 onready var destination_type_indicator:DestinationTypeIndicator = DestinationTypeIndicator.new()
-
+onready var command_menu : CommandMenu = CommandMenu.new()
 var profile_id:String
 var connection_ind_size = 30
 
@@ -94,6 +94,9 @@ func load_scene(id,secret):
 	position_indicator.set_position(self.rect_size - position_indicator.rect_size)
 	self.add_child(position_indicator)
 	entity_management.connect("spawned_player_character",self,"player_character_spawned")
+	
+	command_menu.client_id = entity_management.client_id
+	self.add_child(command_menu)
 	
 	ServerNetwork.get(profile.id).getAllGlobs()
 	#self.mouse_filter = Control.MOUSE_FILTER_IGNORE
