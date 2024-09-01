@@ -21,7 +21,7 @@ var terrain_uuids = []
 func _ready():
 	self.input_ray_pickable = false
 	shape.extents = Vector3(radius,radius,radius)
-	mesh.size = 2*shape.extents
+	mesh.size = 2*shape.extents - Vector3(20,20,20)
 	mesh.material = SpatialMaterial.new()
 	if is_empty:
 		mesh.material.albedo_color = Color.red
@@ -30,7 +30,7 @@ func _ready():
 	mesh_instance.mesh = mesh
 	#if self.is_empty:
 	if !self.is_server:
-		#self.add_child(mesh_instance)
+		self.add_child(mesh_instance)
 		mesh_instance.visible = true
 		
 	collision_shape.shape = shape
