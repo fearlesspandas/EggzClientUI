@@ -26,3 +26,4 @@ func _handle_message(msg,delta):
 		{'LV':{'id':var id,'lv': [var x , var y , var z]}}:
 			self.text = str([x,y,z])
 			
+

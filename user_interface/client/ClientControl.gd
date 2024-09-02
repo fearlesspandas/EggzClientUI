@@ -79,10 +79,11 @@ func load_scene(id,secret):
 	self.add_child(destination_type_indicator)
 	
 	#might not need this
-	entity_management.spawn_client_world(viewport,Vector3(0,-10,0))
+	
 	entity_management.connect("spawned_player_character",position_indicator,"player_character_spawned")
 	self.add_child(position_indicator)
 	
+	entity_management.spawn_client_world(viewport,Vector3(0,-10,0))
 	
 	command_menu.client_id = entity_management.client_id
 	self.add_child(command_menu)
