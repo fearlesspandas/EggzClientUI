@@ -24,13 +24,13 @@ func load_scene(id,secret:String):
 	
 	
 	entity_management.client_id = profile.id
-	self.add_child(entity_management)
 	ServerNetwork.init(profile.id,profile.secret,entity_management,"_on_data",false)
 	ServerNetwork.init_physics(profile.id,profile.secret,entity_management,"_on_physics_data",false)
+	self.add_child(entity_management)
+	
 	console.client_id = profile.id
 	
 	self.add_child(console)
-	ServerNetwork.bind(profile.id,console,"_on_data")
 	connection_indicator.set_size(Vector2(connection_ind_size,connection_ind_size))
 	connection_indicator.set_global_position(Vector2(connection_ind_size,connection_ind_size))
 	connection_indicator.client_id = entity_management.client_id

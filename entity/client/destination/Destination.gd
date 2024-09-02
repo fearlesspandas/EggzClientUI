@@ -10,6 +10,7 @@ var location:Vector3
 var type:String
 var radius:float
 var uuid:String
+var is_empty:bool = false
 func _ready():
 	material.albedo_color = Color.red
 	match type:

@@ -14,7 +14,6 @@ onready var server_control = get_parent() #initial node where base map is added
 var spawn
 
 func _ready():
-	#socket.client_id = client_id
 	entity_scanner.wait_time = 2
 	entity_scanner.client_id = client_id
 	entity_scanner.is_active = true
@@ -26,14 +25,13 @@ func _ready():
 	terrain_scanner.connect("timeout",self,"scan_initial_terrain")
 	self.add_child(terrain_scanner)
 	terrain_scanner.start()
-	self.connect("player_created",self,"inspect_terrain")
 	self.add_child(message_controller)
 	
 	pass # Replace with function body.
 
 func scan_initial_terrain():
-	#ServerNetwork.get(client_id).get_top_level_terrain()
-	ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,Vector3(0,0,0))
+	#socket.get_top_level_terrain()
+	socket.get_top_level_terrain_in_distance(1024,Vector3(0,0,0))
 	terrain_scanner.one_shot = true
 	
 func inspect_terrain(player:ServerEntity):
@@ -81,11 +79,11 @@ func spawn_npc_character_entity_server(id:String,location:Vector3) -> ServerEnti
 
 
 func _on_data():
-	var cmd = ServerNetwork.get(client_id).get_packet(true)
+	var cmd = socket.get_packet(true)
 	message_controller.add_to_queue(cmd)
 	
 func _on_physics_data():
-	var cmd = ServerNetwork.get_physics(client_id).get_packet()
+	var cmd = physics_socket.get_packet()
 	message_controller.add_to_queue(cmd)
 	
 func route_to_entity(id:String,msg):
@@ -115,7 +113,7 @@ func handle_json(json) -> bool:
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
 							if !server_entities.has(id):
 								#print_debug("ServerEntityManager: creating entity , ", id , "in client id," ,client_id , spawn)
-								ServerNetwork.get(client_id).get_top_level_terrain_in_distance(1024,Vector3(x,y,z))
+								socket.get_top_level_terrain_in_distance(1024,Vector3(x,y,z))
 								var spawned_character = spawn_character_entity_server(id,Vector3(x,y,z))
 								res = true
 						{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
@@ -247,7 +245,7 @@ func parseJsonCmd(cmd,delta):
 		var json:Dictionary = parsed.result
 		if handle_json(json):
 			pass
-			#ServerNetwork.get(client_id).get_next_command()
+			#socket.get_next_command()
 		
 	else:
 		#pass

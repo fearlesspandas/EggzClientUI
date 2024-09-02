@@ -33,11 +33,11 @@ func _ready():
 func set_player(player:Player):
 	self.player = player
 	DataCache.add_data(client_id,"PLAYER",player)
-	ServerNetwork.get(client_id).get_top_level_terrain_in_distance(ClientSettings.CHUNK_DISTANCE_ON_PLAYER_LOAD,player.global_transform.origin)
-	ServerNetwork.get(client_id).set_destination_mode(client_id,"FORWARD")
-	ServerNetwork.get(client_id).set_destination_active(client_id,false)
-	ServerNetwork.get(client_id).set_gravitate(client_id,false)
-	ServerNetwork.get(client_id).get_all_destinations(client_id)
+	socket.get_top_level_terrain_in_distance(ClientSettings.CHUNK_DISTANCE_ON_PLAYER_LOAD,player.global_transform.origin)
+	socket.set_destination_mode(client_id,"FORWARD")
+	socket.set_destination_active(client_id,false)
+	socket.set_gravitate(client_id,false)
+	socket.get_all_destinations(client_id)
 	
 func split_chunks(radius,max_size):
 	assert(radius > max_size)
@@ -92,11 +92,12 @@ func spawn_npc_character_entity_client(id:String,location:Vector3) -> ClientPlay
 
 
 func _on_data():
-	var cmd = ServerNetwork.get(client_id).get_packet()
-	message_controller.add_to_queue(cmd)
+	if socket != null:
+		var cmd = socket.get_packet()
+		message_controller.add_to_queue(cmd)
 	
 func _on_physics_data():
-	var cmd = ServerNetwork.get_physics(client_id).get_packet()
+	var cmd = physics_socket.get_packet()
 	message_controller.add_to_queue(cmd)
 	#print_debug("physics received: " , cmd)
 	
@@ -314,7 +315,7 @@ func parseJsonCmd(cmd,delta):
 		var json:Dictionary = parsed.result
 		if handle_json(json):
 			pass
-			#ServerNetwork.get(client_id).get_next_command()
+			#socket.get_next_command()
 	else:
 		print_debug("Could not parse msg:",cmd)
 

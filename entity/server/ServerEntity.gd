@@ -8,10 +8,9 @@ onready var spawn
 
 var socket:ClientWebSocket
 var physics_socket:RustSocket
-var requested_dest = false
-var timeout = 10
+#var requested_dest = false
 var last_request = null
-var destination:Destination = null
+var destination:Destination = Destination.new()
 var destinations_active:bool
 var gravity_active:bool
 var epsilon = 3
@@ -19,11 +18,11 @@ var isSubbed:bool = false
 var is_npc:bool = false
 var queued_teleports = []
 var queued_input = Vector3()
-var is_teleporting:bool = false
 var last_pos:Vector3 #used for lv
 var lv:Vector3
 
 func _ready():
+	destination.is_empty = true
 	spawn = body.global_transform.origin
 	self.add_child(message_controller)
 	self.movement.body_ref = body
@@ -39,11 +38,6 @@ func _ready():
 		timer.wait_time = 0.25
 		self.add_child(timer)
 		timer.start()
-		
-		#health_add_timer.connect("timeout",self,"add_health")
-		#health_add_timer.wait_time = 2
-		#self.add_child(health_add_timer)
-		#health_add_timer.start()		
 	init_sockets()
 	
 func init_sockets():
@@ -101,17 +95,17 @@ func _handle_message(msg,delta_accum):
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
 			body.global_transform.origin = location
 		{'NextDestination':{'id': var id, 'destination': {'uuid':var uuid, 'dest_type':var dest_type, 'location':[var x, var y , var z] , 'radius': var radius}}}:
-			requested_dest = false
-			destination = Destination.new()
+			#requested_dest = false
 			destination.location = Vector3(x,y,z)
 			destination.type = dest_type
 			destination.radius = radius
 			destination.uuid = uuid
+			destination.is_empty = false
 		{'TeleportToNext':{'id':var id, 'location':[var x, var y ,var z]}}:
 			print_debug("teleporting " , x,y,z)
 			queued_teleports.push_front(Vector3(x,y,z))
 		{'NoLocation':{'id':var id}}:
-			destination = null
+			destination.is_empty = true
 		_:
 			print("No server entity handler for " , msg)
 			pass
@@ -146,44 +140,40 @@ func _physics_process(delta):
 		var t = queued_teleports.pop_front()
 		var dir = (t - body.global_transform.origin)#.normalized()
 		body.translate(dir)
-	if(destination != null and destinations_active):
-		var diff = destination.location - body.global_transform.origin
+	if(!destination.is_empty and destinations_active):
+		#var diff = destination.location - body.global_transform.origin
 		match destination.type:
 			'{WAYPOINT:{}}':
-				if diff.length() > epsilon:
-					if gravity_active:
-						movement.entity_move_by_gravity(id,delta,destination.location,body)
-					else:
-						movement.entity_move(delta,destination.location,body)
-				else:
-					destination = null
-			'{TELEPORT:{}}':
-				if diff.length() > epsilon:
-					if gravity_active:
-						movement.entity_move_by_gravity(id,delta,destination.location,body)
-					else:
-						movement.entity_move(delta,destination.location,body)
-				else:
-					destination = null
-			"{GRAVITY_BIND:{}}":
-				if diff.length() > epsilon:
+				#if diff.length() > epsilon:
+				if gravity_active:
 					movement.entity_move_by_gravity(id,delta,destination.location,body)
 				else:
-					destination = null
-					
+					movement.entity_move(delta,destination.location,body)
+				#else:
+				#	destination = null
+			'{TELEPORT:{}}':
+				#if diff.length() > epsilon:
+				if gravity_active:
+					movement.entity_move_by_gravity(id,delta,destination.location,body)
+				else:
+					movement.entity_move(delta,destination.location,body)
+				#else:
+					#destination = null
+			"{GRAVITY_BIND:{}}":
+				#if diff.length() > epsilon:
+				movement.entity_move_by_gravity(id,delta,destination.location,body)
+				#else:
+					#destination = null
 			_:
 				print_debug("no handler found for destination with type ", destination.type)
 	else:
 		queued_teleports.pop_front()
-		is_teleporting = false
 	physics_socket.set_location_physics(id,body.global_transform.origin)
 	
 func _process(delta):
 	if !isSubbed:
 		var query = PayloadMapper.get_physical_stats(id)
 		socket.get_physical_stats(id)
-		#if !is_npc:
-			#socket.toggle_destinations(id)
 		isSubbed = true
 
 

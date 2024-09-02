@@ -39,45 +39,37 @@ func load_scene(id,secret):
 	
 	self.add_child(viewport_container)
 	
+	click_menu.spawn = viewport
+	click_menu.client_id = profile.id
+	self.add_child(click_menu)
+	
+	ServerNetwork.init(profile.id,profile.secret,entity_management,"_on_data")
+	ServerNetwork.init_physics(profile.id,profile.secret,entity_management,"_on_physics_data")
+	
 	entity_management.client_id = profile.id
 	entity_management.viewport = viewport
 	self.connect("is_active",entity_management,"set_active")
 	self.add_child(entity_management)
-	
-	lv_indicator.client_id = profile.id
-	lv_indicator.rect_size = self.rect_size / 4
-	lv_indicator.set_position(Vector2(0,0))
-	self.add_child(lv_indicator)
-	
-	
-	click_menu.spawn = viewport
-	click_menu.client_id = profile.id
-	self.add_child(click_menu)
 	entity_management.connect("spawned_player_character",click_menu,"player_character_spawned")
-	
+	entity_management.connect("spawned_player_character",self,"player_character_spawned")
 	entity_management.destinations.connect("new_destination",destination_display,"add_destination")
 	entity_management.destinations.connect("refresh_destinations",destination_display,"refresh_destinations")
 	entity_management.destinations.connect("clear_destinations",destination_display,"erase_destinations")
 	entity_management.destinations.connect("index_set",destination_display,"set_index")
 	entity_management.destinations.connect("destination_deleted",destination_display,"destination_deleted")
 	
+	lv_indicator.client_id = profile.id
+	lv_indicator.rect_size = self.rect_size / 4
+	lv_indicator.set_position(Vector2(0,0))
+	self.add_child(lv_indicator)
+	
 	destination_display.connect("delete_destination",entity_management.destinations,"delete_destination")
 	destination_display.connect("set_active_destination",entity_management.destinations,"set_active_destination")
 	self.add_child(destination_display)
 	
 	max_speed_slider.client_id = profile.id
-	max_speed_slider.rect_size = self.rect_size / 4
-	max_speed_slider.set_position(
-		Vector2(
-			self.rect_size.x - max_speed_slider.rect_size.x,
-			self.rect_size.y - (max_speed_slider.rect_size.y * 2)
-		)
-	)
 	self.connect("is_active",max_speed_slider,"set_active")
 	self.add_child(max_speed_slider)
-	
-	ServerNetwork.init(profile.id,profile.secret,entity_management,"_on_data")
-	ServerNetwork.init_physics(profile.id,profile.secret,entity_management,"_on_physics_data")
 	
 	connection_indicator.set_size(Vector2(connection_ind_size,connection_ind_size))
 	connection_indicator.set_global_position(Vector2(connection_ind_size,connection_ind_size))
@@ -89,11 +81,8 @@ func load_scene(id,secret):
 	#might not need this
 	entity_management.spawn_client_world(viewport,Vector3(0,-10,0))
 	entity_management.connect("spawned_player_character",position_indicator,"player_character_spawned")
-	
-	position_indicator.rect_size = self.rect_size / 4
-	position_indicator.set_position(self.rect_size - position_indicator.rect_size)
 	self.add_child(position_indicator)
-	entity_management.connect("spawned_player_character",self,"player_character_spawned")
+	
 	
 	command_menu.client_id = entity_management.client_id
 	self.add_child(command_menu)

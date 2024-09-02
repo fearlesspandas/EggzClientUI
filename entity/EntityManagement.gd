@@ -8,9 +8,15 @@ var client_entities = {}
 var server_entities = {}
 var terrain_queue = []
 var terrain = {}
+var socket:ClientWebSocket
+var physics_socket:RustSocket
 
 func _ready():
-	pass # Replace with function body.
+	assert(client_id != null)
+	socket = ServerNetwork.get(client_id)
+	assert(socket != null)
+	physics_socket = ServerNetwork.get_physics(client_id)
+	assert(physics_socket != null)
 
 func spawn_entity(id:String,location:Vector3,parent:Node,resource:Resource,create_as_server_entity:bool):
 	var res = load(resource.resource_path).instance()

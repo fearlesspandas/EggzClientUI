@@ -32,6 +32,7 @@ func _ready():
 
 func _on_data():
 	#pass
+	assert(false)
 	var cmd = ServerNetwork.get(client_id).get_packet(true)
 	message_controller.add_to_queue(cmd.left(10))
 	

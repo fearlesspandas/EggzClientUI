@@ -14,6 +14,7 @@ var is_subbed = false
 var is_active = false
 
 func _ready():
+	assert(client_id != null)
 	self.add_child(speed_label)
 	self.add_child(max_speed_label)
 	self.add_child(slider)
@@ -59,7 +60,10 @@ func _process(delta):
 			slider.value = s
 		max_speed_label.text = str(m)
 		speed_label.text = str(s)
+		
 func set_active(active:bool):
 	is_active = active
 	if is_active:
-		ServerNetwork.get(client_id).get_physical_stats(client_id)
+		var socket = ServerNetwork.get(client_id)
+		if socket != null:
+			socket.get_physical_stats(client_id)
