@@ -269,6 +269,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/client/SettingsMenu.gd"
 }, {
+"base": "StaticBody",
+"class": "StarBlock",
+"language": "GDScript",
+"path": "res://world/StarBlock.gd"
+}, {
 "base": "AbilityOptionCreator",
 "class": "TeleportCreator",
 "language": "GDScript",
@@ -342,6 +347,7 @@ _global_script_class_icons={
 "ServerKinematicMovement": "",
 "ServerRigidMovement": "",
 "SettingsMenu": "",
+"StarBlock": "",
 "TeleportCreator": "",
 "TerrainScannerTimer": "",
 "Username": "",
@@ -351,7 +357,7 @@ _global_script_class_icons={
 [application]
 
 config/name="EggzClientUI"
-run/main_scene="res://network/ServerBase.tscn"
+run/main_scene="res://user_interface/launcher/Profiles.tscn"
 config/icon="res://icon.png"
 
 [autoload]
