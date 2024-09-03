@@ -10,7 +10,7 @@ func _ready():
 
 func _initiate_auth_request(pp_id:String):
 	var pp = ProfileManager.get_profile(pp_id)
-	assert(pp != null)
+	assert(pp != null, "No profile found for id " + pp_id)
 	var url = NetworkConfig.get_verification_url(pp.id)
 	print_debug("requesting url:", url)
 	var headers = ["Content-Type: application/json"]

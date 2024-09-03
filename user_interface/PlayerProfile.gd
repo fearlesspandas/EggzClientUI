@@ -19,9 +19,6 @@ func _ready():
 
 func strippedKeyId():
 	var res = cryptoKey.save_to_string(true).replace('\n','\\n')
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
 
 func set_secret_from_encrypted(encrypted_secret:String):
 	secret =  Crypto.new().decrypt(cryptoKey,Marshalls.base64_to_raw(encrypted_secret)).get_string_from_utf8()

@@ -224,6 +224,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://network/RustSocket.gd"
 }, {
+"base": "Node",
+"class": "ServerBase",
+"language": "GDScript",
+"path": "res://network/ServerBase.gd"
+}, {
 "base": "RigidBody",
 "class": "ServerBody",
 "language": "GDScript",
@@ -328,6 +333,7 @@ _global_script_class_icons={
 "ProfilesList": "",
 "RequestTopTerrainInDistance": "",
 "RustSocket": "",
+"ServerBase": "",
 "ServerBody": "",
 "ServerControl": "",
 "ServerEntity": "",
@@ -345,7 +351,7 @@ _global_script_class_icons={
 [application]
 
 config/name="EggzClientUI"
-run/main_scene="res://user_interface/launcher/Profiles.tscn"
+run/main_scene="res://network/ServerBase.tscn"
 config/icon="res://icon.png"
 
 [autoload]

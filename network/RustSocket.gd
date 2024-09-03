@@ -50,7 +50,7 @@ func get_verification_url():
 func _closed(was_clean = false):
 	# was_clean will tell you if the disconnection was correctly notified
 	# by the remote peer before closing the socket.
-	print_debug("Closed, clean: ", was_clean)
+	print_debug("Physics Socket; Closed, clean: ", was_clean)
 	connected = false
 	set_process(false)
 
