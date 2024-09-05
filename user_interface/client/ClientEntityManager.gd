@@ -142,15 +142,6 @@ func handle_json(json) -> bool:
 							if spawned_character is ClientPlayerEntity:
 								spawned_character.set_health(health)
 							res = true
-						#if client_entities.has(id):
-						#	var character:ClientPlayerEntity = client_entities[id]
-						#	spawn.remove_child(character)
-						#	character.call_deferred('free')
-						#	var spawned_character = create_character_entity_client(id,Vector3(x,y,z),viewport)
-						#	spawned_character.set_active(self.is_active)
-						#	spawned_character.set_health(health)
-						#	res = true
-						#	res = true
 					{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 						if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
 							var npc = spawn_npc_character_entity_client(id,Vector3(x,y,z))
@@ -161,28 +152,28 @@ func handle_json(json) -> bool:
 		{'ModeSet':{'mode':var mode}}:
 			player.set_destination_mode(mode)
 			return false
-		{'DestinationsActive':{'id':var id, 'is_active':var active}}:
+		{'DestinationsActive':{'id':var _id, 'is_active':var active}}:
 			player.set_destinations_active(active)
 			return false
-		{'GravityActive':{'id':var id, 'is_active':var active}}:
+		{'GravityActive':{'id':var _id, 'is_active':var active}}:
 			player.set_gravity_active(active)
 			return false
-		{'ActiveDestination':{'id':var id, 'destination':var uuid}}:
+		{'ActiveDestination':{'id':var _id, 'destination':var _uuid}}:
 			destinations.handle_message(json)
 			return false
 		{'ClearDestinations':{}}:
 			destinations.handle_message(json)
 			return false
-		{'DeleteDestination':{'id':var id, 'uuid':var uuid}}:
+		{'DeleteDestination':{'id':var _id, 'uuid':var _uuid}}:
 			destinations.handle_message(json)
 			return false
-		{'NewDestination':{'id':var id, 'destination':var dests}}:
+		{'NewDestination':{'id':var _id, 'destination':var _dests}}:
 			destinations.handle_message(json)
 			return false				
-		{"AllDestinations":{"id":var id , "destinations":var dests}}:
+		{"AllDestinations":{"id":var _id , "destinations":var _dests}}:
 			destinations.handle_message(json)
 			return false
-		{'NextIndex':{'id':var id, 'index':var index}}:
+		{'NextIndex':{'id':var _id, 'index':var _index}}:
 			destinations.handle_message(json)
 			return false
 		{'LV':{'id':var id, 'lv':[var x , var y , var z]}}:
@@ -192,7 +183,6 @@ func handle_json(json) -> bool:
 			#print("client entity manmager received physstat", max_speed)
 			DataCache.add_data(id,'max_speed',max_speed)
 			DataCache.add_data(id,'speed',speed)
-			
 			return false
 		{'TerrainUnitm':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
 			var keys = entity_map.keys()
@@ -201,7 +191,7 @@ func handle_json(json) -> bool:
 				var resource_id = int(k)
 				var mesh = AssetMapper.matchMesh(resource_id)
 				var asset = AssetMapper.matchAsset(resource_id)
-				for i in range(0,entity_map[k]):
+				for _i in range(0,entity_map[k]):
 					spawn_terrain(str(uuid),loc,spawn,mesh,false)
 					spawn_terrain(str(uuid),loc,spawn,asset,false)
 			return true
@@ -215,11 +205,10 @@ func handle_json(json) -> bool:
 							var resource_id = int(k)
 							var asset = AssetMapper.matchAsset(resource_id)
 							var mesh = AssetMapper.matchMesh(resource_id)
-							for i in range(0,entity_map[k]):
-								#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
-								#terrain_count += 1
-								spawn_terrain(str(uuid),loc,spawn,mesh,false)
-								spawn_terrain(str(uuid),loc,spawn,asset,false)
+							for _i in range(0,entity_map[k]):
+								var mesh_terrain = spawn_terrain(str(uuid),loc,spawn,mesh,false)
+								var collider_terrain = spawn_terrain(str(uuid),loc,spawn,asset,false)
+								collider_terrain.add_child(mesh_terrain)
 			return true
 		{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
 			#assert(y >= 0)
@@ -253,57 +242,6 @@ func handle_json(json) -> bool:
 				terrain[uuid] = chunk
 				spawn.add_child(chunk)
 			return false
-		{'TerrainSet':var terrain_set}:
-			print_debug("USING OLD TERRAIN")
-			match terrain_set:
-				{'terrain':var t_list}:
-					#print("CLIENT_ENTITY_MANAGER incoming terrain: ",t_list)
-					for t in t_list:
-						match t:
-							{'TerrainUnitM':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
-								var keys = entity_map.keys()
-								var loc = Vector3(location[0],location[1],location[2])
-								for k in keys:
-									var resource_id = int(k)
-									var mesh = AssetMapper.matchMesh(resource_id)
-									var asset = AssetMapper.matchAsset(resource_id)
-									for i in range(0,entity_map[k]):
-										#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
-										spawn_terrain(str(uuid),loc,spawn,mesh,false)
-										spawn_terrain(str(uuid),loc,spawn,asset,false)
-										pass
-									#print("CLIENT_ENTITY_MANAGER spawning terrain:",resource_id,loc)
-							{'TerrainRegionM':{'terrain':var innerterain}}:
-								for it in innerterain:
-									match it:
-										[var location,var entity_map, var uuid]:
-											var keys = entity_map.keys()
-											var loc = Vector3(location[0],location[1],location[2])
-											for k in keys:
-												var resource_id = int(k)
-												var asset = AssetMapper.matchAsset(resource_id)
-												var mesh = AssetMapper.matchMesh(resource_id)
-												for i in range(0,entity_map[k]):
-													#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
-													#terrain_count += 1
-													spawn_terrain(str(uuid),loc,spawn,mesh,false)
-													spawn_terrain(str(uuid),loc,spawn,asset,false)
-													pass
-							{'TerrainChunkM': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
-								if !terrain.has(uuid):
-									var chunk = Chunk.new()
-									chunk.client_id = client_id
-									chunk.uuid = uuid
-									chunk.spawn = spawn
-									chunk.center = Vector3(x,y,z)
-									chunk.radius = radius
-									chunk.entity_manager = self
-									chunk.player = client_entities[client_id]
-									spawn.add_child(chunk)
-									terrain[uuid] = chunk
-								
-							_:
-								print_debug("no handler found for: ",t)
 			return true
 		_:						
 			print_debug("no handler found for msg:", json)

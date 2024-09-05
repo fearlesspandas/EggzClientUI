@@ -17,8 +17,8 @@ func _ready():
 	pass # Replace with function body.
 
 
-func strippedKeyId():
-	var res = cryptoKey.save_to_string(true).replace('\n','\\n')
 
 func set_secret_from_encrypted(encrypted_secret:String):
+	print_debug("profile ", id, " is public only:" ,cryptoKey.is_public_only())
 	secret =  Crypto.new().decrypt(cryptoKey,Marshalls.base64_to_raw(encrypted_secret)).get_string_from_utf8()
+	print_debug("Secret set for profile ", id, " secret:", secret)

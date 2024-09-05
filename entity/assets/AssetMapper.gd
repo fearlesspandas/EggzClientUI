@@ -11,12 +11,16 @@ var assets = {
 	7 : "res://world/client/BlockTerrainMesh.tscn",
 	8 : "res://world/client/SpawnBlockMesh.tscn",
 	9 : "res://world/SpawnFrame.tscn",
-	10: "res://world/EmptySpawnSpace.tscn"
+	10: "res://world/EmptySpawnSpace.tscn",
+	11 : "res://world/HealthStars.tscn",
+	12 : "res://world/client/HealthStarMesh.tscn",
 }
+var asset_resources = {}
 
 var mesh = {
 	6:7,
-	9:8
+	9:8,
+	11:12
 }
 
 enum {
@@ -28,10 +32,15 @@ enum {
 	username_font = 5
 	}
 
+func _ready():
+	for k in assets.keys():
+		asset_resources[k] = load(assets[k])
+		
 func matchAsset(id:int) -> Resource:
 	if assets.has(id):
-		var path:String = assets[id]
-		return load(path)
+		#var path:String = assets[id]
+		var res:Resource = asset_resources[id]
+		return res #load(path)
 	else:
 		return null
 		

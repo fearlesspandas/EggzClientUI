@@ -6,13 +6,16 @@ onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
 var profile_id:String
 func _ready():
 	Engine.physics_jitter_fix = 0
-	profile_id = OS.get_environment("EGGZ_PROFILE")
+	profile_id = "1"#OS.get_environment("EGGZ_PROFILE")
 	assert(profile_id != null and profile_id.length() > 0, "EGGZ_PROFILE environment variable not set")
 	auth_request.connect("session_created",self,"load_scene")
 	self.add_child(auth_request)
 	if not ProfileManager.profile_exists(profile_id):
 		print_debug("No profile found for " + profile_id + ", creating new profile")
-		ProfileManager.add_profile(profile_id)
+		if ProfileManager.add_profile(profile_id) == 0:
+			print_debug("successfully created profile for ", profile_id)
+		else:
+			print_debug("Error while creating profile for ", profile_id)
 	else:
 		print_debug("Profile found for ", profile_id)
 	auth_request._initiate_auth_request(profile_id)
