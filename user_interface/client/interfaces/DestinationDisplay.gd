@@ -3,20 +3,15 @@ extends Control
 class_name DestinationDisplay
 signal delete_destination(uuid)
 signal set_active_destination(uuid)
-onready var reposition_index_timer:Timer = Timer.new()
+signal request_destination_refresh
 
+onready var reposition_index_timer:Timer = Timer.new()
 var all_destinations = {}
 var index:int
 var position_indicator:CurrentDestinationIndicator = CurrentDestinationIndicator.new()
 
 func _ready():
-	self.rect_size = OS.window_size/4
-	#self.position_indicator.rect_size = self.rect_size/16
 	self.add_child(position_indicator)
-	#reposition_index_timer.wait_time = 1
-	#reposition_index_timer.connect("timeout",self,"reposition_index_indicator")
-	#self.add_child(reposition_index_timer)
-	#sreposition_index_timer.start()
 
 func reposition_index_by_id(uuid):
 	for dest in all_destinations.values():

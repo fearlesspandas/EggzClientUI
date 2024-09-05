@@ -37,6 +37,9 @@ func delete_destination(uuid:String):
 func set_active_destination(uuid:String):
 	ServerNetwork.get(client_id).set_active_destination(client_id,uuid)
 
+func request_destination_refresh():
+	ServerNetwork.get(client_id).get_all_destinations(client_id)
+
 func destination_deleted(uuid:String):
 	var dest = destinations[uuid]
 	destinations.erase(uuid)
