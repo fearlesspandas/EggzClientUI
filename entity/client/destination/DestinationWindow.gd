@@ -1,5 +1,6 @@
 extends Control
 class_name DestinationWindow
+signal load_destinations
 onready var destination_display:DestinationDisplay = DestinationDisplay.new()
 onready var destination_window_display_bar:ColorRect = ColorRect.new()
 onready var destinations_window_label:RichTextLabel = RichTextLabel.new()

@@ -13,6 +13,7 @@ onready var position_indicator:PositionIndicator = PositionIndicator.new()
 onready var max_speed_slider:MaxSpeedSlider = MaxSpeedSlider.new()
 onready var click_menu:ClickMenu = ClickMenu.new()
 onready var destination_display:DestinationDisplay = DestinationDisplay.new()
+#onready var destination_display_window:DestinationWindow = DestinationWindow.new()
 onready var destination_type_indicator:DestinationTypeIndicator = DestinationTypeIndicator.new()
 onready var command_menu : CommandMenu = CommandMenu.new()
 var profile_id:String
@@ -57,15 +58,15 @@ func load_scene(id,secret):
 	entity_management.destinations.connect("clear_destinations",destination_display,"erase_destinations")
 	entity_management.destinations.connect("index_set",destination_display,"set_index")
 	entity_management.destinations.connect("destination_deleted",destination_display,"destination_deleted")
+	destination_display.connect("delete_destination",entity_management.destinations,"delete_destination")
+	destination_display.connect("set_active_destination",entity_management.destinations,"set_active_destination")
+	self.add_child(destination_display)
 	
 	lv_indicator.client_id = profile.id
 	lv_indicator.rect_size = self.rect_size / 4
 	lv_indicator.set_position(Vector2(0,0))
 	self.add_child(lv_indicator)
 	
-	destination_display.connect("delete_destination",entity_management.destinations,"delete_destination")
-	destination_display.connect("set_active_destination",entity_management.destinations,"set_active_destination")
-	self.add_child(destination_display)
 	
 	max_speed_slider.client_id = profile.id
 	self.connect("is_active",max_speed_slider,"set_active")

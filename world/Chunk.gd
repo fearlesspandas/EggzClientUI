@@ -22,13 +22,18 @@ func _ready():
 	self.input_ray_pickable = false
 	shape.extents = Vector3(radius,radius,radius)
 	mesh.size = 2*shape.extents - Vector3(20,20,20)
-	mesh.material = SpatialMaterial.new()
+	var material = SpatialMaterial.new()
+	mesh.material = material
 	if is_empty:
 		mesh.material.albedo_color = Color.red
 	else:
-		mesh.material.albedo_color = Color.black
+		var starfield_image = Image.new()
+		starfield_image.load("res://textures/Starfield.png")
+		var starfield_texture = ImageTexture.new()
+		starfield_texture.create_from_image(starfield_image)
+		material.albedo_texture = starfield_texture
+		mesh.material.albedo_color = Color.white
 	mesh_instance.mesh = mesh
-	#if self.is_empty:
 	if !self.is_server:
 		self.add_child(mesh_instance)
 		mesh_instance.visible = true
