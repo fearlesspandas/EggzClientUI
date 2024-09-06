@@ -81,9 +81,8 @@ func create_character_entity_client(id:String, location:Vector3 = Vector3(0,10,0
 		return null
 		
 func spawn_npc_character_entity_client(id:String,location:Vector3) -> ClientPlayerEntity:
-	var res:ClientPlayerEntity = AssetMapper.matchAsset(AssetMapper.npc_model).instance()
+	var res:NonPlayerControlledEntity = AssetMapper.matchAsset(AssetMapper.npc_model).instance()
 	client_entities[id] = res
-	res.is_npc = true
 	res.init_with_id(id,client_id)
 	spawn.add_child(res)
 	res.global_transform.origin = location

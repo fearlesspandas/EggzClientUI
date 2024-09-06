@@ -12,6 +12,7 @@ var isSubbed = false
 var is_npc = false
 var physics_socket:RustSocket
 var socket : ClientWebSocket
+var mod = 2
 
 func _ready():
 	username.init_id()
@@ -23,12 +24,8 @@ func _ready():
 	assert(socket != null)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
-	if is_npc:
-		mod = 8
-	pass
 	
 func getSocket() -> ClientWebSocket:
-	#print("entity socket",id)
 	var res = ServerNetwork.get(client_id)
 	if res != null and !res.connected:
 		return null
@@ -45,13 +42,9 @@ func get_location():
 	physics_socket.get_location_physics(id)
 
 var proc = 0
-var mod = 2
 
 func _process(delta):
-	#movement.entity_move_by_direction(delta,body)
-	#get_location()
 	if proc % mod == 0:
-		#get_direction()
 		get_location()
 		proc = 0
 	if proc % mod == ceil(mod/2):
@@ -65,22 +58,11 @@ func poll_physics():
 func _handle_message(msg,delta_accum):
 	match msg:
 		[var x,var y,var z]:
-			#if not is_npc:
-				#print("client player entity received location ", Vector3(x,y,z))
 			movement.entity_move(delta_accum,Vector3(x,y,z),body)
-			
 			pass
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
 			movement.entity_set_direction(Vector3(x,y,z))
 		{'HealthSet':{'id':var id,'value':var value}}:
 			set_health(value)
-		#deprecated
-		{'Location':{'id':id,'location':[var x , var y , var z]}}:
-			var loc = Vector3(x,y,z)
-			#print("setting clientside location:",loc)
-			var diff:Vector3 = body.global_transform.origin - loc
-			
-			#movement.entity_move(delta_accum,loc,body)
-			pass
 		_ :
 			print_debug("no handler found for msg " , msg)

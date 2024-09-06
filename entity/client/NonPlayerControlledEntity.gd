@@ -1,8 +1,9 @@
 extends ClientPlayerEntity
-
+class_name NonPlayerControlledEntity
 func _physics_process(delta):
 	pass
 	
 
 func _ready():
-	pass # Replace with function body.
+	self.is_npc = true
+	self.mod = 8
