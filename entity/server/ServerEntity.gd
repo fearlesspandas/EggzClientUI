@@ -26,18 +26,9 @@ func _ready():
 	spawn = body.global_transform.origin
 	self.add_child(message_controller)
 	self.movement.body_ref = body
-	if is_npc:
-		destinations_active = true
-		timer.connect("timeout",self,"check_destinations")
-		timer.wait_time = 0.5
-		self.add_child(timer)
-		timer.start()
-	else: 
-		timer.connect("timeout",self,"timer_polling")
-		timer.connect("timeout",self,"check_destinations")
-		timer.wait_time = 0.25
-		self.add_child(timer)
-		timer.start()
+	self.add_child(timer)
+	timer.connect("timeout",self,"check_destinations")
+	timer.start()
 	init_sockets()
 	
 func init_sockets():
@@ -50,8 +41,6 @@ func init_sockets():
 #func add_health():
 #	socket.add_health(id,10)
 	
-func timer_polling():
-	socket.set_lv(id,get_lv())
 	
 func check_destinations():
 	socket.get_next_destination(id)
@@ -126,10 +115,6 @@ func get_lv() -> Vector3:
 		return Vector3.ZERO
 		
 func _physics_process(delta):
-	if body is KinematicBody and !is_npc:
-		var coll:KinematicCollision = body.get_last_slide_collision()
-		if coll != null and coll.collider.has_method("handle_collision"):
-			coll.collider.handle_collision(client_id,id)
 	physics_socket.get_dir_physics(id)
 	update_lv_internal(body,delta)
 	#movement.entity_apply_vector(delta,queued_input,body)
@@ -175,9 +160,4 @@ func _process(delta):
 		var query = PayloadMapper.get_physical_stats(id)
 		socket.get_physical_stats(id)
 		isSubbed = true
-
-
-func _input(event):
-	if event is InputEventKey and event.is_action_pressed("alt",true):
-		movement.entity_stop(body)
 	

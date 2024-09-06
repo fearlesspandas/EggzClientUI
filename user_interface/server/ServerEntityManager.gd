@@ -19,8 +19,6 @@ func _ready():
 	entity_scanner.is_active = true
 	self.add_child(entity_scanner)
 	entity_scanner.start()
-	
-	
 	terrain_scanner.wait_time = 0.5
 	terrain_scanner.connect("timeout",self,"scan_initial_terrain")
 	self.add_child(terrain_scanner)
@@ -52,7 +50,7 @@ func spawn_server_world(parent:Node,location:Vector3):
 func spawn_character_entity_server(id:String, location:Vector3) -> ServerEntity:
 	#print_debug("spawning server character")
 	if spawn != null:
-		var res:ServerEntity = AssetMapper.matchAsset(AssetMapper.server_player_model).instance()
+		var res:PlayerServerEntity = AssetMapper.matchAsset(AssetMapper.server_player_model).instance()
 		assert(res != null)
 		server_entities[id] = res
 		if res.has_method("init_with_id"):
@@ -61,16 +59,13 @@ func spawn_character_entity_server(id:String, location:Vector3) -> ServerEntity:
 		res.global_transform.origin = location
 		emit_signal("player_created",res)
 		return res
-		#return spawn_entity(id,location,spawn,resource,true)
 	else:
 		print_debug("no spawn set for server entity manager")
 		return null
 		
 func spawn_npc_character_entity_server(id:String,location:Vector3) -> ServerEntity:
-	var resource = AssetMapper.matchAsset(AssetMapper.server_player_model)
-	var res:ServerEntity = load(resource.resource_path).instance()
+	var res:NPCServerEntity = AssetMapper.matchAsset(AssetMapper.npc_server_model).instance()
 	server_entities[id] = res
-	res.is_npc = true
 	res.init_with_id(id,client_id)
 	spawn.add_child(res)
 	res.global_transform.origin = location

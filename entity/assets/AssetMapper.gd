@@ -14,6 +14,8 @@ var assets = {
 	10: "res://world/EmptySpawnSpace.tscn",
 	11 : "res://world/HealthStars.tscn",
 	12 : "res://world/client/HealthStarMesh.tscn",
+	13 : "res://entity/server/NPCServerEntity.tscn",
+	14 : "res://entity/server/PlayerServerEntity.tscn",
 }
 var asset_resources = {}
 
@@ -25,11 +27,12 @@ var mesh = {
 
 enum {
 	player_model = 0,
-	server_player_model = 1,
+	server_player_model = 14,
 	server_spawn = 10,
 	client_spawn = 3,
 	npc_model = 4,
-	username_font = 5
+	username_font = 5,
+	npc_server_model = 13,
 	}
 
 func _ready():
