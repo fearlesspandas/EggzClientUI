@@ -28,7 +28,7 @@ func connect_to_server():
 func _ready():
 	print_debug("initializing socket")
 	# Connect base signals to get notified of connection open, close, and errors.
-	_client.transfer_mode = NetworkedMultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED
+	#_client.transfer_mode = NetworkedMultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED
 	_client.set_buffers(8192,1024,8132,1024)
 	_client.connect("connection_closed", self, "_closed")
 	_client.connect("connection_error", self, "_closed")

@@ -6,6 +6,10 @@ func _ready():
 	self.is_npc = false
 	timer.connect("timeout",self,"timer_polling")
 	timer.wait_time = 0.25
+	self.body.set_collision_layer_bit(10,true)
+	self.body.set_collision_layer_bit(0,true)
+	self.body.set_collision_mask_bit(10,true)
+	self.body.set_collision_mask_bit(0,true)
 
 
 func timer_polling():

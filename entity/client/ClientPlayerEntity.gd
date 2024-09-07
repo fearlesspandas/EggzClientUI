@@ -44,6 +44,7 @@ func get_location():
 var proc = 0
 
 func _process(delta):
+	get_location()
 	if proc % mod == 0:
 		get_location()
 		proc = 0

@@ -9,7 +9,6 @@ var center:Vector3
 var radius:float
 onready var visibility_not : VisibilityNotifier = VisibilityNotifier.new()
 onready var mesh_instance:MeshInstance = MeshInstance.new()
-onready var mesh:CubeMesh = CubeMesh.new()
 
 var has_loaded:bool = false
 var is_server = false
@@ -18,25 +17,27 @@ var is_empty = false
 var collision_shape:CollisionShape = CollisionShape.new()
 var shape:BoxShape = BoxShape.new()
 var terrain_uuids = []
+var should_spawn_texture:bool = true
 func _ready():
 	self.input_ray_pickable = false
 	shape.extents = Vector3(radius,radius,radius)
-	mesh.size = 2*shape.extents - Vector3(20,20,20)
-	var material = SpatialMaterial.new()
-	mesh.material = material
-	if is_empty:
-		mesh.material.albedo_color = Color.red
-	else:
-		var starfield_image = Image.new()
-		starfield_image.load("res://textures/Starfield.png")
-		var starfield_texture = ImageTexture.new()
-		starfield_texture.create_from_image(starfield_image)
-		material.albedo_texture = starfield_texture
-		mesh.material.albedo_color = Color.white
-	mesh_instance.mesh = mesh
-	if !self.is_server:
-		self.add_child(mesh_instance)
-		mesh_instance.visible = true
+	if should_spawn_texture or is_empty:
+		var mesh:CubeMesh = CubeMesh.new()
+		mesh.size = 2*shape.extents - Vector3(20,20,20)
+		var material = SpatialMaterial.new()
+		mesh.material = material
+		if is_empty:
+			mesh.material.albedo_color = Color.red
+		else:
+			if should_spawn_texture:
+				var starfield_texture:StreamTexture = load("res://textures/Starfield.png")
+				starfield_texture.flags = 2
+				material.albedo_texture = starfield_texture
+				mesh.material.albedo_color = Color.white
+		mesh_instance.mesh = mesh
+		if !self.is_server:
+			self.add_child(mesh_instance)
+			mesh_instance.visible = true
 		
 	collision_shape.shape = shape
 	self.add_child(collision_shape)

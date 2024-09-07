@@ -205,9 +205,9 @@ func handle_json(json) -> bool:
 							var asset = AssetMapper.matchAsset(resource_id)
 							var mesh = AssetMapper.matchMesh(resource_id)
 							for _i in range(0,entity_map[k]):
-								var mesh_terrain = spawn_terrain(str(uuid),loc,spawn,mesh,false)
 								var collider_terrain = spawn_terrain(str(uuid),loc,spawn,asset,false)
-								collider_terrain.add_child(mesh_terrain)
+								var mesh_terrain = spawn_terrain(str(uuid),loc,collider_terrain,mesh,false)
+								#collider_terrain.add_child(mesh_terrain)
 			return true
 		{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
 			#assert(y >= 0)
