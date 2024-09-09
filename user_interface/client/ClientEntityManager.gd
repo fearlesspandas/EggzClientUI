@@ -7,7 +7,6 @@ class_name ClientEntityManager
 onready var entity_scanner :EntityScannerTimer = EntityScannerTimer.new()
 onready var message_controller : MessageController = MessageController.new()
 onready var destinations:DestinationManager = DestinationManager.new()
-onready var destination_scanner : DestinationScannerTimer = DestinationScannerTimer.new()
 var terrain_count = 0
 var viewport:Viewport #base node where initial map is added
 var spawn
@@ -17,16 +16,11 @@ var player:Player
 func _ready():
 	entity_scanner.wait_time = 3
 	entity_scanner.client_id = client_id
-	destination_scanner.wait_time = 10
-	destination_scanner.client_id = client_id
 	destinations.entity_spawn = viewport
 	destinations.client_id = client_id
-	#self.add_child(destinations)
 	self.add_child(entity_scanner)
-	self.add_child(destination_scanner)
 	self.add_child(message_controller)
 	entity_scanner.start()
-	destination_scanner.start()
 	self.connect("spawned_player_character",self,"set_player")
 
 
@@ -49,7 +43,7 @@ func split_chunks(radius,max_size):
 func set_active(active:bool):
 	is_active = active
 	entity_scanner.set_active(active)
-	destination_scanner.set_active(active)
+	#destination_scanner.set_active(active)
 	#terrain_scanner.set_active(active)
 
 func _handle_message(msg,delta_accum):
