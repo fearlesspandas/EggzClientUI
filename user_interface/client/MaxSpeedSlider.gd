@@ -2,12 +2,12 @@ extends Control
 
 class_name MaxSpeedSlider
 
+onready var bg_rect:ColorRect = ColorRect.new()
 onready var max_speed_label:RichTextLabel = RichTextLabel.new()
 onready var speed_label:RichTextLabel = RichTextLabel.new()
 
-onready var slider:VSlider = VSlider.new()
+onready var slider:SpeedIndicator = SpeedIndicator.new()
 
-onready var resize_timer:Timer = Timer.new()
 var client_id
 var previous_value = 0
 var is_subbed = false
@@ -15,27 +15,44 @@ var is_active = false
 
 func _ready():
 	assert(client_id != null)
+	self.add_child(bg_rect)
 	self.add_child(speed_label)
 	self.add_child(max_speed_label)
 	self.add_child(slider)
-	self.add_child(resize_timer)
-	resize_timer.wait_time = 3
-	resize_timer.connect("timeout",self,"resize")
-	resize_timer.start()
+
+	bg_rect.color = Color.white
+	max_speed_label.modulate = Color.black
+	max_speed_label.scroll_active = false
+	speed_label.modulate = Color.green
+	speed_label.scroll_active = false
+
+	slider.connect("adjust_speed",self,"adjust_speed")
 	pass
 
 
+var bg_offset = 3
+var bg_offset_vec = Vector2(bg_offset,bg_offset)
+
 func resize():
 	if is_active:
-		self.rect_size = OS.window_size/4
-		slider.rect_size = Vector2(self.rect_size.x/3,self.rect_size.y * 0.5)
-		max_speed_label.rect_size = Vector2(self.rect_size.x/5,20)
-		speed_label.rect_size = Vector2(self.rect_size.x/5,20)
-		self.set_position(OS.window_size - self.rect_size)
-		slider.set_position(Vector2(self.rect_size.x/2,self.rect_size.y- 2 * slider.rect_size.y))
-		speed_label.set_position(slider.rect_position - speed_label.rect_size)
-		max_speed_label.set_position(Vector2(self.rect_size.x - speed_label.rect_size.x,0))
-		
+		#set sizes
+		max_speed_label.rect_size = Vector2(slider.rect_size.x,OS.window_size.y/32)
+		speed_label.rect_size = Vector2(slider.rect_size.x,OS.window_size.y/32)
+		self.rect_size = Vector2(slider.rect_size.x,slider.rect_size.y + max_speed_label.rect_size.y + speed_label.rect_size.y) + 2*bg_offset_vec
+		bg_rect.rect_size = self.rect_size
+		#set positions
+		self.set_position(OS.window_size - 1.3*self.rect_size ) 
+		bg_rect.set_position(Vector2(0,0))
+		max_speed_label.set_position(bg_offset_vec)
+		speed_label.set_position(Vector2(0,max_speed_label.rect_size.y) + bg_offset_vec)
+		slider.set_position(Vector2(0,max_speed_label.rect_size.y + speed_label.rect_size.y) + bg_offset_vec)
+
+func adjust_speed(delta):
+	var socket = ServerNetwork.get(client_id)
+	if socket != null and delta != 0:
+		var stats = {'max_speed_delta':0,'speed_delta':delta}
+		socket.adjust_stats(client_id,stats)
+
 func _input(event):
 	if is_active:
 		var delta = 0
@@ -56,10 +73,11 @@ func _process(delta):
 		
 		#print("max speed slider, cache " , m)
 		if m != null:
-			slider.tick_count = ceil(m)
-			slider.value = s
+			slider.max_speed = m
+			slider.speed = s
 		max_speed_label.text = str(m)
 		speed_label.text = str(s)
+		resize()
 		
 func set_active(active:bool):
 	is_active = active

@@ -6,7 +6,7 @@ onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
 var profile_id:String
 func _ready():
 	Engine.physics_jitter_fix = 0
-	profile_id = "1"#OS.get_environment("EGGZ_PROFILE")
+	profile_id = OS.get_environment("EGGZ_PROFILE")
 	assert(profile_id != null and profile_id.length() > 0, "EGGZ_PROFILE environment variable not set")
 	auth_request.connect("session_created",self,"load_scene")
 	self.add_child(auth_request)

@@ -83,7 +83,7 @@ func load_scene(id,secret):
 	#might not need this
 	
 	entity_management.connect("spawned_player_character",position_indicator,"player_character_spawned")
-	self.add_child(position_indicator)
+	#self.add_child(position_indicator)
 	
 	entity_management.spawn_client_world(viewport,Vector3(0,-10,0))
 	
@@ -107,13 +107,6 @@ func set_active(active: bool):
 	emit_signal("is_active",active)
 	
 func _process(delta):
-	if (self.rect_size - OS.get_window_safe_area().size).length() > 5:
+	if (self.rect_size - OS.get_window_safe_area().size).length() > 0:
 		self.set_size(OS.get_window_safe_area().size,true)
 		viewport_container.set_size(self.rect_size,true)
-		#max_speed_slider.rect_size = self.rect_size / 4
-		#max_speed_slider.set_position(
-		#	Vector2(
-		#		self.rect_size.x - max_speed_slider.rect_size.x,
-		#		self.rect_size.y - (max_speed_slider.rect_size.y * 2)
-		#	)
-		#)

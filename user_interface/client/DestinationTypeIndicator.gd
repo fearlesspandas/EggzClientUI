@@ -28,7 +28,7 @@ func _process(delta):
 	gravity_active_bg.rect_size = destinations_active_bg.rect_size - 2*bg_offset_vec
 	main_bg.rect_size = gravity_active_bg.rect_size - 2*bg_offset_vec
 	destination_direction_type.rect_size = Vector2(self.rect_size.x/3,self.rect_size.y/3)
-	self.set_position(Vector2(0,OS.get_window_safe_area().size.y - self.rect_size.y))
+	self.set_position(Vector2(0,OS.window_size.y - 1.5*self.rect_size.y))
 	destinations_active_bg.set_position(Vector2(0,0))
 	gravity_active_bg.set_position(destinations_active_bg.rect_position + bg_offset_vec)
 	main_bg.set_position(gravity_active_bg.rect_position + bg_offset_vec)

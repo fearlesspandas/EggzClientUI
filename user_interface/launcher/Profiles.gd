@@ -59,6 +59,6 @@ func on_tab_change(tab:int):
 		active_tab.set_active(true)
 
 func _process(delta):
-	if (self.rect_size - OS.get_window_safe_area().size).length() > 5:
+	if (self.rect_size - OS.get_window_safe_area().size).length() > 0:
 		self.set_size(OS.get_window_safe_area().size,true)
 		newProfile.set_size(self.rect_size)

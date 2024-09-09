@@ -50,7 +50,7 @@ func size_display_bar():
 	destinations_window_label.rect_size = Vector2(destination_window_display_bar.rect_size.x/2,destination_window_display_bar.rect_size.y)
 	#set positions//////////////////
 	self.set_position(Vector2(
-		OS.window_size.x - self.rect_size.x,
+		OS.window_size.x - (self.rect_size.x + bg_offset),
 		0
 	))
 	destination_window_display_bar.set_position(Vector2(0,0) + bg_offset_vec)
