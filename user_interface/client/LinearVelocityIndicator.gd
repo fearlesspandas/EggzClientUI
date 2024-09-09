@@ -5,8 +5,10 @@ class_name LinearVelocityIndicator
 onready var timer:Timer = Timer.new()
 onready var message_controller:MessageController = MessageController.new()
 onready var parent = get_parent()
+var is_active:bool = false
 var client_id
 var base_label = "LV:"
+
 func _ready():
 	self.text = "NOTHING"
 	timer.wait_time = 0.25
@@ -16,10 +18,11 @@ func _ready():
 	timer.start()
 	
 func timeout_polling():
-	var socket = ServerNetwork.get(client_id)
-	if socket != null:
-		socket.lazy_lv(client_id)
-	self.text = base_label + str(DataCache.cached(client_id,'lv'))
+	if is_active:
+		var socket = ServerNetwork.get(client_id)
+		if socket != null:
+			socket.lazy_lv(client_id)
+		self.text = base_label + str(DataCache.cached(client_id,'lv'))
 	
 func _handle_message(msg,delta):
 	match msg:

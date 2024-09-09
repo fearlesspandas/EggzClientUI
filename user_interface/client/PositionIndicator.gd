@@ -2,10 +2,11 @@ extends RichTextLabel
 
 class_name PositionIndicator
 onready var timer:Timer = Timer.new()
+var is_active:bool = false
 
 var player
-
 var base_label = "position:"
+
 func _process(delta):
 	if player != null:
 		text = base_label + str(player.body.global_transform.origin)
