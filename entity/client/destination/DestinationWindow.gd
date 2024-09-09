@@ -22,6 +22,7 @@ func _ready():
 	self.connect("mouse_entered",self,"entered")
 	self.connect("mouse_exited",self,"exited")
 	bg_rect.color = Color.blue
+	bg_rect.color.a = 0.5
 	destinations_window_label.text = "DESTINATIONS"
 	destinations_window_label.visible_characters = 12
 	destinations_window_label.modulate = Color.white
@@ -33,10 +34,12 @@ func _ready():
 func entered():
 	hovering = true
 	bg_rect.color = Color.white
+	bg_rect.color.a = 0.5
 
 func exited():
 	hovering = false
 	bg_rect.color = Color.blue
+	bg_rect.color.a = 0.5
 
 func size_display_bar():
 	#set sizes//////////////////////

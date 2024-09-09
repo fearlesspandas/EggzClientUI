@@ -8,8 +8,7 @@ onready var viewport_container:ViewportContainer = ViewportContainer.new()
 onready var viewport:Viewport = Viewport.new()
 onready var entity_management:ClientEntityManager = ClientEntityManager.new()
 onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
-onready var lv_indicator:LinearVelocityIndicator = LinearVelocityIndicator.new()
-onready var position_indicator:PositionIndicator = PositionIndicator.new()
+onready var physical_stats:PhysicalStatsDisplay = PhysicalStatsDisplay.new()
 onready var max_speed_slider:MaxSpeedSlider = MaxSpeedSlider.new()
 onready var click_menu:ClickMenu = ClickMenu.new()
 onready var destination_display:DestinationDisplay = DestinationDisplay.new()
@@ -63,11 +62,6 @@ func load_scene(id,secret):
 	destination_display_window.destination_display.connect("set_active_destination",entity_management.destinations,"set_active_destination")
 	destination_display_window.connect("load_destinations",entity_management.destinations,"request_destination_refresh")
 	
-	lv_indicator.client_id = profile.id
-	lv_indicator.rect_size = self.rect_size / 4
-	lv_indicator.set_position(Vector2(0,0))
-	self.add_child(lv_indicator)
-	
 	
 	max_speed_slider.client_id = profile.id
 	self.connect("is_active",max_speed_slider,"set_active")
@@ -80,10 +74,10 @@ func load_scene(id,secret):
 	
 	self.add_child(destination_type_indicator)
 	
-	#might not need this
 	
-	entity_management.connect("spawned_player_character",position_indicator,"player_character_spawned")
-	#self.add_child(position_indicator)
+	self.add_child(physical_stats)
+	entity_management.connect("spawned_player_character",physical_stats.position_indicator,"player_character_spawned")
+	physical_stats.lv_indicator.client_id = profile.id
 	
 	entity_management.spawn_client_world(viewport,Vector3(0,-10,0))
 	

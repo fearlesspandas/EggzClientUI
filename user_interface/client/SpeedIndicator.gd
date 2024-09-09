@@ -36,13 +36,9 @@ func size_and_position():
 	self.rect_size = Vector2(OS.window_size.x/32,OS.window_size.y/4)
 	bg_rect.rect_size = self.rect_size
 	speed_rect.rect_size = Vector2(bg_rect.rect_size.x,get_speed_ratio() * bg_rect.rect_size.y)
-	#hover_rect.rect_size = speed_rect.rect_size
 	#Set positions
-	#self.set_position(OS.window_size - self.rect_size)
-	#self.set_position(Vector2(0,0))
 	bg_rect.set_position(Vector2(0,0))
 	speed_rect.set_position(Vector2(0,bg_rect.rect_size.y - speed_rect.rect_size.y))
-	#hover_rect.set_position(speed_rect.rect_position)
 	#set visible
 	if hovering:
 		hover_rect.visible = true
