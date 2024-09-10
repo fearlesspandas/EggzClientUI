@@ -13,6 +13,8 @@ onready var server_control = get_parent() #initial node where base map is added
 
 var spawn
 
+var empty_terrain_queue = []
+
 func _ready():
 	entity_scanner.wait_time = 2
 	entity_scanner.client_id = client_id
@@ -130,17 +132,20 @@ func handle_json(json) -> bool:
 				DataCache.add_data(id,'max_speed',max_speed)
 				DataCache.add_data(id,'speed',speed)
 				return false
-			{'TerrainUnitM':{'entities':var entity_map,'location':var location, 'uuid':var uuid}}:
-				var keys = entity_map.keys()
-				var loc = Vector3(location[0],location[1],location[2])
-				for k in keys:
-					var resource_id = int(k)
-					assert(resource_id != 9)
-					var asset = AssetMapper.matchAsset(resource_id)
-					for i in range(0,entity_map[k]):
-							#terrain_queue.push_front({'resource_id':resource_id,'uuid':uuid,'loc':loc})
-						spawn_terrain(str(uuid),loc,spawn,asset,true)
-						pass
+			{'TerrainUnitm':{'entities':var entity_map,'location':var location, 'uuid':var uuid}}:
+				if terrain.has(uuid):
+					pass
+				else:
+					var keys = entity_map.keys()
+					var loc = Vector3(location[0],location[1],location[2])
+					for k in keys:
+						var resource_id = int(k)
+						assert(resource_id != 9)
+						var asset = AssetMapper.matchAsset(resource_id)
+						for i in range(0,entity_map[k]):
+							spawn_terrain(str(uuid),loc,spawn,asset,true)
+							socket.get_top_level_terrain_in_distance(2048,loc)
+					terrain[uuid] = true
 				return true
 			{'TerrainRegionm':{'terrain':var innerterain}}:
 				
@@ -172,6 +177,7 @@ func handle_json(json) -> bool:
 					spawn.add_child(chunk)
 				return true
 			{'EmptyChunk':{'uuid':var uuid, 'location': [var x ,var y ,var z], 'radius': var radius}}:
+				empty_terrain_queue.push(json)
 				if !terrain.has(uuid):
 					var chunk = Chunk.new()
 					chunk.client_id = client_id

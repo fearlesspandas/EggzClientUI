@@ -6,7 +6,7 @@ signal terrain_created(entity,parent,server_entity) #Node,Node,bool
 var client_id:String
 var client_entities = {}
 var server_entities = {}
-var terrain_queue = []
+#var terrain_queue = []
 var terrain = {}
 var socket:ClientWebSocket
 var physics_socket:RustSocket
@@ -42,16 +42,6 @@ func spawn_terrain(id:String,location:Vector3,parent:Node,resource:Resource,crea
 	emit_signal("terrain_created",res,parent,create_as_server_entity)
 	return res
 
-func spawn_terrain_from_queue(spawn,server:bool = false):
-	if !terrain_queue.empty():
-		var t = terrain_queue.pop_front()
-		var resource_id = t.resource_id
-		var asset = AssetMapper.matchAsset(resource_id)
-		if !server:
-			var mesh = AssetMapper.matchMesh(resource_id)
-			spawn_terrain(str(t.uuid),t.loc,spawn,mesh,server)
-		spawn_terrain(str(t.uuid),t.loc,spawn,asset,server)
-		
 func spawn_player_client(id:String,location:Vector3,parent:Node):
 	var res:Player = AssetMapper.matchAsset(AssetMapper.player_model).instance()
 	if res.has_method("init_with_id"):
