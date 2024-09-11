@@ -21,7 +21,7 @@ var should_spawn_texture:bool = true
 func _ready():
 	self.input_ray_pickable = false
 	shape.extents = Vector3(radius,radius,radius)
-	if should_spawn_texture or is_empty:
+	if (should_spawn_texture or is_empty) and !self.is_server:
 		var mesh:CubeMesh = CubeMesh.new()
 		mesh.size = 2*shape.extents - Vector3(20,20,20)
 		var material = SpatialMaterial.new()

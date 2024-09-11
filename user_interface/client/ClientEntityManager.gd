@@ -7,6 +7,7 @@ class_name ClientEntityManager
 onready var entity_scanner :EntityScannerTimer = EntityScannerTimer.new()
 onready var message_controller : MessageController = MessageController.new()
 onready var destinations:DestinationManager = DestinationManager.new()
+onready var empty_terrain_queue_spawner:Timer = Timer.new()
 var terrain_count = 0
 var viewport:Viewport #base node where initial map is added
 var spawn
@@ -24,19 +25,27 @@ func _ready():
 	entity_scanner.start()
 	self.connect("spawned_player_character",self,"set_player")
 
+	empty_terrain_queue_spawner.wait_time = 0.25
+	empty_terrain_queue_spawner.connect("timeout",self,"spawn_empty_terrain_from_queue")
+	self.add_child(empty_terrain_queue_spawner)
+	empty_terrain_queue_spawner.start()
+
 
 func spawn_empty_terrain_from_queue():
-	if !empty_terrain_queue.is_empty():
-		match empty_terrain_queue.pop:
+	print_debug("empty terrain count : ",empty_terrain_queue.size())
+	if !empty_terrain_queue.empty():
+		match empty_terrain_queue.pop_front():
 			{'EmptyChunk':{'uuid':var uuid, 'location': [var x ,var y ,var z], 'radius': var radius}}:
-				var chunk = Chunk.new()
-				chunk.client_id = client_id
-				chunk.uuid = uuid
-				chunk.spawn = spawn
-				chunk.center = Vector3(x,y,z)
-				chunk.radius = radius
-				chunk.is_empty = true
-				spawn.add_child(chunk)
+				if true:
+					var chunk = terrain[uuid]
+					chunk.client_id = client_id
+					chunk.uuid = uuid
+					chunk.spawn = spawn
+					chunk.center = Vector3(x,y,z)
+					chunk.radius = radius
+					chunk.is_empty = true
+					spawn.add_child(chunk)
+					terrain[uuid] = chunk
 			_:
 				pass
 func set_player(player:Player):
@@ -204,7 +213,7 @@ func handle_json(json) -> bool:
 				for _i in range(0,entity_map[k]):
 					spawn_terrain(str(uuid),loc,spawn,mesh,false)
 					spawn_terrain(str(uuid),loc,spawn,asset,false)
-					socket.get_top_level_terrain_in_distance(2048,loc)
+					socket.get_top_level_terrain_in_distance(1024 * 5,loc)
 			return true
 		{'TerrainRegionm':{'terrain':var innerterain}}:
 			for it in innerterain:
@@ -241,17 +250,9 @@ func handle_json(json) -> bool:
 			return true
 		{'EmptyChunk':{'uuid':var uuid, 'location': [var x ,var y ,var z], 'radius': var radius}}:
 			if !terrain.has(uuid):
-				empty_terrain_queue.push(json)
-			if !terrain.has(uuid):
+				empty_terrain_queue.push_front(json)
 				var chunk = Chunk.new()
-				chunk.client_id = client_id
-				chunk.uuid = uuid
-				chunk.spawn = spawn
-				chunk.center = Vector3(x,y,z)
-				chunk.radius = radius
-				chunk.is_empty = true
 				terrain[uuid] = chunk
-				spawn.add_child(chunk)
 			return false
 		_:						
 			print_debug("no handler found for msg:", json)
@@ -273,4 +274,4 @@ func parseJsonCmd(cmd,delta):
 
 
 func _process(delta):
-	spawn_terrain_from_queue(spawn,false)
+	pass
