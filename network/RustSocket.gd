@@ -107,4 +107,4 @@ func set_dir_physics(id:String,dir:Vector3):
 	send_payload(PayloadMapper.set_dir_physics(id,dir))
 
 func send_input(id:String,inputVec:Vector3):	
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.set_input_physics(id,inputVec)).to_utf8())
+	send_payload(PayloadMapper.set_input_physics(id,inputVec))

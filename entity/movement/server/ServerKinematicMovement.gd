@@ -62,5 +62,7 @@ func set_max_speed(max_speed):
 	if max_speed != null:
 		speed = max_speed
 		
+func get_max_speed() -> float:
+	return speed
 func _ready():
 	pass

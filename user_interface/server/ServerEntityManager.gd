@@ -71,7 +71,7 @@ func spawn_server_world(parent:Node,location:Vector3):
 	spawn = spawn_terrain("0",location,parent,resource,true)
 
 
-func spawn_character_entity_server(id:String, location:Vector3) -> ServerEntity:
+func spawn_character_entity_server(id:String, location:Vector3) -> PlayerServerEntity:
 	#print_debug("spawning server character")
 	if spawn != null:
 		var res:PlayerServerEntity = AssetMapper.matchAsset(AssetMapper.server_player_model).instance()
@@ -87,7 +87,7 @@ func spawn_character_entity_server(id:String, location:Vector3) -> ServerEntity:
 		print_debug("no spawn set for server entity manager")
 		return null
 		
-func spawn_npc_character_entity_server(id:String,location:Vector3) -> ServerEntity:
+func spawn_npc_character_entity_server(id:String,location:Vector3) -> NPCServerEntity:
 	var res:NPCServerEntity = AssetMapper.matchAsset(AssetMapper.npc_server_model).instance()
 	server_entities[id] = res
 	res.init_with_id(id,client_id)
@@ -138,7 +138,7 @@ func handle_json(json) -> bool:
 						{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 							if !server_entities.has(id):
 								var spawned_character = spawn_npc_character_entity_server(id,Vector3(x,y,z))
-								spawned_character.is_npc = true
+								#spawned_character.is_npc = true
 						_:
 							print_debug("ServerEntityManager could not parse glob type ", glob)
 				return res

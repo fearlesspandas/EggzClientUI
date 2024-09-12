@@ -32,7 +32,7 @@ func _ready():
 
 
 func spawn_empty_terrain_from_queue():
-	print_debug("empty terrain count : ",empty_terrain_queue.size())
+	#print_debug("empty terrain count : ",empty_terrain_queue.size())
 	if !empty_terrain_queue.empty():
 		match empty_terrain_queue.pop_front():
 			{'EmptyChunk':{'uuid':var uuid, 'location': [var x ,var y ,var z], 'radius': var radius}}:
