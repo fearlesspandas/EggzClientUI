@@ -48,6 +48,7 @@ func check_destinations():
 func check_dir():
 	physics_socket.get_dir_physics(id)
 
+var proc:int = 0
 func _handle_message(msg,_delta_accum):
 	match msg:
 		{'GravityActive':{'id': var _id, 'is_active':var active}}:
@@ -76,11 +77,14 @@ func _handle_message(msg,_delta_accum):
 			var max_speed = movement.get_max_speed()#DataCache.cached(id,'speed')
 			if gravity_active and max_speed == null :
 				assert(false)
-			#need this dumb fix with random so that network doesn't get clogged in a loop
-			if max_speed != null and dir.length() > max_speed and rand_range(0,2) > 1:
-				#print("direction ", Vector3(x,y,z))
-				dir = dir.normalized() * max_speed
-				physics_socket.set_dir_physics(id,dir)
+			#proc is needed to ensure network doesn't get clogged in a loop when trying to reset speed
+			if max_speed != null and dir.length() > max_speed :
+				dir = (dir.normalized() * max_speed)
+				if proc %2 == 0:
+					print("direction ", Vector3(x,y,z))
+					proc = 0
+					physics_socket.set_dir_physics(id,dir)
+				proc += 1
 			if (not destinations_active) or gravity_active:
 				movement.entity_set_direction(dir)
 		{'Input':{"id":var _id, "vec":[var x ,var y ,var z]}}:
