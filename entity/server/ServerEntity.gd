@@ -75,13 +75,11 @@ func _handle_message(msg,_delta_accum):
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
 			var dir = Vector3(x,y,z)
 			var max_speed = movement.get_max_speed()#DataCache.cached(id,'speed')
-			if gravity_active and max_speed == null :
-				assert(false)
 			#proc is needed to ensure network doesn't get clogged in a loop when trying to reset speed
 			if max_speed != null and dir.length() > max_speed :
 				dir = (dir.normalized() * max_speed)
 				if proc %2 == 0:
-					print("direction ", Vector3(x,y,z))
+					#print("direction ", Vector3(x,y,z))
 					proc = 0
 					physics_socket.set_dir_physics(id,dir)
 				proc += 1
