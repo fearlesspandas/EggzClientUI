@@ -21,7 +21,7 @@ var should_spawn_texture:bool = true
 func _ready():
 	self.input_ray_pickable = false
 	shape.extents = Vector3(radius,radius,radius)
-	if (should_spawn_texture or is_empty) and !self.is_server:
+	if (should_spawn_texture or is_empty) and !self.is_server :
 		var mesh:CubeMesh = CubeMesh.new()
 		mesh.size = 2*shape.extents - Vector3(20,20,20)
 		var material = SpatialMaterial.new()
@@ -30,14 +30,14 @@ func _ready():
 			mesh.material.albedo_color = Color.red
 		else:
 			if should_spawn_texture:
-				var starfield_texture:StreamTexture = load("res://textures/Starfield.png")
+				var starfield_texture:StreamTexture = load("res://textures/vortex.png")
 				starfield_texture.flags = 2
 				material.albedo_texture = starfield_texture
 				mesh.material.albedo_color = Color.white
 		mesh_instance.mesh = mesh
 		if !self.is_server:
 			self.add_child(mesh_instance)
-			mesh_instance.visible = true
+			mesh_instance.visible = DataCache.cached_with("CLIENT","chunks_visible",true)
 		
 	collision_shape.shape = shape
 	self.add_child(collision_shape)
@@ -60,16 +60,10 @@ func _ready():
 	pass
 	
 
-func chunk_is_visible(camera:Camera):
-	print_debug("Chunk IS VISIBLE ", uuid)
-	#if !self.has_loaded:
-		#load_terrain()
-#func expand_chunk() -> Array:
-	
-func chunk_is_not_visible():
-	pass
-	#print_debug("Chunk is NOT visible ", uuid)
-	
+func toggle_chunk_visibility(is_visible):
+	if self.mesh_instance !=null and !has_loaded:
+		self.mesh_instance.visible = is_visible
+
 func body_entered_print(body):
 	if body is KinematicBody:
 		mesh_instance.visible = false

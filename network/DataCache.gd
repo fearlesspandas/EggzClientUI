@@ -22,3 +22,9 @@ func cached(id:String,field:String):
 		return store[id][field]
 	else:
 		return null
+func cached_with(id:String,field:String,default):
+	var res = cached(id,field)
+	if res == null:
+		return default
+	else:
+		return res

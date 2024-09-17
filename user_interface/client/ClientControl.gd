@@ -98,6 +98,7 @@ func player_character_spawned(player:Player):
 func set_active(active: bool):
 	print_debug("setting is active for control:",active)
 	ClientReferences.set_viewport(self.viewport)
+	ClientReferences.set_command_menu(self.command_menu)
 	emit_signal("is_active",active)
 	
 func _process(delta):

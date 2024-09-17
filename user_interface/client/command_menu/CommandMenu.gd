@@ -4,16 +4,16 @@ class_name CommandMenu
 
 onready var bg_rect:ColorRect = ColorRect.new()
 
-onready var request_top_terrain = RequestTopTerrainInDistance.new()
+onready var request_top_terrain:RequestTopTerrainInDistance = RequestTopTerrainInDistance.new()
+onready var toggle_chunk_visibility: ToggleChunkVisibility = ToggleChunkVisibility.new()
 onready var commands = []
 
 var client_id:String
 
 func initialize_commands():
-	request_top_terrain.command_name = "get_top_terrain_within_distance"
-	request_top_terrain.add_args(["radius"])
 	request_top_terrain.client_id = client_id
 	commands.push_back(request_top_terrain)
+	commands.push_back(toggle_chunk_visibility)
 	
 func size():
 	self.rect_size = OS.window_size

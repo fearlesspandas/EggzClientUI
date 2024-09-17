@@ -233,6 +233,8 @@ func handle_json(json) -> bool:
 		{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
 			if !terrain.has(uuid):
 				var chunk = Chunk.new()
+				if ClientReferences.command_menu != null:
+					ClientReferences.command_menu.toggle_chunk_visibility.connect("toggle_chunks_visible",chunk,"toggle_chunk_visibility")
 				chunk.client_id = client_id
 				chunk.uuid = uuid
 				chunk.spawn = spawn
