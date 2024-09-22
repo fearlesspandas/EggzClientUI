@@ -201,6 +201,12 @@ func handle_json(json) -> bool:
 			DataCache.add_data(id,'max_speed',max_speed)
 			DataCache.add_data(id,'speed',speed)
 			return false
+		{'Fizzle':{'ability_id':var ability_id, 'entity_id':var entity_id,'reason': var reason}}:
+			var fizzle = Fizzle.new()
+			fizzle.center = player.body.global_transform.origin
+			spawn.add_child(fizzle)	
+			return false
+			
 		{'TerrainUnitm':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
 			if terrain.has(uuid):
 				return true
