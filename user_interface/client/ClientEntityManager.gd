@@ -83,6 +83,7 @@ func spawn_client_world(parent:Node,location:Vector3):
 	print_debug("spawned client world")
 	var resource = AssetMapper.matchAsset(AssetMapper.client_spawn)
 	spawn = spawn_terrain("0",location,parent,resource,false)
+	AbilityManager.spawn = spawn
 
 func emit_character():
 	print_debug("EMITTING SIGNAL")
@@ -201,6 +202,14 @@ func handle_json(json) -> bool:
 			#print("client entity manmager received physstat", max_speed)
 			DataCache.add_data(id,'max_speed',max_speed)
 			DataCache.add_data(id,'speed',speed)
+			return false
+		{'DoAbility':{'ability_id':var ability_id,'entity_id':var entity_id}}:
+			if !client_entities.has(entity_id):
+				assert(false, "no entity found with id " + entity_id)
+			var entity = client_entities[entity_id]
+			if entity == null:
+				assert(false,"entity with id is null")
+			AbilityManager.ability_client(int(ability_id),entity.body.global_transform.origin)	
 			return false
 		{'Fizzle':{'ability_id':var ability_id, 'entity_id':var entity_id,'reason': var reason}}:
 			var fizzle = Fizzle.new()

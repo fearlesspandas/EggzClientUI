@@ -309,6 +309,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/client/SettingsMenu.gd"
 }, {
+"base": "Spatial",
+"class": "SmackClient",
+"language": "GDScript",
+"path": "res://entity/abilities/client/SmackClient.gd"
+}, {
+"base": "Area",
+"class": "SmackServer",
+"language": "GDScript",
+"path": "res://entity/abilities/server/SmackServer.gd"
+}, {
 "base": "Control",
 "class": "SpeedIndicator",
 "language": "GDScript",
@@ -405,6 +415,8 @@ _global_script_class_icons={
 "ServerKinematicMovement": "",
 "ServerRigidMovement": "",
 "SettingsMenu": "",
+"SmackClient": "",
+"SmackServer": "",
 "SpeedIndicator": "",
 "StarBlock": "",
 "TeleportCreator": "",
@@ -435,6 +447,7 @@ ProfileManager="*res://user_interface/launcher/ProfileManager.gd"
 TerrainScheduler="res://world/TerrainScheduler.gd"
 ClientSettings="*res://user_interface/client/ClientSettings.gd"
 ClientReferences="*res://user_interface/client/ClientReferences.gd"
+AbilityManager="*res://entity/abilities/AbilityManager.gd"
 
 [input]
 
