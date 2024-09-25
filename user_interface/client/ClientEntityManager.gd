@@ -83,7 +83,7 @@ func spawn_client_world(parent:Node,location:Vector3):
 	print_debug("spawned client world")
 	var resource = AssetMapper.matchAsset(AssetMapper.client_spawn)
 	spawn = spawn_terrain("0",location,parent,resource,false)
-	AbilityManager.spawn = spawn
+	AbilityManager.client_spawn = spawn
 
 func emit_character():
 	print_debug("EMITTING SIGNAL")

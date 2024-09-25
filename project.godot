@@ -448,6 +448,7 @@ TerrainScheduler="res://world/TerrainScheduler.gd"
 ClientSettings="*res://user_interface/client/ClientSettings.gd"
 ClientReferences="*res://user_interface/client/ClientReferences.gd"
 AbilityManager="*res://entity/abilities/AbilityManager.gd"
+EntityConstants="*res://entity/EntityConstants.gd"
 
 [input]
 

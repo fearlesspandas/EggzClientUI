@@ -9,8 +9,8 @@ func _ready():
 	self.add_child(mesh)
 	if !client_player_entity.is_npc:
 		print_debug("SETTING TERRAIN COLLISION FOR ", client_player_entity.id)
-		self.set_collision_layer_bit(0,false)
-		self.set_collision_mask_bit(0,false)
-		self.set_collision_layer_bit(11,true)
-		self.set_collision_mask_bit(11,true)
-	pass # Replace with function body.
+		#separate to PlayerEntity class
+		self.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
+		self.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
+		self.set_collision_layer_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,true)
+		self.set_collision_mask_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,true)

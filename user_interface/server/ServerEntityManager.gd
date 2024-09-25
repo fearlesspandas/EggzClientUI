@@ -32,6 +32,8 @@ func _ready():
 	self.add_child(empty_terrain_queue_spawner)
 	empty_terrain_queue_spawner.start()
 
+	AbilityManager.client_id_server = client_id
+
 	pass # Replace with function body.
 
 func spawn_empty_terrain_from_queue():
@@ -69,6 +71,7 @@ func spawn_server_world(parent:Node,location:Vector3):
 	print_debug("spawned server world")
 	var resource = AssetMapper.matchAsset(AssetMapper.server_spawn)
 	spawn = spawn_terrain("0",location,parent,resource,true)
+	AbilityManager.server_spawn = spawn
 
 
 func spawn_character_entity_server(id:String, location:Vector3) -> PlayerServerEntity:
@@ -153,6 +156,14 @@ func handle_json(json) -> bool:
 			{'PhysStat':{'id':var id, 'max_speed':var max_speed,'speed':var speed}}:
 				DataCache.add_data(id,'max_speed',max_speed)
 				DataCache.add_data(id,'speed',speed)
+				return false
+			{'DoAbility':{'ability_id':var ability_id,'entity_id':var entity_id}}:
+				if !server_entities.has(entity_id):
+					assert(false, "no entity found with id " + entity_id)
+				var entity = server_entities[entity_id]
+				if entity == null:
+					assert(false,"entity with id is null")
+				AbilityManager.ability_server(int(ability_id),entity.body.global_transform.origin)	
 				return false
 			{'TerrainUnitm':{'entities':var entity_map,'location':var location, 'uuid':var uuid}}:
 				if terrain.has(uuid):

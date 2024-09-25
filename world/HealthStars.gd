@@ -9,8 +9,8 @@ func _ready():
 	health_replenish_timer.wait_time = 1
 	health_replenish_timer.connect("timeout",self,"replenish_health")
 	self.add_child(health_replenish_timer)
-	self.set_collision_layer_bit(12,true)
-	self.set_collision_mask_bit(12,true)
+	self.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COUNTABLE_COLLISION_LAYER,true)
+	self.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COUNTABLE_COLLISION_LAYER,true)
 
 func handle_collision(client_id:String,player_id:String):
 	if available_health > 0:

@@ -23,3 +23,7 @@ func not_process(delta):
 			teleport_position = collision.position
 
 		translation = teleport_position
+
+#todo move to ServerEntity?
+func handle_ability_collision(ability_id:int):
+	AbilityManager.do_ability_server(ability_id,parent.id)

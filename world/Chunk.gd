@@ -44,14 +44,14 @@ func _ready():
 	visibility_not.aabb = AABB(center - shape.extents,2*shape.extents)
 	visibility_not.max_distance = radius
 	visibility_not.connect("camera_entered",self,"chunk_is_visible")
-	self.set_collision_mask_bit(0,false)
-	self.set_collision_layer_bit(0,false)
-	self.set_collision_mask_bit(10,true)
-	self.set_collision_layer_bit(10,true)
-	self.set_collision_layer_bit(11,true)
-	self.set_collision_mask_bit(11,true)
-	self.set_collision_layer_bit(12,true)
-	self.set_collision_mask_bit(12,true)
+	self.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
+	self.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
+	self.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,true)
+	self.set_collision_layer_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,true)
+	self.set_collision_layer_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,true)
+	self.set_collision_mask_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,true)
+	self.set_collision_layer_bit(EntityConstants.SERVER_NPC_COLLISION_LAYER,false)
+	self.set_collision_mask_bit(EntityConstants.SERVER_NPC_COLLISION_LAYER,false)
 	
 	self.global_transform.origin = center
 	#if self.is_empty:
