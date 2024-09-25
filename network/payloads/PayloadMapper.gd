@@ -160,5 +160,11 @@ func get_cached_terrain(uuid:String):
 func ability(from:String,ability_id:int):
 	return {'ABILITY':{'from':from,'ability_id':ability_id}}
 	
+func add_item(id:String,item:int):
+	return {'ADD_ITEM':{'id':id,'item':item}}
+
+func get_inventory(id:String):
+	return {'GET_INVENTORY':{'id':id}}
+	
 func get_next_command():
 	return {'NEXT_CMD':{}}

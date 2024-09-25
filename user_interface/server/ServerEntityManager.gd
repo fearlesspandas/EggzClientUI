@@ -131,14 +131,14 @@ func handle_json(json) -> bool:
 					match glob:
 						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
 							if !server_entities.has(id):
-								#print_debug("ServerEntityManager: creating entity , ", id , "in client id," ,client_id , spawn)
 								socket.get_top_level_terrain_in_distance(1024,Vector3(x,y,z))
 								var spawned_character = spawn_character_entity_server(id,Vector3(x,y,z))
+								#temporary - adding smack ability to all players
+								socket.add_item(id,0)	
 								res = true
 						{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 							if !server_entities.has(id):
 								var spawned_character = spawn_npc_character_entity_server(id,Vector3(x,y,z))
-								#spawned_character.is_npc = true
 						_:
 							print_debug("ServerEntityManager could not parse glob type ", glob)
 				return res

@@ -6,14 +6,17 @@ onready var bg_rect:ColorRect = ColorRect.new()
 
 onready var request_top_terrain:RequestTopTerrainInDistance = RequestTopTerrainInDistance.new()
 onready var toggle_chunk_visibility: ToggleChunkVisibility = ToggleChunkVisibility.new()
+onready var get_inventory:GetInventory = GetInventory.new()
 onready var commands = []
 
 var client_id:String
 
 func initialize_commands():
 	request_top_terrain.client_id = client_id
+	get_inventory.client_id = client_id
 	commands.push_back(request_top_terrain)
 	commands.push_back(toggle_chunk_visibility)
+	commands.push_back(get_inventory)
 	
 func size():
 	self.rect_size = OS.window_size

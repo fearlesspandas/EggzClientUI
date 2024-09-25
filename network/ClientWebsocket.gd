@@ -215,5 +215,11 @@ func get_cached_terrain(uuid:String):
 func ability(from:String,ability_id:int):
 	send_payload(PayloadMapper.ability(from,ability_id))
 
+func add_item(id:String,item:int):
+	send_payload(PayloadMapper.add_item(id,item))
+
+func get_inventory(id:String):
+	send_payload(PayloadMapper.get_inventory(id))
+
 func get_next_command():
 	send_payload(PayloadMapper.get_next_command())

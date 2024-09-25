@@ -56,6 +56,7 @@ func set_player(player:Player):
 	socket.set_destination_active(client_id,false)
 	socket.set_gravitate(client_id,false)
 	socket.get_all_destinations(client_id)
+	socket.get_inventory(client_id)
 	
 func split_chunks(radius,max_size):
 	assert(radius > max_size)
@@ -206,7 +207,9 @@ func handle_json(json) -> bool:
 			fizzle.center = player.body.global_transform.origin
 			spawn.add_child(fizzle)	
 			return false
-			
+		{'ItemAdded':{'id':var id, 'item':var item}}:
+			print_debug("Item added for ", id)
+			return false
 		{'TerrainUnitm':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
 			if terrain.has(uuid):
 				return true
