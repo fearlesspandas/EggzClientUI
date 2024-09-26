@@ -1,0 +1,64 @@
+extends Spatial
+class_name RotatingEntities
+
+onready var center:Spatial = Spatial.new()
+onready var blobs = {} 
+
+var center_point:Vector3
+var radius:float
+
+var height = 128
+var blob_count:int = 200
+var rotation_speed = 0.01
+
+func _ready():
+	assert(center_point != null and center_point != Vector3())
+	assert(radius != null)
+	#initialize center
+	self.global_transform.origin = center_point
+	self.add_child(center)
+	#initialize blob state
+	initialize_blobs()
+	#set_random_rotation()
+	
+
+func set_random_rotation():
+	var x = rand_range(0,360)
+	var y = rand_range(0,360)
+	var z = rand_range(0,360)
+	center.global_rotation = Vector3(x,y,z)
+	
+func initialize_blobs():
+	for i in range(0,blob_count):
+		var blob = GoalBlob.new()
+		blob.id = i
+		blob.connect("collided",self,"blob_collision")
+		blobs[blob.id] = blob
+
+	for blob in blobs.values():
+		set_random_rotation()
+	
+		center.add_child(blob)
+		blob.global_transform.origin += Vector3(0,0,rand_range(0,radius))
+		clamp(blob.global_transform.origin.y,0,height)
+	
+		#random_reposition(blob)
+		
+	
+func random_reposition(blob:GoalBlob):
+	blob.global_transform.origin = Vector3(
+		rand_range(-radius,radius),
+		clamp(rand_range(-radius,radius),0,height),
+		rand_range(-radius,radius)
+	)
+
+func blob_collision(id,body):
+	random_reposition(blobs[id])
+	
+func tick_rotate(delta):
+	center.global_rotation += Vector3(0,delta * self.rotation_speed,0)
+
+func _physics_process(delta):
+	tick_rotate(delta)
+
+

@@ -31,9 +31,12 @@ func _ready():
 		else:
 			if should_spawn_texture:
 				var starfield_texture:StreamTexture = load("res://textures/vortex.png")
-				starfield_texture.flags = 2
+				starfield_texture.flags = 7
 				material.albedo_texture = starfield_texture
 				mesh.material.albedo_color = Color.white
+				mesh.material.albedo_color.a = 1
+				mesh.material.albedo_color.v = 1
+				mesh.material.albedo_color.s = 0.5
 		mesh_instance.mesh = mesh
 		if !self.is_server:
 			self.add_child(mesh_instance)

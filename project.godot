@@ -164,6 +164,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/client/command_menu/GetInventory.gd"
 }, {
+"base": "Area",
+"class": "GoalBlob",
+"language": "GDScript",
+"path": "res://entity/client/tutorial/GoalBlob.gd"
+}, {
 "base": "MeshInstance",
 "class": "HealthDisplay",
 "language": "GDScript",
@@ -258,6 +263,11 @@ _global_script_classes=[ {
 "class": "RequestTopTerrainInDistance",
 "language": "GDScript",
 "path": "res://user_interface/client/command_menu/RequestTopTerrainInDistance.gd"
+}, {
+"base": "Spatial",
+"class": "RotatingEntities",
+"language": "GDScript",
+"path": "res://entity/client/tutorial/RotatingEntities.gd"
 }, {
 "base": "Node",
 "class": "RustSocket",
@@ -386,6 +396,7 @@ _global_script_class_icons={
 "Fizzle": "",
 "GameFileManager": "",
 "GetInventory": "",
+"GoalBlob": "",
 "HealthDisplay": "",
 "HealthStars": "",
 "LinearVelocityIndicator": "",
@@ -405,6 +416,7 @@ _global_script_class_icons={
 "Profiles": "",
 "ProfilesList": "",
 "RequestTopTerrainInDistance": "",
+"RotatingEntities": "",
 "RustSocket": "",
 "ServerBase": "",
 "ServerBody": "",
