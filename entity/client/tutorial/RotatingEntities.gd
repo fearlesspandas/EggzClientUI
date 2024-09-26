@@ -2,13 +2,14 @@ extends Spatial
 class_name RotatingEntities
 
 onready var center:Spatial = Spatial.new()
+onready var tower:ProgressTower = ProgressTower.new()
 onready var blobs = {} 
 
 var center_point:Vector3
 var radius:float
 
 var height = 128
-var blob_count:int = 200
+var blob_count:int = 100
 var rotation_speed = 0.01
 
 func _ready():
@@ -17,9 +18,13 @@ func _ready():
 	#initialize center
 	self.global_transform.origin = center_point
 	self.add_child(center)
+	#initialize tower
+	tower.global_transform.origin = center_point
+	self.add_child(tower)
 	#initialize blob state
 	initialize_blobs()
 	#set_random_rotation()
+
 	
 
 func set_random_rotation():
@@ -37,11 +42,9 @@ func initialize_blobs():
 
 	for blob in blobs.values():
 		set_random_rotation()
-	
 		center.add_child(blob)
-		blob.global_transform.origin += Vector3(0,0,rand_range(0,radius))
+		blob.global_transform.origin += Vector3(0,0,rand_range(tower.chunk_radius,radius))
 		clamp(blob.global_transform.origin.y,0,height)
-	
 		#random_reposition(blob)
 		
 	
@@ -52,7 +55,8 @@ func random_reposition(blob:GoalBlob):
 		rand_range(-radius,radius)
 	)
 
-func blob_collision(id,body):
+func blob_collision(id):
+	tower.increment()
 	random_reposition(blobs[id])
 	
 func tick_rotate(delta):
