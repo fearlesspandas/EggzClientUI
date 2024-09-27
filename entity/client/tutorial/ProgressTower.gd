@@ -1,6 +1,6 @@
 extends Spatial
 class_name ProgressTower
-
+signal completed
 var segments = []
 
 var num_segments = 32
@@ -26,3 +26,5 @@ func _ready():
 func increment():
 	segments[score%segments.size()].set_color(Color.green)
 	score += 1
+	if score == segments.size():
+		emit_signal("completed")

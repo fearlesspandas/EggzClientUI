@@ -20,12 +20,17 @@ func _ready():
 	self.add_child(center)
 	#initialize tower
 	tower.global_transform.origin = center_point
+	tower.connect("completed",self,"completed")
 	self.add_child(tower)
 	#initialize blob state
 	initialize_blobs()
 	#set_random_rotation()
 
 	
+func completed():
+	for blob in blobs.values():
+		blob.stop()
+		blob.set_color(Color.green)
 
 func set_random_rotation():
 	var x = rand_range(0,360)
@@ -41,10 +46,12 @@ func initialize_blobs():
 		blobs[blob.id] = blob
 
 	for blob in blobs.values():
-		set_random_rotation()
+		#set_random_rotation()
 		center.add_child(blob)
-		blob.global_transform.origin += Vector3(0,0,rand_range(tower.chunk_radius,radius))
-		clamp(blob.global_transform.origin.y,0,height)
+		var y = rand_range(0,height)
+		var x = rand_range(-radius,radius)
+		var z = rand_range(-radius,radius)
+		blob.global_transform.origin += Vector3(x,y,z)
 		#random_reposition(blob)
 		
 	

@@ -7,6 +7,7 @@ onready var color_timer:Timer = Timer.new()
 
 var id:int
 var radius = 10
+var colors = [Color.red,Color.aqua,Color.blue,Color.blueviolet,Color.aquamarine,Color.burlywood,Color.coral]
 func _ready():
 	assert(id != null)
 	#initialize mesh
@@ -37,7 +38,7 @@ func _ready():
 	self.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
 	self.set_collision_layer_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
 	self.set_collision_mask_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,true)
-	self.set_collision_layer_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,true)
+	self.set_collision_layer_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,false)
 	self.connect("body_entered",self,"entered")
 
 	#timer
@@ -75,18 +76,16 @@ func color_processes(delta):
 			mesh_instance.mesh.material.albedo_color.b += 1
 	proc_1 += 1			
 
+func set_color(color:Color):
+	mesh_instance.mesh.material.albedo_color = color
+	
 func random_color():
 	var rand_x = int(rand_range(0,255))
 	var rand_y = int(rand_range(0,255))
 	var rand_z = int(rand_range(0,255))
-	if rand_x > 100:
-		mesh_instance.mesh.material.albedo_color = Color.red
-	else:
-		mesh_instance.mesh.material.albedo_color = Color.green
+	var rand_ind = int(rand_range(0,colors.size()))
+	mesh_instance.mesh.material.albedo_color = colors[rand_ind]
 
-var proc:int = 0
-func not_process(delta):
-	if proc%10 == 0:
-		proc = 0
-		random_color()
-	proc += 1
+func stop():
+	color_timer.stop()
+

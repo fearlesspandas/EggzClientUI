@@ -18,7 +18,7 @@ func _ready():
 	shape.radius = radius
 	shape.height = height
 	collision_shape.shape = shape
-	self.add_child(collision_shape)
+	#self.add_child(collision_shape)
 
 	#initialize mesh
 	var mesh:CylinderMesh = CylinderMesh.new()
