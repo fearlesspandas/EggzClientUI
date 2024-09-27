@@ -20,6 +20,7 @@ func _ready():
 	entity_scanner.client_id = client_id
 	destinations.entity_spawn = viewport
 	destinations.client_id = client_id
+	ClientReferences.set_destination_manager(destinations)
 	self.add_child(entity_scanner)
 	self.add_child(message_controller)
 	entity_scanner.start()

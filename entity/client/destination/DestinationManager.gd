@@ -11,7 +11,7 @@ var client_id
 var destinations = {}
 var entity_spawn:Viewport
 var index
-
+var active_uuid
 func _ready():
 	assert(entity_spawn != null)
 	
@@ -23,6 +23,13 @@ func make_destination_active(uuid):
 			res = dest
 			print_debug(i,uuid)
 			set_index(i,uuid)
+	active_uuid = uuid
+
+func get_active_destination() -> Destination:
+	if active_uuid == null:
+		return null
+	else:
+		return destinations[active_uuid]
 
 func set_index(ind:int,uuid = null):
 	index = ind
@@ -54,6 +61,7 @@ func erase_dests():
 			dest.call_deferred("free")
 			dest = null
 	destinations = {}
+	active_uuid = null
 	
 func spawn_dest(destination:Destination):
 	entity_spawn.add_child(destination)
