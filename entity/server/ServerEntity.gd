@@ -121,7 +121,7 @@ func get_lv() -> Vector3:
 	else:
 		return Vector3.ZERO
 		
-func _physics_process(delta):
+func default_physics_process(delta):
 	physics_socket.get_dir_physics(id)
 	update_lv_internal(body,delta)
 	movement.entity_set_max_speed(DataCache.cached(id,'speed'))
@@ -150,7 +150,7 @@ func _physics_process(delta):
 	else:
 		queued_teleports.pop_front()
 	physics_socket.set_location_physics(id,body.global_transform.origin)
-	
+
 func _process(delta):
 	if !isSubbed:
 		socket.get_physical_stats(id)

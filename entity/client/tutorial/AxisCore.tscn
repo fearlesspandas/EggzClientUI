@@ -1,0 +1,65 @@
+[gd_scene load_steps=7 format=2]
+
+[sub_resource type="CapsuleShape" id=1]
+radius = 30.0
+height = 30.0
+
+[sub_resource type="SpatialMaterial" id=2]
+albedo_color = Color( 0.470588, 0.623529, 0.627451, 1 )
+metallic = 0.32
+roughness = 0.38
+emission_enabled = true
+emission = Color( 0.470588, 0.623529, 0.627451, 1 )
+emission_energy = 0.2
+emission_operator = 0
+emission_on_uv2 = false
+
+[sub_resource type="CapsuleMesh" id=3]
+material = SubResource( 2 )
+radius = 30.0
+mid_height = 30.0
+radial_segments = 8
+
+[sub_resource type="CylinderShape" id=4]
+height = 25.0
+radius = 20.0
+
+[sub_resource type="PrismMesh" id=5]
+size = Vector3( 40, 25, 40 )
+
+[sub_resource type="SpatialMaterial" id=6]
+albedo_color = Color( 0.321569, 0.690196, 0.776471, 1 )
+metallic = 0.74
+roughness = 0.15
+emission_enabled = true
+emission = Color( 0.333333, 0.376471, 0.388235, 1 )
+emission_energy = 0.1
+emission_operator = 0
+emission_on_uv2 = false
+
+[node name="AxisCore" type="Spatial"]
+
+[node name="KinematicBody" type="KinematicBody" parent="."]
+
+[node name="Capsule" type="CollisionShape" parent="KinematicBody"]
+shape = SubResource( 1 )
+
+[node name="CapsuleMesh" type="MeshInstance" parent="KinematicBody/Capsule"]
+mesh = SubResource( 3 )
+skeleton = NodePath("../..")
+
+[node name="Top" type="CollisionShape" parent="KinematicBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 27.1298, 0 )
+shape = SubResource( 4 )
+
+[node name="TopMesh" type="MeshInstance" parent="KinematicBody/Top"]
+mesh = SubResource( 5 )
+material/0 = SubResource( 6 )
+
+[node name="Top2" type="CollisionShape" parent="KinematicBody"]
+transform = Transform( -1, 8.74228e-08, 0, -8.74228e-08, -1, 0, 0, 0, 1, 0, -25, 0 )
+shape = SubResource( 4 )
+
+[node name="TopMesh" type="MeshInstance" parent="KinematicBody/Top2"]
+mesh = SubResource( 5 )
+material/0 = SubResource( 6 )

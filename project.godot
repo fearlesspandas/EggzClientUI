@@ -24,6 +24,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://network/AuthenticationRequest.gd"
 }, {
+"base": "Spatial",
+"class": "AxisSpider",
+"language": "GDScript",
+"path": "res://entity/client/tutorial/AxisSpider.gd"
+}, {
 "base": "StaticBody",
 "class": "BlockTerrain",
 "language": "GDScript",
@@ -378,6 +383,7 @@ _global_script_class_icons={
 "AbilityOptionCreator": "",
 "AuthenticatedControl": "",
 "AuthenticationRequest": "",
+"AxisSpider": "",
 "BlockTerrain": "",
 "Chunk": "",
 "ClickMenu": "",

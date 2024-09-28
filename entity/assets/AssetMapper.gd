@@ -16,6 +16,7 @@ var assets = {
 	12 : "res://world/client/HealthStarMesh.tscn",
 	13 : "res://entity/server/NPCServerEntity.tscn",
 	14 : "res://entity/server/PlayerServerEntity.tscn",
+	15 : "res://entity/client/tutorial/AxisSpider.tscn",
 }
 var asset_resources = {}
 
@@ -33,7 +34,8 @@ enum {
 	npc_model = 4,
 	username_font = 5,
 	npc_server_model = 13,
-	}
+	spider = 15,
+}
 
 func _ready():
 	for k in assets.keys():

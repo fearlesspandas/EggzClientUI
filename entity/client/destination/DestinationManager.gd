@@ -12,6 +12,7 @@ var destinations = {}
 var entity_spawn:Viewport
 var index
 var active_uuid
+
 func _ready():
 	assert(entity_spawn != null)
 	
@@ -52,6 +53,8 @@ func destination_deleted(uuid:String):
 	destinations.erase(uuid)
 	entity_spawn.remove_child(dest)
 	dest.call_deferred('free')
+	if active_uuid == uuid:
+		active_uuid = null
 	emit_signal("destination_deleted",uuid)
 	
 func erase_dests():

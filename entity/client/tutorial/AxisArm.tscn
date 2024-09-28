@@ -1,0 +1,94 @@
+[gd_scene load_steps=12 format=2]
+
+[sub_resource type="CapsuleShape" id=5]
+radius = 10.0
+height = 90.0
+
+[sub_resource type="PrismMesh" id=1]
+left_to_right = 2.0
+size = Vector3( 10, 100, 10 )
+
+[sub_resource type="SpatialMaterial" id=2]
+albedo_color = Color( 0.117647, 0.109804, 0.109804, 1 )
+
+[sub_resource type="SpatialMaterial" id=3]
+albedo_color = Color( 0.854902, 0.00784314, 0.00784314, 1 )
+metallic = 1.0
+roughness = 0.0
+
+[sub_resource type="PrismMesh" id=4]
+material = SubResource( 3 )
+left_to_right = 2.0
+size = Vector3( 5, 100, 5 )
+
+[sub_resource type="CylinderShape" id=8]
+height = 20.0
+radius = 10.0
+
+[sub_resource type="CylinderMesh" id=7]
+top_radius = 3.842
+bottom_radius = 9.182
+height = 20.0
+
+[sub_resource type="SpatialMaterial" id=9]
+albedo_color = Color( 0.278431, 0.266667, 0.266667, 1 )
+metallic = 1.0
+roughness = 0.0
+emission_enabled = true
+emission = Color( 0.92549, 0.0470588, 0.0470588, 1 )
+emission_energy = 0.43
+emission_operator = 0
+emission_on_uv2 = false
+
+[sub_resource type="SphereShape" id=11]
+radius = 10.0
+
+[sub_resource type="SphereMesh" id=10]
+radius = 10.0
+height = 20.0
+radial_segments = 4
+
+[sub_resource type="SpatialMaterial" id=12]
+albedo_color = Color( 0.278431, 0.631373, 0.639216, 1 )
+metallic = 0.5
+roughness = 0.05
+emission_enabled = true
+emission = Color( 0.278431, 0.631373, 0.639216, 1 )
+emission_energy = 1.65
+emission_operator = 0
+emission_on_uv2 = false
+
+[node name="AxisArm" type="Spatial"]
+
+[node name="KinematicBody" type="KinematicBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 55, 0 )
+
+[node name="ArmVertical" type="CollisionShape" parent="KinematicBody"]
+transform = Transform( 0.984427, -7.6843e-09, -0.175796, -0.175796, -4.30306e-08, -0.984426, 0, 1, -4.37114e-08, 7.32967, 0.567276, 0 )
+shape = SubResource( 5 )
+
+[node name="ArmVerticalMeshBlack" type="MeshInstance" parent="KinematicBody"]
+mesh = SubResource( 1 )
+material/0 = SubResource( 2 )
+
+[node name="ArmVerticalMeshRed" type="MeshInstance" parent="KinematicBody"]
+transform = Transform( 0.99011, 0.140296, 0, -0.140296, 0.99011, 0, 0, 0, 1, 0, 0, 0 )
+mesh = SubResource( 4 )
+
+[node name="ArmHorizontal" type="CollisionShape" parent="KinematicBody"]
+transform = Transform( 6.48451e-11, 0.999999, -0.00148348, 4.37113e-08, -0.00148348, -0.999999, -1, 0, -4.37114e-08, -18.4269, -50, 0 )
+shape = SubResource( 8 )
+
+[node name="ArmHorizontalMesh" type="MeshInstance" parent="KinematicBody"]
+transform = Transform( -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, -17.3067, -50, 0 )
+mesh = SubResource( 7 )
+material/0 = SubResource( 9 )
+
+[node name="Elbow" type="CollisionShape" parent="KinematicBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, 0 )
+shape = SubResource( 11 )
+
+[node name="ElbowMesh" type="MeshInstance" parent="KinematicBody"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, 0 )
+mesh = SubResource( 10 )
+material/0 = SubResource( 12 )

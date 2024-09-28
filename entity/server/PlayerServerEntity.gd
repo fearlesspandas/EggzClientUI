@@ -16,6 +16,7 @@ func timer_polling():
 	socket.set_lv(id,get_lv())
 
 func _physics_process(delta):
+	default_physics_process(delta)
 	if body is KinematicBody: 
 		var coll:KinematicCollision = body.get_last_slide_collision()
 		if coll != null and coll.collider.has_method("handle_collision"):

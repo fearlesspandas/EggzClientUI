@@ -31,6 +31,9 @@ func completed():
 	for blob in blobs.values():
 		blob.stop()
 		blob.set_color(Color.green)
+	var spider:AxisSpider = AssetMapper.matchAsset(AssetMapper.spider).instance()
+	spider.global_transform.origin = Vector3(0,0,800)
+	center.add_child(spider)
 
 func set_random_rotation():
 	var x = rand_range(0,360)
