@@ -1,5 +1,7 @@
 extends Node
 
+#assets that are the same between client and server
+#i.e. basic collision boxes
 var assets = {
 	0 : "res://entity/Player.tscn",
 	1 : "res://entity/server/ServerEntity.tscn",
@@ -18,7 +20,17 @@ var assets = {
 	14 : "res://entity/server/PlayerServerEntity.tscn",
 	15 : "res://entity/client/tutorial/AxisSpider.tscn",
 }
+#client specific assets
+var client_assets = {
+	16: "placeholder",
+}
+#server specific assets
+var server_assets = {
+	16: "placeholder",
+}
 var asset_resources = {}
+var client_asset_resources = {}
+var server_asset_resources = {}
 
 var mesh = {
 	6:7,
@@ -40,6 +52,14 @@ enum {
 func _ready():
 	for k in assets.keys():
 		asset_resources[k] = load(assets[k])
+	for k in client_assets.keys():
+		client_asset_resources[k] = load(client_assets[k])
+	for k in server_assets.keys():
+		server_asset_resources[k] = load(server_assets[k])
+
+#any specific client/server assets should be in both 
+func verify_client_server_assets():
+	pass
 		
 func matchAsset(id:int) -> Resource:
 	if assets.has(id):
@@ -61,3 +81,15 @@ func matchMesh(id:int) -> Resource:
 		return matchAsset(mesh_id)
 	else:
 		return null
+
+func matchClientAsset(id:int) -> Resource:
+	if client_assets.has(id):
+		return client_asset_resources[id]
+	else:
+		return matchAsset(id)
+	
+func matchServerAsset(id:int) -> Resource:
+	if server_assets.has(id):
+		return server_asset_resources[id]
+	else:
+		return matchAsset(id)

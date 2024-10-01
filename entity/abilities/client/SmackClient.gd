@@ -25,5 +25,9 @@ func _ready():
 	despawn_timer.start()
 
 func despawn():
+	self.remove_child(mesh_instance)
+	mesh_instance.queue_free()
+	self.remove_child(despawn_timer)
+	despawn_timer.queue_free()
 	get_parent().remove_child(self)
 	self.queue_free()

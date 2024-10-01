@@ -2,9 +2,12 @@ extends Node
 
 func destination(type:String, location:Vector3,radius:float):
 	return {'dest_type':{type:{}},'location':[location.x,location.y,location.z], 'radius':radius}
+
 func create_glob(id:String,location:Vector3):
-	#print("calling create glob")
 	return {'CREATE_GLOB':{'globId':id,'location':[location.x,location.y,location.z]}}
+
+func create_prowler(id:String,location:Vector3):
+	return {'CREATE_PROWLER':{'globId':id,'location':[location.x,location.y,location.z]}}
 
 func create_repair_egg(eggId:String,globId:String):
 	return {'CREATE_REPAIR_EGG':{'eggId':eggId,'globId':globId}}

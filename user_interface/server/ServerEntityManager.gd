@@ -174,7 +174,7 @@ func handle_json(json) -> bool:
 					for k in keys:
 						var resource_id = int(k)
 						assert(resource_id != 9)
-						var asset = AssetMapper.matchAsset(resource_id)
+						var asset = AssetMapper.matchServerAsset(resource_id)
 						for i in range(0,entity_map[k]):
 							spawn_terrain(str(uuid),loc,spawn,asset,true)
 							socket.get_top_level_terrain_in_distance(1024 * 5,loc)
@@ -188,7 +188,7 @@ func handle_json(json) -> bool:
 							var loc = Vector3(location[0],location[1],location[2])
 							for k in keys:
 								var resource_id = int(k)
-								var asset = AssetMapper.matchAsset(resource_id)
+								var asset = AssetMapper.matchServerAsset(resource_id)
 								for i in range(0,entity_map[k]):
 									spawn_terrain(str(uuid),loc,spawn,asset,true)
 				return true

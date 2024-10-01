@@ -82,14 +82,16 @@ func send_payload(payload):
 	_client.get_peer(1).put_packet(JSON.print(payload).to_utf8())
 	
 func create_glob(id:String,location:Vector3):
-	#print("calling create glob")
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.create_glob(id,location)).to_utf8())
+	send_payload(PayloadMapper.create_glob(id,location))
+
+func create_prowler(id:String,location:Vector3):
+	send_payload(PayloadMapper.create_prowler(id,location))
 
 func create_repair_egg(eggId:String,globId:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.create_repair_egg(eggId,globId)).to_utf8())
 
 func get_blob(id:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.get_blob(id)).to_utf8())
+	send_payload(JSON.print(PayloadMapper.get_blob(id)))
 
 func relate_eggs(id1:String,id2:String,globid:String,bidirectional:bool):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.relate_eggs(id1,id2,globid,bidirectional)).to_utf8())

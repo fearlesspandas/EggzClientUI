@@ -228,7 +228,7 @@ func handle_json(json) -> bool:
 			for k in keys:
 				var resource_id = int(k)
 				var mesh = AssetMapper.matchMesh(resource_id)
-				var asset = AssetMapper.matchAsset(resource_id)
+				var asset = AssetMapper.matchClientAsset(resource_id)
 				for _i in range(0,entity_map[k]):
 					spawn_terrain(str(uuid),loc,spawn,mesh,false)
 					spawn_terrain(str(uuid),loc,spawn,asset,false)
@@ -242,7 +242,7 @@ func handle_json(json) -> bool:
 						var loc = Vector3(location[0],location[1],location[2])
 						for k in keys:
 							var resource_id = int(k)
-							var asset = AssetMapper.matchAsset(resource_id)
+							var asset = AssetMapper.matchClientAsset(resource_id)
 							var mesh = AssetMapper.matchMesh(resource_id)
 							for _i in range(0,entity_map[k]):
 								var collider_terrain = spawn_terrain(str(uuid),loc,spawn,asset,false)
