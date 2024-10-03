@@ -36,10 +36,10 @@ func spawn_terrain(id:String,location:Vector3,parent:Node,resource:Resource,crea
 	if resource != null:
 		var res = resource.instance()
 		terrain[id] = res
-		parent.add_child(res)
-		res.global_transform.origin = location
 		if res.has_method("init_with_id"):
 			res.init_with_id(id)
+		parent.add_child(res)
+		res.global_transform.origin = location
 		emit_signal("terrain_created",res,parent,create_as_server_entity)
 		return res
 	else:
@@ -50,8 +50,8 @@ func spawn_player_client(id:String,location:Vector3,parent:Node):
 	if res.has_method("init_with_id"):
 		res.init_with_id(id,client_id)
 	parent.add_child(res)
+	res.global_transform.origin = location
 	#res.camera.make_current()
 	client_entities[id] = res
-	res.global_transform.origin = location
 	return res
 

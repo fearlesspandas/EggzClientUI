@@ -23,6 +23,7 @@ var assets = {
 
 #client specific assets
 var client_assets = {
+	16:"res://world/client/ProwlerAnchorMesh.tscn"
 }
 
 #server specific assets

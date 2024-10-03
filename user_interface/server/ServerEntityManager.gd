@@ -1,6 +1,7 @@
 extends EntityManagement
 
 signal player_created(player)
+signal npc_created(npc)
 class_name ServerEntityManager
 
 export var serverSpawnWorld:Resource
@@ -35,7 +36,13 @@ func _ready():
 	AbilityManager.client_id_server = client_id
 	EntityTerrainMapper.client_id_server = client_id
 
+	#self.connect("npc_created",self,"init_entity")
 	pass # Replace with function body.
+
+func init_entity(entity:NPCServerEntity):
+	socket.set_destination_mode(entity.id,"FORWARD")
+	socket.set_destination_active(entity.id,true)
+	socket.set_gravitate(entity.id,true)
 
 func spawn_empty_terrain_from_queue():
 	if !empty_terrain_queue.empty():
@@ -98,7 +105,10 @@ func spawn_npc_character_entity_server(id:String,location:Vector3) -> NPCServerE
 	res.init_with_id(id,client_id)
 	spawn.add_child(res)
 	res.global_transform.origin = location
-	emit_signal("entity_created",res,spawn,false)
+	res.body.global_transform.origin = location
+	#emit_signal("entity_created",res,spawn,false)
+	emit_signal("entity_created",res,spawn,true)
+	emit_signal("npc_created",res)
 	return res
 
 
