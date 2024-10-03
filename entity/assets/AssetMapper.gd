@@ -20,13 +20,14 @@ var assets = {
 	14 : "res://entity/server/PlayerServerEntity.tscn",
 	15 : "res://entity/client/tutorial/AxisSpider.tscn",
 }
+
 #client specific assets
 var client_assets = {
-	16: "placeholder",
 }
+
 #server specific assets
 var server_assets = {
-	16: "placeholder",
+	16:"res://world/ProwlerAnchorServer.tscn",
 }
 var asset_resources = {}
 var client_asset_resources = {}

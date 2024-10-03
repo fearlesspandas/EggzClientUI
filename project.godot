@@ -272,7 +272,7 @@ _global_script_classes=[ {
 "base": "Spatial",
 "class": "ProwlerAnchor",
 "language": "GDScript",
-"path": "res://world/ProwlerAnchor.gd"
+"path": "res://world/ProwlerAnchorServer.gd"
 }, {
 "base": "Command",
 "class": "RequestTopTerrainInDistance",
@@ -485,6 +485,7 @@ ClientSettings="*res://user_interface/client/ClientSettings.gd"
 ClientReferences="*res://user_interface/client/ClientReferences.gd"
 AbilityManager="*res://entity/abilities/AbilityManager.gd"
 EntityConstants="*res://entity/EntityConstants.gd"
+EntityTerrainMapper="*res://entity/EntityTerrainMapper.gd"
 
 [input]
 
