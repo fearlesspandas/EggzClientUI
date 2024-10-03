@@ -9,6 +9,8 @@ func queue_mapping(terrain):
 
 var npc_count:int = 0
 
+var client_id_server
+
 func generate_name(typ) -> String:
 	match typ :
 		NPCType.PROWLER:

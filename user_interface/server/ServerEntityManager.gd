@@ -33,6 +33,7 @@ func _ready():
 	empty_terrain_queue_spawner.start()
 
 	AbilityManager.client_id_server = client_id
+	EntityTerrainMapper.client_id_server = client_id
 
 	pass # Replace with function body.
 
@@ -84,6 +85,7 @@ func spawn_character_entity_server(id:String, location:Vector3) -> PlayerServerE
 			res.init_with_id(id,client_id)
 		spawn.add_child(res)
 		res.global_transform.origin = location
+		res.body.global_transform.origin = location
 		emit_signal("player_created",res)
 		return res
 	else:

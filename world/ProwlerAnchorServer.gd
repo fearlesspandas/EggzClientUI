@@ -10,7 +10,7 @@ onready var follow_timer : Timer = Timer.new()
 
 var client_id:String
 
-var npc_ids = [EntityTerrainMapper.generate_name(EntityTerrainMapper.NPCType.Prowler)]
+var npc_ids = [EntityTerrainMapper.generate_name(EntityTerrainMapper.NPCType.PROWLER)]
 
 var npcs = [] 
 
@@ -20,7 +20,8 @@ var radius:float
 var socket:ClientWebSocket
 
 func _ready():
-	socket = ServerNetwork.get(client_id)	
+	assert(EntityTerrainMapper.client_id_server != null)
+	socket = ServerNetwork.get(EntityTerrainMapper.client_id_server)	
 	assert(socket != null)
 	init_npcs()
 
@@ -32,14 +33,14 @@ func _ready():
 
 	follow_timer.connect("timeout",self,"follow_terrain")
 	follow_timer.wait_time = 2
-	self.add_child(follow_timer)
-	follow_timer.start()
+	#self.add_child(follow_timer)
+	#follow_timer.start()
 
 
 
 func init_npcs():
 	for id in npc_ids:
-		socket.create_prowler(id,center.global_transform.origin)
+		socket.create_prowler(id,self.global_transform.origin)
 		#socket.get_blob(id)
 
 func add_entity(npc:NPCServerEntity):
@@ -54,4 +55,5 @@ func follow_terrain():
 		socket.set_gravitate(id,true)
 	
 
-
+func init_with_id(client_id):
+	self.client_id = client_id
