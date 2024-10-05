@@ -108,6 +108,7 @@ func _handle_message(msg,_delta_accum):
 	pass
 	
 func freeze():
+	assert(false)
 	body.global_transform.origin = spawn
 	
 func update_lv_internal(body,delta):
