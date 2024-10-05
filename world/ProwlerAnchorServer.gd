@@ -34,7 +34,7 @@ func _ready():
 	shape.extents = Vector3(radius,radius,radius)
 
 	follow_timer.connect("timeout",self,"follow_terrain")
-	follow_timer.wait_time = 2
+	follow_timer.wait_time = 10
 	self.add_child(follow_timer)
 	follow_timer.start()
 
@@ -50,6 +50,7 @@ func add_entity(npc:NPCServerEntity):
 	self.add_child(npc)
 	socket #make npc follow center
 	
+
 
 func follow_terrain():
 	#necessary because location is not yet set during ready step

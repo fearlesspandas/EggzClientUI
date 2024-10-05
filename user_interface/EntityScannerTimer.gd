@@ -1,10 +1,13 @@
+#deprecated
 extends Timer
+
 
 class_name EntityScannerTimer
 var queue_entities = []
 var client_id
 var is_active:bool = false
 func _ready():
+	assert(false)
 	self.connect("timeout",self,"poll_for_entities")
 	pass # Replace with function body.
 

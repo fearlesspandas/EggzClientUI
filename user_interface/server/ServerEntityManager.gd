@@ -7,7 +7,6 @@ class_name ServerEntityManager
 export var serverSpawnWorld:Resource
 export var servercharacter:Resource
 onready var message_controller : MessageController = MessageController.new()
-onready var entity_scanner: EntityScannerTimer = EntityScannerTimer.new()
 onready var terrain_scanner: Timer = Timer.new()
 onready var empty_terrain_queue_spawner:Timer = Timer.new()
 onready var server_control = get_parent() #initial node where base map is added
@@ -17,22 +16,22 @@ var spawn
 var empty_terrain_queue = []
 
 func _ready():
-	entity_scanner.wait_time = 2
-	entity_scanner.client_id = client_id
-	entity_scanner.is_active = true
-	self.add_child(entity_scanner)
-	entity_scanner.start()
+	#ready initial requests (spawn terrain and entities)
 	terrain_scanner.wait_time = 0.5
 	terrain_scanner.connect("timeout",self,"scan_initial_terrain")
 	self.add_child(terrain_scanner)
 	terrain_scanner.start()
+
+	#ready message controller
 	self.add_child(message_controller)
 
+	#ready empty terrain queue
 	empty_terrain_queue_spawner.wait_time = 1
 	empty_terrain_queue_spawner.connect("timeout",self,"spawn_empty_terrain_from_queue")
 	self.add_child(empty_terrain_queue_spawner)
 	empty_terrain_queue_spawner.start()
 
+	#ready global managers
 	AbilityManager.client_id_server = client_id
 	EntityTerrainMapper.client_id_server = client_id
 
@@ -65,6 +64,7 @@ func scan_initial_terrain():
 	#socket.get_top_level_terrain()
 	socket.get_top_level_terrain_in_distance(1024,Vector3(0,0,0))
 	terrain_scanner.one_shot = true
+	socket.getAllGlobs()
 	
 func inspect_terrain(player:ServerEntity):
 	for t in terrain.values():
@@ -126,6 +126,25 @@ func route_to_entity(id:String,msg):
 		if s!= null:
 			s.message_controller.add_to_queue(msg)
 		
+func handle_globset(globs):
+	for glob in globs:
+		handle_entity(glob)
+
+func handle_entity(entity):
+	match entity:
+		{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
+			if !server_entities.has(id):
+				socket.get_top_level_terrain_in_distance(1024,Vector3(x,y,z))
+				var spawned_character = spawn_character_entity_server(id,Vector3(x,y,z))
+				#temporary - adding smack ability to all players
+				socket.add_item(id,0)	
+		{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
+			if !server_entities.has(id):
+				var spawned_character = spawn_npc_character_entity_server(id,Vector3(x,y,z))
+		_:
+			print_debug("could not find handler for entity ", entity)
+
+
 func handle_json(json) -> bool:
 	match json:
 			{'MSG':{'route':var route,'message':var msg}}:
@@ -140,22 +159,12 @@ func handle_json(json) -> bool:
 			{'Input':{"id":var id , "vec":[var x ,var y ,var z]}}:
 				route_to_entity(id,json)
 				return false
+			{'Entity':{'entity':var entity}}:
+				handle_entity(entity)
+				return false
 			{"GlobSet":{"globs":var globs}}:
 				var res = false
-				for glob in globs:
-					match glob:
-						{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
-							if !server_entities.has(id):
-								socket.get_top_level_terrain_in_distance(1024,Vector3(x,y,z))
-								var spawned_character = spawn_character_entity_server(id,Vector3(x,y,z))
-								#temporary - adding smack ability to all players
-								socket.add_item(id,0)	
-								res = true
-						{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
-							if !server_entities.has(id):
-								var spawned_character = spawn_npc_character_entity_server(id,Vector3(x,y,z))
-						_:
-							print_debug("ServerEntityManager could not parse glob type ", glob)
+				handle_globset(globs)
 				return res
 			{"NextDestination":{"id": var id, "destination": var dest}}:
 				route_to_entity(id,json)

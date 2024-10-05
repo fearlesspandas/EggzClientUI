@@ -4,10 +4,10 @@ signal spawned_player_character(player)
 
 class_name ClientEntityManager
 
-onready var entity_scanner :EntityScannerTimer = EntityScannerTimer.new()
 onready var message_controller : MessageController = MessageController.new()
 onready var destinations:DestinationManager = DestinationManager.new()
 onready var empty_terrain_queue_spawner:Timer = Timer.new()
+onready var startup_timer:Timer = Timer.new()
 var terrain_count = 0
 var viewport:Viewport #base node where initial map is added
 var spawn
@@ -16,21 +16,28 @@ var player:Player
 
 var empty_terrain_queue = []
 func _ready():
-	entity_scanner.wait_time = 3
-	entity_scanner.client_id = client_id
+	#ready destinations
 	destinations.entity_spawn = viewport
 	destinations.client_id = client_id
 	ClientReferences.set_destination_manager(destinations)
-	self.add_child(entity_scanner)
+
+	#ready message controller
 	self.add_child(message_controller)
-	entity_scanner.start()
+
+	#ready player
 	self.connect("spawned_player_character",self,"set_player")
 
+	#ready empty terrain queue
 	empty_terrain_queue_spawner.wait_time = 0.25
 	empty_terrain_queue_spawner.connect("timeout",self,"spawn_empty_terrain_from_queue")
 	self.add_child(empty_terrain_queue_spawner)
 	empty_terrain_queue_spawner.start()
 
+	#ready startup timer (initial requests to setup environment)
+	startup_timer.wait_time = 1
+	startup_timer.connect("timeout",self,"startup_requests")
+	self.add_child(startup_timer)
+	startup_timer.start()
 
 func spawn_empty_terrain_from_queue():
 	#print_debug("empty terrain count : ",empty_terrain_queue.size())
@@ -58,6 +65,7 @@ func set_player(player:Player):
 	socket.set_gravitate(client_id,false)
 	socket.get_all_destinations(client_id)
 	socket.get_inventory(client_id)
+	socket.getAllGlobs()
 	
 func split_chunks(radius,max_size):
 	assert(radius > max_size)
@@ -68,9 +76,12 @@ func split_chunks(radius,max_size):
 		
 func set_active(active:bool):
 	is_active = active
-	entity_scanner.set_active(active)
 	#destination_scanner.set_active(active)
 	#terrain_scanner.set_active(active)
+
+func startup_requests():
+	startup_timer.one_shot = true
+	socket.getAllGlobs()
 
 func _handle_message(msg,delta_accum):
 	route(msg,delta_accum)
@@ -127,6 +138,33 @@ func route_to_entity(id:String,msg):
 		if s!= null:
 			s.message_controller.add_to_queue(msg)
 		
+func handle_globset(globs):
+	for glob in globs:
+		handle_entity(glob)
+
+func handle_entity(entity):
+	match entity:
+		{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
+			#the server network check is only needed due to a bug where different players are techncially added to the same scene
+			#in spite of being in different viewports
+			if !client_entities.has(id) and id == client_id:
+				print_debug("creating entity , ", id ," in client id:",client_id, spawn)
+				var spawned_character = create_character_entity_client(id,Vector3(x,y,z),viewport)
+				spawned_character.set_active(self.is_active)
+				spawned_character.set_health(health)
+			if !client_entities.has(id) and client_id != id and (!ServerNetwork.sockets.has(id) or !ServerNetwork.physics_sockets.has(id)):
+				print_debug("creating entity , ", id ," in client id:",client_id, spawn)
+				var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
+				if spawned_character is ClientPlayerEntity:
+					spawned_character.set_health(health)
+		{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
+			if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
+				var npc = spawn_npc_character_entity_client(id,Vector3(x,y,z))
+				npc.set_health(health)
+		_:
+			print_debug("no handler found for entity ", entity)
+
+
 func handle_json(json) -> bool:
 	match json:
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
@@ -143,31 +181,12 @@ func handle_json(json) -> bool:
 		{"Location":{"id":var id, "location": [var x , var y , var z]}}:
 			route_to_entity(id,json)
 			return false
+		{'Entity':{'entity':var entity}}:
+			handle_entity(entity)
+			return false
 		{"GlobSet":{"globs":var globs}}:
 			var res = false
-			for glob in globs:
-				match glob:
-					{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
-						#the server network check is only needed due to a bug where different players are techncially added to the same scene
-						#in spite of being in different viewports
-						if !client_entities.has(id) and id == client_id:
-							print_debug("creating entity , ", id ," in client id:",client_id, spawn)
-							var spawned_character = create_character_entity_client(id,Vector3(x,y,z),viewport)
-							spawned_character.set_active(self.is_active)
-							spawned_character.set_health(health)
-							res = true
-						if !client_entities.has(id) and client_id != id and (!ServerNetwork.sockets.has(id) or !ServerNetwork.physics_sockets.has(id)):
-							print_debug("creating entity , ", id ," in client id:",client_id, spawn)
-							var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
-							if spawned_character is ClientPlayerEntity:
-								spawned_character.set_health(health)
-							res = true
-					{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
-						if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
-							var npc = spawn_npc_character_entity_client(id,Vector3(x,y,z))
-							npc.set_health(health)
-					_:
-						print("ClientEntityManager could not parse glob type ", glob)
+			handle_globset(globs)
 			return res
 		{'ModeSet':{'mode':var mode}}:
 			player.set_destination_mode(mode)

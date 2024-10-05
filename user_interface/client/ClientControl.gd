@@ -84,7 +84,6 @@ func load_scene(id,secret):
 	command_menu.client_id = entity_management.client_id
 	self.add_child(command_menu)
 	
-	ServerNetwork.get(profile.id).getAllGlobs()
 	#self.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	#viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
