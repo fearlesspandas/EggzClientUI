@@ -38,18 +38,9 @@ func remove_health(id:String,value:float):
 
 func getGlobLocation(id:String):
 	return {'GET_GLOB_LOCATION':{'id':str(id)}}	
-
-func getLocationPhysics(id:String):
-	return {'type':'GET_GLOB_LOCATION','body':{'id':id}}
 	
 func setGlobLocation(id:String,location:Vector3):
 	return {'SET_GLOB_LOCATION':{'id':str(id),'location':[location.x,location.y,location.z]}}	
-
-func setLocationPhysics(id:String,location:Vector3):
-	return {'type':'SET_GLOB_LOCATION','body':{'id':id,'location':[location.x,location.y,location.z]}}
-
-func setGlobRotation(id,rotation):
-	return {'SET_GLOB_ROTATION':{'id':str(id),'rotation':rotation}}	
 				
 func start_egg(eggId,globId):
 	return {'START_EGG':{'eggId':str(eggId),'globId':str(globId)}}	
@@ -100,6 +91,12 @@ func toggle_gravity(id:String):
 func apply_vector(id:String,vec:Vector3):
 	return {'APPLY_VECTOR':{'id':id,'vec':[vec.x,vec.y,vec.z]}}
 	
+func getLocationPhysics(id:String):
+	return {'type':'GET_GLOB_LOCATION','body':{'id':id}}
+
+func setLocationPhysics(id:String,location:Vector3):
+	return {'type':'SET_GLOB_LOCATION','body':{'id':id,'location':[location.x,location.y,location.z]}}
+
 func set_input_physics(id:String,vec:Vector3):
 	return {'type':'APPLY_VECTOR','body':{'id':id,'vec':[vec.x,vec.y,vec.z]}}
 
@@ -117,6 +114,12 @@ func get_dir_physics(id:String):
 
 func set_dir_physics(id:String,dir:Vector3):
 	return {'type':'SET_DIR','body':{'id':id,'vec':[dir.x,dir.y,dir.z]}}
+
+func get_rot_physics(id:String):
+	return {'type':'GET_ROT','body':{'id':id}}
+
+func set_rot_physics(id:String,dir:Vector3):
+	return {'type':'SET_ROT','body':{'id':id,'vec':[dir.x,dir.y,dir.z]}}
 
 func clear_destinations(id:String):
 	return {'CLEAR_DESTINATIONS':{'id':id}}

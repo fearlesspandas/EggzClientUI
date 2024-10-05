@@ -96,3 +96,8 @@ func set_active(active:bool):
 	self.is_active = active
 	camera.set_active(active)
 	
+func _handle_message(msg,delta_accum):
+	self.default_handle_message(msg,delta_accum)
+
+func _physics_process(delta):
+	self.default_physics_process(delta)

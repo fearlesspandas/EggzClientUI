@@ -106,5 +106,11 @@ func get_dir_physics(id:String):
 func set_dir_physics(id:String,dir:Vector3):
 	send_payload(PayloadMapper.set_dir_physics(id,dir))
 
+func get_rot_physics(id:String):
+	send_payload(PayloadMapper.get_rot_physics(id))
+
+func set_rot_physics(id:String,dir:Vector3):
+	send_payload(PayloadMapper.set_rot_physics(id,dir))
+
 func send_input(id:String,inputVec:Vector3):	
 	send_payload(PayloadMapper.set_input_physics(id,inputVec))

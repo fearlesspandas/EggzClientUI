@@ -15,6 +15,7 @@ func _ready():
 func timer_polling():
 	socket.set_lv(id,get_lv())
 
+#instance - don't abstract out
 func _physics_process(delta):
 	default_physics_process(delta)
 	if body is KinematicBody: 

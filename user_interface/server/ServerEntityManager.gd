@@ -111,6 +111,17 @@ func spawn_npc_character_entity_server(id:String,location:Vector3) -> NPCServerE
 	emit_signal("npc_created",res)
 	return res
 
+#spawns prowler with id at location
+func spawn_prowler_character_entity_server(id:String,location:Vector3) -> ProwlerServerEntity:
+	var res:ProwlerServerEntity = AssetMapper.matchAsset(AssetMapper.prowler_server_entity).instance()
+	server_entities[id] = res
+	res.init_with_id(id,client_id)
+	spawn.add_child(res)
+	res.global_transform.origin = location
+	res.body.global_transform.origin = location
+	emit_signal("entity_created",res,spawn,true)
+	emit_signal("npc_created",res)
+	return res
 
 func _on_data():
 	var cmd = socket.get_packet(true)
@@ -140,7 +151,7 @@ func handle_entity(entity):
 				socket.add_item(id,0)	
 		{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 			if !server_entities.has(id):
-				var spawned_character = spawn_npc_character_entity_server(id,Vector3(x,y,z))
+				var spawned_character = spawn_prowler_character_entity_server(id,Vector3(x,y,z))
 		_:
 			print_debug("could not find handler for entity ", entity)
 

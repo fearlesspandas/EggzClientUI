@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://entity/client/tutorial/AxisSpider.gd" type="Script" id=3]
+
+[node name="AxisSpider" type="Spatial"]
+script = ExtResource( 3 )

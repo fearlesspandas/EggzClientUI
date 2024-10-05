@@ -15,6 +15,6 @@ func _ready():
 	self.body.set_collision_layer_bit(EntityConstants.SERVER_NPC_COLLISION_LAYER,true)
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_NPC_COLLISION_LAYER,false)
 
-	
-func _physics_process(delta):
-	self.default_physics_process(delta)	
+#remove put in specific instance classes	
+#func _physics_process(delta):
+#	self.default_physics_process(delta)	

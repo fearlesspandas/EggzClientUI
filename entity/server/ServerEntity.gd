@@ -121,6 +121,7 @@ func get_lv() -> Vector3:
 	else:
 		return Vector3.ZERO
 		
+#default physics process for all server entities
 func default_physics_process(delta):
 	physics_socket.get_dir_physics(id)
 	update_lv_internal(body,delta)

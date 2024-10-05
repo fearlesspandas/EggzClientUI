@@ -121,6 +121,15 @@ func spawn_npc_character_entity_client(id:String,location:Vector3) -> ClientPlay
 	emit_signal("entity_created",res,spawn,false)
 	return res
 
+func spawn_prowler_entity(id:String,location:Vector3) -> ClientPlayerEntity:
+	var res:ProwlerEntity = AssetMapper.matchAsset(AssetMapper.prowler_client_entity).instance()
+	client_entities[id] = res
+	res.init_with_id(id,client_id)
+	spawn.add_child(res)
+	res.global_transform.origin = location
+	emit_signal("entity_created",res,spawn,false)
+	return res
+
 
 func _on_data():
 	if socket != null:
@@ -159,7 +168,7 @@ func handle_entity(entity):
 					spawned_character.set_health(health)
 		{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 			if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
-				var npc = spawn_npc_character_entity_client(id,Vector3(x,y,z))
+				var npc = spawn_prowler_entity(id,Vector3(x,y,z))
 				npc.set_health(health)
 		_:
 			print_debug("no handler found for entity ", entity)

@@ -43,7 +43,8 @@ func get_location():
 
 var proc = 0
 
-func _process(delta):
+#basic location polling
+func default_physics_process(delta):
 	get_location()
 	if proc % mod == 0:
 		get_location()
@@ -56,7 +57,7 @@ func poll_physics():
 	if physics_socket.connected:
 		physics_socket.get_location_physics(id)
 		
-func _handle_message(msg,delta_accum):
+func default_handle_message(msg,delta_accum):
 	match msg:
 		[var x,var y,var z]:
 			movement.entity_move(delta_accum,Vector3(x,y,z),body)

@@ -2,9 +2,9 @@
 
 [ext_resource path="res://entity/client/tutorial/AxisCore.tscn" type="PackedScene" id=1]
 [ext_resource path="res://entity/client/tutorial/AxisArm.tscn" type="PackedScene" id=2]
-[ext_resource path="res://entity/client/tutorial/AxisSpider.gd" type="Script" id=3]
+[ext_resource path="res://entity/client/tutorial/AxisSpiderClient.gd" type="Script" id=3]
 
-[node name="AxisSpider" type="Spatial"]
+[node name="AxisSpiderClient" type="Spatial"]
 script = ExtResource( 3 )
 
 [node name="AxisCore" parent="." instance=ExtResource( 1 )]

@@ -18,7 +18,11 @@ var assets = {
 	12 : "res://world/client/HealthStarMesh.tscn",
 	13 : "res://entity/server/NPCServerEntity.tscn",
 	14 : "res://entity/server/PlayerServerEntity.tscn",
-	15 : "res://entity/client/tutorial/AxisSpider.tscn",
+	15 : "res://entity/client/tutorial/AxisSpiderClient.tscn",
+	#16 skip (client/server specific)
+	17 : "res://entity/server/ProwlerServerEntity.tscn",
+	18 : "res://entity/client/ProwlerEntity.tscn",
+	19 : "res://entity/client/tutorial/AxisSpider.tscn",
 }
 
 #client specific assets
@@ -49,6 +53,9 @@ enum {
 	username_font = 5,
 	npc_server_model = 13,
 	spider = 15,
+	prowler_server_entity = 17,
+	prowler_client_entity = 18,
+	local_spider_entity = 19,
 }
 
 func _ready():

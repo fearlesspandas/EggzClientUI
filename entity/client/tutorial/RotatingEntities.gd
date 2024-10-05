@@ -31,7 +31,7 @@ func completed():
 	for blob in blobs.values():
 		blob.stop()
 		blob.set_color(Color.green)
-	var spider:AxisSpider = AssetMapper.matchAsset(AssetMapper.spider).instance()
+	var spider:AxisSpider = AssetMapper.matchAsset(AssetMapper.local_spider_entity).instance()
 	spider.global_transform.origin = Vector3(0,0,800)
 	center.add_child(spider)
 
