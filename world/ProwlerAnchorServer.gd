@@ -6,13 +6,14 @@ class_name ProwlerAnchor
 
 onready var area:Area = Area.new()
 onready var center:Spatial = Spatial.new()
-onready var follow_timer : Timer = Timer.new()
+onready var setup_timer : Timer = Timer.new()
+onready var follow_timer: Timer = Timer.new()
 
 var client_id:String
 
 var npc_ids = [EntityTerrainMapper.generate_name(EntityTerrainMapper.NPCType.PROWLER)]
 
-var npcs = [] 
+var npcs = {}
 
 
 var radius:float = 50
@@ -33,18 +34,37 @@ func _ready():
 	var shape:BoxShape = BoxShape.new()
 	shape.extents = Vector3(radius,radius,radius)
 
-	follow_timer.connect("timeout",self,"follow_terrain")
-	follow_timer.wait_time = 10
-	self.add_child(follow_timer)
-	follow_timer.start()
+	setup_timer.wait_time = 1
+	setup_timer.connect("timeout",self,"init_npcs")
+	self.add_child(setup_timer)
+	setup_timer.start()
 
+	#follow_timer.wait_time = 5
+	#follow_timer.connect("timeout",self,"follow_terrain")
+	#self.add_child(follow_timer)
+	#follow_timer.start()
 
+	GlobalSignalsServer.connect("prowler_created",self,"init_prowler")
+		
 
+func fail(id,prowler):
+	assert(false)
+
+func init_prowler(id,prowler):
+	if id in npc_ids:
+		npcs[id] = prowler
+		socket.set_destination_mode(id,"FORWARD")
+		socket.clear_destinations(id)
+		socket.add_destination(id,center.global_transform.origin,"WAYPOINT",1)
+		socket.set_gravitate(id,true)
+	
 func init_npcs():
+	setup_timer.one_shot = true
 	for id in npc_ids:
 		print_debug("creating prowler, ", str(center.global_transform.origin + (Vector3.UP * radius)))
 		socket.create_prowler(id,center.global_transform.origin + (Vector3.UP * radius))
 		#socket.get_blob(id)
+	
 
 func add_entity(npc:NPCServerEntity):
 	self.add_child(npc)
@@ -54,14 +74,10 @@ func add_entity(npc:NPCServerEntity):
 
 func follow_terrain():
 	#necessary because location is not yet set during ready step
-	if not has_loaded:
-		init_npcs()
-		has_loaded = true
-	else:
-		for id in npc_ids:
-			socket.set_destination_mode(id,"FORWARD")
-			socket.clear_destinations(id)
-			socket.add_destination(id,center.global_transform.origin,"WAYPOINT",1)
-			socket.set_gravitate(id,true)
-	
+	for id in npc_ids:
+		socket.set_destination_mode(id,"FORWARD")
+		socket.clear_destinations(id)
+		socket.add_destination(id,center.global_transform.origin,"WAYPOINT",1)
+		socket.set_gravitate(id,true)
+
 

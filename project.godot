@@ -534,6 +534,8 @@ ClientReferences="*res://user_interface/client/ClientReferences.gd"
 AbilityManager="*res://entity/abilities/AbilityManager.gd"
 EntityConstants="*res://entity/EntityConstants.gd"
 EntityTerrainMapper="*res://entity/EntityTerrainMapper.gd"
+ServerReferences="*res://user_interface/server/ServerReferences.gd"
+GlobalSignalsServer="*res://network/GlobalSignalsServer.gd"
 
 [input]
 

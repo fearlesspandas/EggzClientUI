@@ -10,6 +10,7 @@ onready var message_controller : MessageController = MessageController.new()
 onready var terrain_scanner: Timer = Timer.new()
 onready var empty_terrain_queue_spawner:Timer = Timer.new()
 onready var server_control = get_parent() #initial node where base map is added
+#onready var global_signals:GlobalSignalsServer = GlobalSignalsServer.new()
 
 var spawn
 
@@ -34,6 +35,7 @@ func _ready():
 	#ready global managers
 	AbilityManager.client_id_server = client_id
 	EntityTerrainMapper.client_id_server = client_id
+	#ServerReferences.set_global_signals(global_signals)
 
 	#self.connect("npc_created",self,"init_entity")
 	pass # Replace with function body.
@@ -111,6 +113,12 @@ func spawn_npc_character_entity_server(id:String,location:Vector3) -> NPCServerE
 	emit_signal("npc_created",res)
 	return res
 
+func despawn_prowler(id:String):
+	if server_entities.has(id):
+		var prowler:ProwlerServerEntity = server_entities[id]
+		spawn.remove_child(prowler)
+		prowler.queue_free()
+
 #spawns prowler with id at location
 func spawn_prowler_character_entity_server(id:String,location:Vector3) -> ProwlerServerEntity:
 	var res:ProwlerServerEntity = AssetMapper.matchAsset(AssetMapper.prowler_server_entity).instance()
@@ -119,6 +127,7 @@ func spawn_prowler_character_entity_server(id:String,location:Vector3) -> Prowle
 	spawn.add_child(res)
 	res.global_transform.origin = location
 	res.body.global_transform.origin = location
+	GlobalSignalsServer.send_prowler_created(id,res)
 	emit_signal("entity_created",res,spawn,true)
 	emit_signal("npc_created",res)
 	return res
@@ -150,8 +159,9 @@ func handle_entity(entity):
 				#temporary - adding smack ability to all players
 				socket.add_item(id,0)	
 		{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
-			if !server_entities.has(id):
-				var spawned_character = spawn_prowler_character_entity_server(id,Vector3(x,y,z))
+			if server_entities.has(id):
+				despawn_prowler(id)
+			var spawned_character = spawn_prowler_character_entity_server(id,Vector3(x,y,z))
 		_:
 			print_debug("could not find handler for entity ", entity)
 
