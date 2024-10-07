@@ -49,7 +49,7 @@ func check_dir():
 	physics_socket.get_dir_physics(id)
 
 var proc:int = 0
-func _handle_message(msg,_delta_accum):
+func default_handle_message(msg,_delta_accum):
 	match msg:
 		{'GravityActive':{'id': var _id, 'is_active':var active}}:
 			print_debug("gravity active " , active)

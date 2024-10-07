@@ -22,3 +22,6 @@ func _physics_process(delta):
 		var coll:KinematicCollision = body.get_last_slide_collision()
 		if coll != null and coll.collider.has_method("handle_collision"):
 			coll.collider.handle_collision(client_id,id)
+
+func _handle_message(msg,delta_accum):
+	self.default_handle_message(msg,delta_accum)
