@@ -3,18 +3,18 @@ extends NPCServerEntity
 class_name AxisSpiderServer
 
 
-onready var top_legs = find_node("TopLegs")
-onready var bottom_legs = find_node("BottomLegs")
+onready var top_legs = body.find_node("TopLegs")
+onready var bottom_legs = body.find_node("BottomLegs")
 
-onready var axis_core = find_node("AxisCore")
-onready var axis_arm_1 = find_node("AxisArm1")
-onready var axis_arm_2 = find_node("AxisArm2")
-onready var axis_arm_3 = find_node("AxisArm3")
-onready var axis_arm_4 = find_node("AxisArm4")
-onready var axis_arm_5 = find_node("AxisArm5")
-onready var axis_arm_6 = find_node("AxisArm6")
-onready var axis_arm_7 = find_node("AxisArm7")
-onready var axis_arm_8 = find_node("AxisArm8")
+onready var axis_core = body.find_node("AxisCore")
+onready var axis_arm_1 = body.find_node("AxisArm1")
+onready var axis_arm_2 = body.find_node("AxisArm2")
+onready var axis_arm_3 = body.find_node("AxisArm3")
+onready var axis_arm_4 = body.find_node("AxisArm4")
+onready var axis_arm_5 = body.find_node("AxisArm5")
+onready var axis_arm_6 = body.find_node("AxisArm6")
+onready var axis_arm_7 = body.find_node("AxisArm7")
+onready var axis_arm_8 = body.find_node("AxisArm8")
 
 var rotation_speed:float = 0.1
 
@@ -31,36 +31,25 @@ func _ready():
 	assert(axis_arm_7 != null)
 	assert(axis_arm_8 != null)
 
-	#self.add_child(axis_core)
-	#axis_core.add_child(top_legs)
-	#top_legs.add_child(axis_arm_1)
-	#top_legs.add_child(axis_arm_2)
-	#top_legs.add_child(axis_arm_3)
-	#top_legs.add_child(axis_arm_4)
+	self.destinations_active = false
 
-	#top_legs.add_child(axis_arm_5)
-	#top_legs.add_child(axis_arm_6)
-	#top_legs.add_child(axis_arm_7)
-	#top_legs.add_child(axis_arm_8)
+	self.destinations_active = false
+	self.gravity_active = false
 
-	#axis_arm_1.global_rotation += Vector3(0,0,0)
-	#axis_arm_1.global_transform.origin += Vector3(100,0,0)
-	#axis_arm_2.global_rotation += Vector3(0,0,0)
-	#axis_arm_2.global_transform.origin += Vector3(-100,0,0)
-	#axis_arm_3.global_rotation += Vector3(0,180,0)
-	#axis_arm_3.global_transform.origin += Vector3(-100,90,0)
-	#axis_arm_4.global_rotation += Vector3(0,0,0)
-	#axis_arm_4.global_transform.origin += Vector3(100,-90,0)
+	self.body.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
+	self.body.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
+	#self.body.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
+	#self.body.set_collision_layer_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
 
-	#axis_arm_5.global_rotation += Vector3(0,0,0)
-	#axis_arm_5.global_transform.origin += Vector3(100,0,0)
-	#axis_arm_6.global_rotation += Vector3(0,0,0)
-	#axis_arm_6.global_transform.origin += Vector3(100,0,0)
-	#axis_arm_7.global_rotation += Vector3(0,0,0)
-	#axis_arm_7.global_transform.origin += Vector3(100,0,0)
-	#axis_arm_8.global_rotation += Vector3(0,0,0)
-	#axis_arm_8.global_transform.origin += Vector3(100,0,0)
-
+	self.body.add_collision_exception_with(axis_core)
+	self.body.add_collision_exception_with(axis_arm_1)
+	self.body.add_collision_exception_with(axis_arm_2)
+	self.body.add_collision_exception_with(axis_arm_3)
+	self.body.add_collision_exception_with(axis_arm_4)
+	self.body.add_collision_exception_with(axis_arm_5)
+	self.body.add_collision_exception_with(axis_arm_6)
+	self.body.add_collision_exception_with(axis_arm_7)
+	self.body.add_collision_exception_with(axis_arm_8)
 
 
 func spider_physics_process(delta):
@@ -94,9 +83,9 @@ func spider_physics_process(delta):
 	physics_socket.set_rot_physics(id,top_legs.global_rotation)
 	
 func _physics_process(delta):
-	top_legs.global_rotation.y+= delta * rotation_speed
-	bottom_legs.global_rotation.y = -top_legs.global_rotation.y
-	physics_socket.set_rot_physics(id,top_legs.global_rotation)
+	#top_legs.global_rotation.y+= delta * rotation_speed
+	#bottom_legs.global_rotation.y = -top_legs.global_rotation.y
+	#physics_socket.set_rot_physics(id,top_legs.global_rotation)
 	self.default_physics_process(delta)
 
 func _handle_message(msg,delta_accum):

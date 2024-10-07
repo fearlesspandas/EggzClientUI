@@ -5,9 +5,12 @@ func destination(type:String, location:Vector3,radius:float):
 
 func create_glob(id:String,location:Vector3):
 	return {'CREATE_GLOB':{'globId':id,'location':[location.x,location.y,location.z]}}
-
+#spawns prowler with id at location;resets prowler if one already exists with the same id
 func create_prowler(id:String,location:Vector3):
 	return {'CREATE_PROWLER':{'globId':id,'location':[location.x,location.y,location.z]}}
+#spawns axis spider with id at location; resets axis_spider if one already exists with the same id
+func create_axis_spider(id:String,location:Vector3):
+	return {'CREATE_SPIDER':{'globId':id,'location':[location.x,location.y,location.z]}}
 
 func create_repair_egg(eggId:String,globId:String):
 	return {'CREATE_REPAIR_EGG':{'eggId':eggId,'globId':globId}}

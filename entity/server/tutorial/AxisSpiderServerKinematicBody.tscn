@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://entity/server/tutorial/AxisSpiderServer.gd" type="Script" id=1]
+[ext_resource path="res://entity/server/tutorial/AxisSpiderServerKinematicBody.gd" type="Script" id=1]
 [ext_resource path="res://entity/server/tutorial/AxisArmServer.tscn" type="PackedScene" id=4]
 [ext_resource path="res://entity/server/tutorial/AxisCoreServer.tscn" type="PackedScene" id=5]
 

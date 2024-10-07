@@ -119,6 +119,12 @@ func despawn_prowler(id:String):
 		spawn.remove_child(prowler)
 		prowler.queue_free()
 
+func despawn_spider(id:String):
+	if server_entities.has(id):
+		var spider : AxisSpiderServer = server_entities[id]
+		spawn.remove_child(spider)
+		spider.queue_free()
+
 #spawns prowler with id at location
 func spawn_prowler_character_entity_server(id:String,location:Vector3) -> ProwlerServerEntity:
 	var res:ProwlerServerEntity = AssetMapper.matchAsset(AssetMapper.prowler_server_entity).instance()
@@ -127,7 +133,19 @@ func spawn_prowler_character_entity_server(id:String,location:Vector3) -> Prowle
 	spawn.add_child(res)
 	res.global_transform.origin = location
 	res.body.global_transform.origin = location
-	GlobalSignalsServer.send_prowler_created(id,res)
+	GlobalSignalsServer.prowler_created(id,res)
+	emit_signal("entity_created",res,spawn,true)
+	emit_signal("npc_created",res)
+	return res
+
+func spawn_axis_spider(id:String,location:Vector3) -> AxisSpiderServer:
+	var res:AxisSpiderServer = AssetMapper.matchAsset(AssetMapper.axis_spider_server).instance()
+	server_entities[id] = res
+	res.init_with_id(id,client_id)
+	spawn.add_child(res)
+	res.global_transform.origin = location
+	res.body.global_transform.origin = location
+	GlobalSignalsServer.axis_spider_created(id,res)
 	emit_signal("entity_created",res,spawn,true)
 	emit_signal("npc_created",res)
 	return res
@@ -162,6 +180,10 @@ func handle_entity(entity):
 			if server_entities.has(id):
 				despawn_prowler(id)
 			var spawned_character = spawn_prowler_character_entity_server(id,Vector3(x,y,z))
+		{"AxisSpiderModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
+			if server_entities.has(id):
+				despawn_spider(id)
+			var spawned_character = spawn_axis_spider(id,Vector3(x,y,z))
 		_:
 			print_debug("could not find handler for entity ", entity)
 

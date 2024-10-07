@@ -83,9 +83,12 @@ func send_payload(payload):
 	
 func create_glob(id:String,location:Vector3):
 	send_payload(PayloadMapper.create_glob(id,location))
-
+#spawns prowler;resets entity if one with that id already exists
 func create_prowler(id:String,location:Vector3):
 	send_payload(PayloadMapper.create_prowler(id,location))
+#spawns axis spider at location; resets entity if one with that id already exists
+func create_axis_spider(id:String,location:Vector3):
+	send_payload(PayloadMapper.create_axis_spider(id,location))
 
 func create_repair_egg(eggId:String,globId:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.create_repair_egg(eggId,globId)).to_utf8())

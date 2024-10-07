@@ -130,6 +130,15 @@ func spawn_prowler_entity(id:String,location:Vector3) -> ClientPlayerEntity:
 	emit_signal("entity_created",res,spawn,false)
 	return res
 
+func spawn_axis_spider(id:String,location:Vector3) -> ClientPlayerEntity:
+	var res:AxisSpiderClient = AssetMapper.matchAsset(AssetMapper.axis_spider_client).instance()
+	client_entities[id] = res
+	res.init_with_id(id,client_id)
+	spawn.add_child(res)
+	res.global_transform.origin = location
+	emit_signal("entity_created",res,spawn,false)
+	return res
+
 
 func _on_data():
 	if socket != null:
@@ -154,8 +163,6 @@ func handle_globset(globs):
 func handle_entity(entity):
 	match entity:
 		{"PlayerGlob":{ "id":var id, "location" : [var x, var y, var z], "stats":{"energy": var energy,"health":var health, "id" : var discID}}}:
-			#the server network check is only needed due to a bug where different players are techncially added to the same scene
-			#in spite of being in different viewports
 			if !client_entities.has(id) and id == client_id:
 				print_debug("creating entity , ", id ," in client id:",client_id, spawn)
 				var spawned_character = create_character_entity_client(id,Vector3(x,y,z),viewport)
@@ -170,6 +177,10 @@ func handle_entity(entity):
 			if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
 				var npc = spawn_prowler_entity(id,Vector3(x,y,z))
 				npc.set_health(health)
+		{"AxisSpiderModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
+			if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
+				var npc = spawn_axis_spider(id,Vector3(x,y,z))
+				npc.set_health(health)
 		_:
 			print_debug("no handler found for entity ", entity)
 
@@ -177,6 +188,9 @@ func handle_entity(entity):
 func handle_json(json) -> bool:
 	match json:
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
+			route_to_entity(id,json)
+			return false
+		{'Rot':{'id':var id, 'rot':var vec}}:
 			route_to_entity(id,json)
 			return false
 		{"SendLocation":{'id':var id, 'loc': var loc}}:
