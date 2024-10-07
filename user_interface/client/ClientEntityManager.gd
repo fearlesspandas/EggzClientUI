@@ -163,7 +163,7 @@ func handle_entity(entity):
 				spawned_character.set_health(health)
 			if !client_entities.has(id) and client_id != id and (!ServerNetwork.sockets.has(id) or !ServerNetwork.physics_sockets.has(id)):
 				print_debug("creating entity , ", id ," in client id:",client_id, spawn)
-				var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_model),false)
+				var spawned_character = spawn_entity(id,Vector3(x,y,z),viewport,AssetMapper.matchAsset(AssetMapper.npc_player_entity),false)
 				if spawned_character is ClientPlayerEntity:
 					spawned_character.set_health(health)
 		{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:

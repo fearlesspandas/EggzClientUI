@@ -23,6 +23,7 @@ var assets = {
 	17 : "res://entity/server/ProwlerServerEntity.tscn",
 	18 : "res://entity/client/ProwlerEntity.tscn",
 	19 : "res://entity/client/tutorial/AxisSpider.tscn",
+	20 : "res://entity/client/NPCPlayerEntity.tscn",
 }
 
 #client specific assets
@@ -56,6 +57,7 @@ enum {
 	prowler_server_entity = 17,
 	prowler_client_entity = 18,
 	local_spider_entity = 19,
+	npc_player_entity = 20,
 }
 
 func _ready():
