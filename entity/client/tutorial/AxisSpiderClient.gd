@@ -26,7 +26,6 @@ onready var axis_arm_5 = body.find_node("AxisArm5")
 onready var axis_arm_6 = body.find_node("AxisArm6")
 onready var axis_arm_7 = body.find_node("AxisArm7")
 onready var axis_arm_8 = body.find_node("AxisArm8")
-
 var rotation_speed:float = 0.1
 
 func _ready():
@@ -57,13 +56,13 @@ func _ready():
 
 
 func _physics_process(delta):
-	#physics_socket.get_rot_physics(id)
+	physics_socket.get_rot_physics(id)
 	self.default_physics_process(delta)
 
 func _handle_message(msg,delta_accum):
 	match msg:
-		{'Rot':{'id':var id,'rot':[var x , var y ,var z]}}:
-			#top_legs.global_rotation = Vector3(x,y,z)
-			pass
+		{'Rot':{'id':var id,'vec':[var x , var y ,var z]}}:
+			top_legs.global_rotation.y = y #Vector3(x,y,z)
+			bottom_legs.global_rotation.y = -y #Vector3(x,y,z)
 		_:
 			self.default_handle_message(msg,delta_accum)

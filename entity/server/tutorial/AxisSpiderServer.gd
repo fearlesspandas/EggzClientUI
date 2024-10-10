@@ -16,6 +16,8 @@ onready var axis_arm_6 = body.find_node("AxisArm6")
 onready var axis_arm_7 = body.find_node("AxisArm7")
 onready var axis_arm_8 = body.find_node("AxisArm8")
 
+onready var setup_timer : Timer = Timer.new()
+
 var rotation_speed:float = 0.1
 
 func _ready():
@@ -31,9 +33,7 @@ func _ready():
 	assert(axis_arm_7 != null)
 	assert(axis_arm_8 != null)
 
-	self.destinations_active = false
 
-	self.gravity_active = false
 
 	self.body.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
@@ -42,15 +42,21 @@ func _ready():
 	#self.body.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
 	#self.body.set_collision_layer_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
 
-	self.body.add_collision_exception_with(axis_core)
-	self.body.add_collision_exception_with(axis_arm_1)
-	self.body.add_collision_exception_with(axis_arm_2)
-	self.body.add_collision_exception_with(axis_arm_3)
-	self.body.add_collision_exception_with(axis_arm_4)
-	self.body.add_collision_exception_with(axis_arm_5)
-	self.body.add_collision_exception_with(axis_arm_6)
-	self.body.add_collision_exception_with(axis_arm_7)
-	self.body.add_collision_exception_with(axis_arm_8)
+	#self.body.add_collision_exception_with(axis_core)
+	#self.body.add_collision_exception_with(axis_arm_1)
+	#self.body.add_collision_exception_with(axis_arm_2)
+	#self.body.add_collision_exception_with(axis_arm_3)
+	#self.body.add_collision_exception_with(axis_arm_4)
+	#self.body.add_collision_exception_with(axis_arm_5)
+	#self.body.add_collision_exception_with(axis_arm_6)
+	#self.body.add_collision_exception_with(axis_arm_7)
+	#self.body.add_collision_exception_with(axis_arm_8)
+
+	setup_timer.wait_time = 0.5
+	setup_timer.connect("timeout",self,"setup")
+	self.add_child(setup_timer)
+	setup_timer.start()
+
 
 
 func spider_physics_process(delta):
@@ -83,16 +89,18 @@ func spider_physics_process(delta):
 	physics_socket.set_location_physics(id,axis_core.global_transform.origin)
 	physics_socket.set_rot_physics(id,top_legs.global_rotation)
 	
+func setup():
+	setup_timer.one_shot = true
+	socket.set_destination_mode(id,"FORWARD")
+	socket.clear_destinations(id)
+	socket.add_destination(id,self.global_transform.origin - Vector3(0,530,0),"WAYPOINT",1)
+	socket.set_gravitate(id,true)
+
 func _physics_process(delta):
-	#top_legs.global_rotation.y+= delta * rotation_speed
-	#bottom_legs.global_rotation.y = -top_legs.global_rotation.y
-	#physics_socket.set_rot_physics(id,top_legs.global_rotation)
-	assert(!destinations_active)
+	top_legs.global_rotation.y+= delta * rotation_speed
+	bottom_legs.global_rotation.y = -top_legs.global_rotation.y
+	physics_socket.set_rot_physics(id,top_legs.global_rotation)
 	self.default_physics_process(delta)
-	var collider = self.body.get_last_slide_collision()
-	if collider != null:
-		print_debug("SPIDER COLLISION ",collider.collider, " " , collider.collider_shape)
-	#pass
 
 func _handle_message(msg,delta_accum):
 	self.default_handle_message(msg,delta_accum)

@@ -190,7 +190,7 @@ func handle_json(json) -> bool:
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
 			route_to_entity(id,json)
 			return false
-		{'Rot':{'id':var id, 'rot':var vec}}:
+		{'Rot':{'id':var id, 'vec':[var x, var y , var z]}}:
 			route_to_entity(id,json)
 			return false
 		{"SendLocation":{'id':var id, 'loc': var loc}}:

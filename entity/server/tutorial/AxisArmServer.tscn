@@ -13,22 +13,26 @@ radius = 10.0
 [sub_resource type="SphereShape" id=11]
 radius = 10.0
 
-[node name="Spatial" type="Spatial"]
-
-[node name="KinematicBody" type="KinematicBody" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 55, 0 )
+[node name="AxisArmServer" type="Spatial"]
 script = ExtResource( 1 )
 
-[node name="ArmVertical" type="CollisionShape" parent="KinematicBody"]
+[node name="ArmVertical" type="KinematicBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 55, 0 )
+
+[node name="Collision" type="CollisionShape" parent="ArmVertical"]
 transform = Transform( 0.984427, -7.6843e-09, -0.175796, -0.175796, -4.30306e-08, -0.984426, 0, 1, -4.37114e-08, 7.32967, 0.567276, 0 )
 shape = SubResource( 5 )
 
-[node name="ArmHorizontal" type="CollisionShape" parent="KinematicBody"]
+[node name="ArmHorizontal" type="KinematicBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 55, 0 )
+
+[node name="Collision" type="CollisionShape" parent="ArmHorizontal"]
 transform = Transform( 6.48451e-11, 0.999999, -0.00148348, 4.37113e-08, -0.00148348, -0.999999, -1, 0, -4.37114e-08, -18.4269, -50, 0 )
 shape = SubResource( 8 )
 
-[node name="Elbow" type="CollisionShape" parent="KinematicBody"]
+[node name="Elbow" type="KinematicBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 55, 0 )
+
+[node name="Collision" type="CollisionShape" parent="Elbow"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -50, 0 )
 shape = SubResource( 11 )
-
-[node name="AxisArm" type="Spatial" parent="KinematicBody"]
