@@ -18,6 +18,8 @@ onready var axis_arm_8 = body.find_node("AxisArm8")
 
 onready var setup_timer : Timer = Timer.new()
 
+var path = [] 
+
 var rotation_speed:float = 0.1
 
 func _ready():
@@ -32,7 +34,6 @@ func _ready():
 	assert(axis_arm_6 != null)
 	assert(axis_arm_7 != null)
 	assert(axis_arm_8 != null)
-
 
 
 	self.body.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
@@ -57,44 +58,32 @@ func _ready():
 	self.add_child(setup_timer)
 	setup_timer.start()
 
-
-
-func spider_physics_process(delta):
-	physics_socket.get_dir_physics(id)
-	update_lv_internal(axis_core,delta)
-	movement.entity_set_max_speed(DataCache.cached(id,'speed'))
-	movement.entity_move_by_direction(delta,axis_core)
-	if !queued_teleports.empty() and body is KinematicBody and destinations_active:
-		var t = queued_teleports.pop_front()
-		var dir = (t - body.global_transform.origin)#.normalized()
-		axis_core.translate(dir)
-	if(!destination.is_empty and destinations_active):
-		match destination.type:
-			'{WAYPOINT:{}}':
-				if gravity_active:
-					movement.entity_move_by_gravity(id,delta,destination.location,axis_core)
-				else:
-					movement.entity_move(delta,destination.location,axis_core)
-			'{TELEPORT:{}}':
-				if gravity_active:
-					movement.entity_move_by_gravity(id,delta,destination.location,axis_core)
-				else:
-					movement.entity_move(delta,destination.location,axis_core)
-			"{GRAVITY_BIND:{}}":
-				movement.entity_move_by_gravity(id,delta,destination.location,axis_core)
-			_:
-				print_debug("no handler found for destination with type ", axis_core)
-	else:
-		queued_teleports.pop_front()
-	physics_socket.set_location_physics(id,axis_core.global_transform.origin)
-	physics_socket.set_rot_physics(id,top_legs.global_rotation)
 	
+
+func setup_path():
+	socket.add_destination(id,self.global_transform.origin + Vector3(500,250,0),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(-500,250,0),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(500,-250,0),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(-500,-250,0),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(0,250,500),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(0,250,-500),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(0,-250,500),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(0,-250,-500),"WAYPOINT",1)
+
+	
+
 func setup():
 	setup_timer.one_shot = true
+	setup_timer.stop()
+	#reset physics
+	physics_socket.set_dir_physics(id,Vector3.ZERO)
+	socket.adjust_max_speed(id,500)
+	socket.set_speed(id,300)
+	#reset destinations
 	socket.set_destination_mode(id,"FORWARD")
 	socket.clear_destinations(id)
-	socket.add_destination(id,self.global_transform.origin - Vector3(0,530,0),"WAYPOINT",1)
-	socket.set_gravitate(id,true)
+	socket.set_gravitate(id,false)
+	#setup_path()
 
 func _physics_process(delta):
 	top_legs.global_rotation.y+= delta * rotation_speed

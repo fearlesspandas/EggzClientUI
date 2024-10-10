@@ -26,7 +26,22 @@ onready var axis_arm_5 = body.find_node("AxisArm5")
 onready var axis_arm_6 = body.find_node("AxisArm6")
 onready var axis_arm_7 = body.find_node("AxisArm7")
 onready var axis_arm_8 = body.find_node("AxisArm8")
+
+
+onready var setup_timer : Timer = Timer.new()
+
 var rotation_speed:float = 0.1
+var dest_positions = [
+
+	self.global_transform.origin + Vector3(500,250,0),
+	self.global_transform.origin + Vector3(-500,250,0),
+	self.global_transform.origin + Vector3(500,-250,0),
+	self.global_transform.origin + Vector3(-500,-250,0),
+	self.global_transform.origin + Vector3(0,250,500),
+	self.global_transform.origin + Vector3(0,250,-500),
+	self.global_transform.origin + Vector3(0,-250,500),
+	self.global_transform.origin + Vector3(0,-250,-500),
+]
 
 func _ready():
 	assert(top_legs != null)	
@@ -54,6 +69,40 @@ func _ready():
 	self.body.add_collision_exception_with(axis_arm_7)
 	self.body.add_collision_exception_with(axis_arm_8)
 
+	setup_timer.wait_time = 0.5
+	setup_timer.connect("timeout",self,"setup")
+	self.add_child(setup_timer)
+	setup_timer.start()
+
+func destination_mesh() -> MeshInstance:
+	var mesh:CubeMesh = CubeMesh.new()
+	mesh.size = Vector3(20,20,20)
+	mesh.material = SpatialMaterial.new()
+	mesh.material.albedo_color = Color.purple
+	var res = MeshInstance.new()
+	res.mesh = mesh
+	return res
+	
+func destination_mesh_at(location:Vector3) -> MeshInstance:
+	var res = destination_mesh()
+	res.global_transform.origin = location
+	return res
+
+func setup_path():
+	self.add_child(destination_mesh_at(self.global_transform.origin + Vector3(500,250,0)))
+	self.add_child(destination_mesh_at(self.global_transform.origin + Vector3(-500,250,0)))
+	self.add_child(destination_mesh_at(self.global_transform.origin + Vector3(500,-250,0)))
+	self.add_child(destination_mesh_at(self.global_transform.origin + Vector3(-500,-250,0)))
+	self.add_child(destination_mesh_at(self.global_transform.origin + Vector3(0,250,500)))
+	self.add_child(destination_mesh_at(self.global_transform.origin + Vector3(0,250,-500)))
+	self.add_child(destination_mesh_at(self.global_transform.origin + Vector3(0,-250,500)))
+	self.add_child(destination_mesh_at(self.global_transform.origin + Vector3(0,-250,-500)))
+	
+func setup():
+	setup_timer.one_shot = true
+	setup_timer.stop()
+	pass
+#	setup_path()
 
 func _physics_process(delta):
 	physics_socket.get_rot_physics(id)

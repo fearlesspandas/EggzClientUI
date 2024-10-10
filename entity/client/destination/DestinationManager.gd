@@ -35,6 +35,7 @@ func get_active_destination() -> Destination:
 func set_index(ind:int,uuid = null):
 	index = ind
 	emit_signal("index_set",index,uuid)
+	GlobalSignalsClient.index_set(index,uuid)
 
 func add_destination(dest:Destination):
 	destinations[dest.uuid] = dest
@@ -56,6 +57,7 @@ func destination_deleted(uuid:String):
 	if active_uuid == uuid:
 		active_uuid = null
 	emit_signal("destination_deleted",uuid)
+	GlobalSignalsClient.destination_deleted(uuid)
 	
 func erase_dests():
 	for dest in destinations.values():
@@ -88,14 +90,17 @@ func handle_message(message):
 		{'ClearDestinations':{}}:
 			erase_dests()
 			emit_signal("clear_destinations")
+			GlobalSignalsClient.clear_destinations()
 		{"AllDestinations":{"id":var id , "destinations":var dests}}:
 			_handle_message(dests)
 			emit_signal("refresh_destinations",destinations)
+			GlobalSignalsClient.refresh_destinations(destinations)
 		{'NewDestination':{'id':var id,'destination':{'uuid':var uuid, 'dest_type' : var dest_type,'location': [var x, var y ,var z],'radius':var radius}}}:
 			var dest = destination(uuid,dest_type,Vector3(x,y,z),radius)
 			add_destination(dest)
 			spawn_dest(dest)
 			emit_signal("new_destination",dest)
+			GlobalSignalsClient.new_destination(dest)
 			
 func _handle_message(dests):
 	erase_dests()

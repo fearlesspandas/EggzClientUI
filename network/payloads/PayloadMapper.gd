@@ -138,6 +138,9 @@ func adjust_stats(id:String,delta):
 
 func adjust_max_speed(id:String,delta:float):
 	return {'ADJUST_MAX_SPEED':{'id':id,'delta':delta}}
+
+func set_speed(id,value:float):
+	return {'SET_SPEED':{'id':id,'value':value}}
 	
 func get_physical_stats(id:String):
 	return {'GET_PHYSICAL_STATS':{'id': id}}

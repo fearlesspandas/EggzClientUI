@@ -20,6 +20,16 @@ func _ready():
 
 
 
+func setup_path(id):
+	socket.add_destination(id,self.global_transform.origin + Vector3(500,250,0),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(-500,250,0),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(500,-250,0),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(-500,-250,0),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(0,250,500),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(0,250,-500),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(0,-250,500),"WAYPOINT",1)
+	socket.add_destination(id,self.global_transform.origin + Vector3(0,-250,-500),"WAYPOINT",1)
+
 
 func setup():
 	setup_timer.one_shot = true
@@ -28,4 +38,4 @@ func setup():
 	
 
 func spider_created(id,spider):
-	pass
+	setup_path(id)

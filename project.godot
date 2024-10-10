@@ -572,6 +572,7 @@ EntityConstants="*res://entity/EntityConstants.gd"
 EntityTerrainMapper="*res://entity/EntityTerrainMapper.gd"
 ServerReferences="*res://user_interface/server/ServerReferences.gd"
 GlobalSignalsServer="*res://network/GlobalSignalsServer.gd"
+GlobalSignalsClient="*res://network/GlobalSignalsClient.gd"
 
 [input]
 
