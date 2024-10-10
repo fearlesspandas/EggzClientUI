@@ -33,11 +33,12 @@ func _ready():
 
 	self.destinations_active = false
 
-	self.destinations_active = false
 	self.gravity_active = false
 
 	self.body.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
+	self.body.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)	
+	self.body.set_collision_layer_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)	
 	#self.body.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
 	#self.body.set_collision_layer_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
 
@@ -86,7 +87,12 @@ func _physics_process(delta):
 	#top_legs.global_rotation.y+= delta * rotation_speed
 	#bottom_legs.global_rotation.y = -top_legs.global_rotation.y
 	#physics_socket.set_rot_physics(id,top_legs.global_rotation)
+	assert(!destinations_active)
 	self.default_physics_process(delta)
+	var collider = self.body.get_last_slide_collision()
+	if collider != null:
+		print_debug("SPIDER COLLISION ",collider.collider, " " , collider.collider_shape)
+	#pass
 
 func _handle_message(msg,delta_accum):
 	self.default_handle_message(msg,delta_accum)
