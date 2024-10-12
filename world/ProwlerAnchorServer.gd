@@ -16,7 +16,7 @@ var npc_ids = [EntityTerrainMapper.generate_name(EntityTerrainMapper.NPCType.PRO
 var npcs = {}
 
 
-var radius:float = 50
+var radius:float = 1000
 
 var socket:ClientWebSocket
 
@@ -35,14 +35,14 @@ func _ready():
 	shape.extents = Vector3(radius,radius,radius)
 	collision_shape.shape = shape
 	
-	var mesh:CubeMesh = CubeMesh.new()
-	mesh.size = 2*shape.extents
-	var mesh_instance = MeshInstance.new()
-	mesh_instance.mesh = mesh
+	#var mesh:CubeMesh = CubeMesh.new()
+	#mesh.size = 2*shape.extents
+	#var mesh_instance = MeshInstance.new()
+	#mesh_instance.mesh = mesh
 
 	self.add_child(area)
 	area.global_transform.origin = self.global_transform.origin
-	area.add_child(mesh_instance)
+	#area.add_child(mesh_instance)
 	area.add_child(collision_shape)
 	area.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
 	area.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
@@ -71,6 +71,13 @@ func init_prowler(id,prowler):
 		socket.add_destination(id,center.global_transform.origin,"WAYPOINT",1)
 		socket.set_gravitate(id,true)
 	
+func reset_to_center(id):
+	socket.set_destination_mode(id,"FORWARD")
+	socket.clear_destinations(id)
+	socket.add_destination(id,center.global_transform.origin,"WAYPOINT",1)
+	socket.set_gravitate(id,true)
+
+
 func init_npcs():
 	setup_timer.one_shot = true
 	for id in npc_ids:
@@ -90,8 +97,12 @@ func follow_terrain():
 func entered(body):
 	if body is ServerEntityKinematicBody:
 		for id in npc_ids:
+			socket.set_gravitate(id,false)
 			socket.follow_entity(id,body.parent.id)	
 	
 
 func exited(body):
-	assert(false)
+	if body is ServerEntityKinematicBody:
+		for id in npc_ids:
+			socket.unfollow_entity(id,body.parent.id)
+			reset_to_center(id)

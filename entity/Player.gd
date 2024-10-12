@@ -10,6 +10,8 @@ onready var camera:Camera = camera_root.find_node("Camera")
 onready var curserRay:CursorRay = camera_root.find_node("CursorRay")
 onready var pointer:PlayerPathPointer = PlayerPathPointer.new()
 onready var input_timer:Timer = Timer.new()
+onready var position_data_timer : Timer = Timer.new()
+
 var is_active = false
 
 func _ready():
@@ -58,7 +60,10 @@ func _input(event):
 	if is_active and event is InputEventKey:
 		var vec = get_input_vec()
 		pointer.position(body.global_transform.origin - vec)
+		physics_socket.send_input(id,vec)
 	
+var position_proc = 0
+var position_mod = 60
 func _process(delta):
 	if is_active:
 		camera_root.global_transform.origin = body.global_transform.origin
@@ -66,6 +71,11 @@ func _process(delta):
 		pointer.position(body.global_transform.origin - vec)
 		muh_process()
 		
+	if position_proc%position_mod == 0:
+		position_proc = 0	
+		GlobalSignalsClient.player_position(body.global_transform.origin)
+	position_proc += 1
+
 func muh_process():
 	if is_active:
 		var vec = get_input_vec()

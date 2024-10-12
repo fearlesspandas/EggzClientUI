@@ -29,3 +29,8 @@ func destination_deleted(client_id,uuid):
 signal item_added(client_id,item)
 func item_added(client_id,item):
 	emit_signal("item_added",client_id,item)
+
+#emits player_position signal
+signal player_position(location)
+func player_position(location):
+	emit_signal("player_position",location)

@@ -162,6 +162,9 @@ func set_active_destination(id,uuid:String):
 func follow_entity(id:String,target:String):
 	send_payload(PayloadMapper.follow_entity(id,target))
 
+func unfollow_entity(id:String,target:String):
+	send_payload(PayloadMapper.unfollow_entity(id,target))
+
 func location_subscribe(id:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.location_subscribe(id)).to_utf8())	
 

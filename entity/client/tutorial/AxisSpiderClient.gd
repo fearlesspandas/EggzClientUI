@@ -44,6 +44,7 @@ var dest_positions = [
 ]
 
 func _ready():
+	self.radius = 500
 	assert(top_legs != null)	
 	assert(bottom_legs != null)	
 	assert(axis_core != null)
@@ -73,6 +74,8 @@ func _ready():
 	setup_timer.connect("timeout",self,"setup")
 	self.add_child(setup_timer)
 	setup_timer.start()
+
+	GlobalSignalsClient.connect("player_location",self,"default_update_player_location")
 
 func destination_mesh() -> MeshInstance:
 	var mesh:CubeMesh = CubeMesh.new()
@@ -106,7 +109,7 @@ func setup():
 
 func _physics_process(delta):
 	physics_socket.get_rot_physics(id)
-	self.default_physics_process(delta)
+	self.default_physics_process(delta,2)
 
 func _handle_message(msg,delta_accum):
 	match msg:

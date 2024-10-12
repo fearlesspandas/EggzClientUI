@@ -13,7 +13,7 @@ var is_npc = false
 var physics_socket:RustSocket
 var socket : ClientWebSocket
 var mod = 2
-
+var radius = 0
 func _ready():
 	username.init_id()
 	Subscriptions.subscribe(username.id,id)
@@ -42,10 +42,10 @@ func get_location():
 	physics_socket.get_location_physics(id)
 
 var proc = 0
-
 #basic location polling
-func default_physics_process(delta):
-	get_location()
+func default_physics_process(delta,mod = 2):
+	if mod == 2:
+		get_location()
 	if proc % mod == 0:
 		get_location()
 		proc = 0
@@ -68,3 +68,16 @@ func default_handle_message(msg,delta_accum):
 			set_health(value)
 		_ :
 			print_debug("no handler found for msg " , msg)
+
+func default_update_player_location(location):
+	assert(radius > 0)
+	if (location - self.body.global_transform.origin).length() < radius:	
+		self.mod = 4
+	elif (location - self.body.global_transform.origin).length() < 2 * radius:
+		self.mod = 4
+	elif (location - self.body.global_transform.origin).length() < 4 * radius:
+		self.mod = 6
+	elif (location - self.body.global_transform.origin).length() < 8 * radius:
+		self.mod = 16
+	else:
+		self.mod = 32
