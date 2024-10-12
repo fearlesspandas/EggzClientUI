@@ -70,6 +70,7 @@ func init_prowler(id,prowler):
 		socket.clear_destinations(id)
 		socket.add_destination(id,center.global_transform.origin,"WAYPOINT",1)
 		socket.set_gravitate(id,true)
+		self.connect("exited",prowler)
 	
 func reset_to_center(id):
 	socket.set_destination_mode(id,"FORWARD")
