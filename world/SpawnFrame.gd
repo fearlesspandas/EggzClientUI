@@ -33,9 +33,11 @@ func setup_path(id):
 
 func setup():
 	setup_timer.one_shot = true
+	setup_timer.stop()
 	for id in npc_ids:
 		socket.create_axis_spider(id,self.global_transform.origin + Vector3(0,0,1000))
 	
 
 func spider_created(id,spider):
-	setup_path(id)
+	pass
+	#setup_path(id)

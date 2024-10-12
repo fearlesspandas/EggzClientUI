@@ -79,6 +79,9 @@ func delete_destination(id:String,uuid:String):
 func set_active_destination(id:String,uuid:String):
 	return {'SET_ACTIVE_DESTINATION':{'id':id,'destination_id':uuid}}
 
+func follow_entity(id:String,target:String):
+	return {'FOLLOW_ENTITY':{'id':id,'target':target}}
+
 func location_subscribe(id:String):
 	return {'SUBSCRIBE':{"query":{'GET_GLOB_LOCATION':{'id':id}}}}
 	

@@ -261,6 +261,7 @@ func handle_json(json) -> bool:
 			return false
 		{'ItemAdded':{'id':var id, 'item':var item}}:
 			print_debug("Item added for ", id)
+			GlobalSignalsClient.item_added(id,item)
 			return false
 		{'TerrainUnitm':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
 			if terrain.has(uuid):

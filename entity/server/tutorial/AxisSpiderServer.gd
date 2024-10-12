@@ -83,7 +83,7 @@ func setup():
 	socket.set_destination_mode(id,"FORWARD")
 	socket.clear_destinations(id)
 	socket.set_gravitate(id,false)
-	#setup_path()
+	setup_path()
 
 func _physics_process(delta):
 	top_legs.global_rotation.y+= delta * rotation_speed

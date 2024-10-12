@@ -1,7 +1,7 @@
 extends Spatial
 
 #change to server specific
-class_name ProwlerAnchor
+class_name ProwlerAnchorServer
 
 
 onready var area:Area = Area.new()
@@ -33,6 +33,22 @@ func _ready():
 	var collision_shape:CollisionShape = CollisionShape.new()
 	var shape:BoxShape = BoxShape.new()
 	shape.extents = Vector3(radius,radius,radius)
+	collision_shape.shape = shape
+	
+	var mesh:CubeMesh = CubeMesh.new()
+	mesh.size = 2*shape.extents
+	var mesh_instance = MeshInstance.new()
+	mesh_instance.mesh = mesh
+
+	self.add_child(area)
+	area.global_transform.origin = self.global_transform.origin
+	area.add_child(mesh_instance)
+	area.add_child(collision_shape)
+	area.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
+	area.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
+	area.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,true)
+	area.connect("body_entered",self,"entered")
+	area.connect("body_exited",self,"exited")
 
 	setup_timer.wait_time = 1
 	setup_timer.connect("timeout",self,"init_npcs")
@@ -46,9 +62,6 @@ func _ready():
 
 	GlobalSignalsServer.connect("prowler_created",self,"init_prowler")
 		
-
-func fail(id,prowler):
-	assert(false)
 
 func init_prowler(id,prowler):
 	if id in npc_ids:
@@ -64,13 +77,6 @@ func init_npcs():
 		print_debug("creating prowler, ", str(center.global_transform.origin + (Vector3.UP * radius)))
 		socket.create_prowler(id,center.global_transform.origin + (Vector3.UP * radius))
 		#socket.get_blob(id)
-	
-
-func add_entity(npc:NPCServerEntity):
-	self.add_child(npc)
-	socket #make npc follow center
-	
-
 
 func follow_terrain():
 	#necessary because location is not yet set during ready step
@@ -81,3 +87,11 @@ func follow_terrain():
 		socket.set_gravitate(id,true)
 
 
+func entered(body):
+	if body is ServerEntityKinematicBody:
+		for id in npc_ids:
+			socket.follow_entity(id,body.parent.id)	
+	
+
+func exited(body):
+	assert(false)

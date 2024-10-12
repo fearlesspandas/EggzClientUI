@@ -234,6 +234,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://world/HealthStars.gd"
 }, {
+"base": "Control",
+"class": "InventoryMenu",
+"language": "GDScript",
+"path": "res://user_interface/client/InventoryMenu.gd"
+}, {
+"base": "Control",
+"class": "ItemSlot",
+"language": "GDScript",
+"path": "res://user_interface/client/ItemSlot.gd"
+}, {
 "base": "RichTextLabel",
 "class": "LinearVelocityIndicator",
 "language": "GDScript",
@@ -325,7 +335,7 @@ _global_script_classes=[ {
 "path": "res://entity/client/tutorial/ProgressTower.gd"
 }, {
 "base": "Spatial",
-"class": "ProwlerAnchor",
+"class": "ProwlerAnchorServer",
 "language": "GDScript",
 "path": "res://world/ProwlerAnchorServer.gd"
 }, {
@@ -500,6 +510,8 @@ _global_script_class_icons={
 "GoalBlob": "",
 "HealthDisplay": "",
 "HealthStars": "",
+"InventoryMenu": "",
+"ItemSlot": "",
 "LinearVelocityIndicator": "",
 "MaxSpeedSlider": "",
 "MessageController": "",
@@ -518,7 +530,7 @@ _global_script_class_icons={
 "Profiles": "",
 "ProfilesList": "",
 "ProgressTower": "",
-"ProwlerAnchor": "",
+"ProwlerAnchorServer": "",
 "ProwlerEntity": "",
 "ProwlerServerEntity": "",
 "RequestTopTerrainInDistance": "",
