@@ -14,6 +14,7 @@ var label_y:RichTextLabel = RichTextLabel.new()
 var label_z:RichTextLabel = RichTextLabel.new()
 var index:int
 var hovering
+
 func _init():
 	bgRect.color = Color.lightslategray
 	bgRect.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -56,9 +57,12 @@ func delete_dest():
 func entered():
 	hovering = true
 	bgRect.color = Color.white
+	GlobalSignalsClient.destination_hovered(uuid)
+
 func exited():
 	hovering = false
 	bgRect.color = Color.lightslategray
+	GlobalSignalsClient.destination_unhovered(uuid)
 		
 func load_dest(destination:Destination):
 	self.uuid = destination.uuid

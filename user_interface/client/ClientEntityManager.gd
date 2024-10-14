@@ -252,6 +252,7 @@ func handle_json(json) -> bool:
 			var entity = client_entities[entity_id]
 			if entity == null:
 				assert(false,"entity with id is null")
+			#update abilities to have location/other metadata
 			AbilityManager.ability_client(int(ability_id),entity.body.global_transform.origin)	
 			return false
 		{'Fizzle':{'ability_id':var ability_id, 'entity_id':var entity_id,'reason': var reason}}:

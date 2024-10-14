@@ -13,9 +13,22 @@ var entity_spawn:Viewport
 var index
 var active_uuid
 
+	
 func _ready():
 	assert(entity_spawn != null)
+
+func _init():
+	GlobalSignalsClient.connect("destination_hovered",self,"highlight_destination")
+	GlobalSignalsClient.connect("destination_unhovered",self,"unhighlight_destination")
+
+func highlight_destination(uuid):
+	if destinations.has(uuid):
+		destinations[uuid].highlight()
 	
+func unhighlight_destination(uuid):
+	if destinations.has(uuid):
+		destinations[uuid].unhighlight()
+
 func make_destination_active(uuid):
 	var res:Destination
 	for i in range(0,destinations.values().size()):

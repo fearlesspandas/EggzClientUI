@@ -26,6 +26,15 @@ signal destination_deleted(client_id,uuid)
 func destination_deleted(client_id,uuid):
 	emit_signal("destination_deleted",client_id,uuid)
 
+#emits destination_hovered signal
+signal destination_hovered(uuid)
+func destination_hovered(uuid):
+	emit_signal("destination_hovered",uuid)
+
+#emits destination_unhovered signal
+signal destination_unhovered(uuid)
+func destination_unhovered(uuid):
+	emit_signal("destination_unhovered",uuid)
 #INVENTORY SIGNALS
 #emits the item_added signal
 signal item_added(client_id,item)
