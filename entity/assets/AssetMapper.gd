@@ -26,6 +26,7 @@ var assets = {
 	20 : "res://entity/client/NPCPlayerEntity.tscn",
 	21 : "res://entity/client/tutorial/AxisSpiderClient.tscn",
 	22 : "res://entity/server/tutorial/AxisSpiderServer.tscn",
+	23 : "res://user_interface/client/overheads/ChicagoFont.tscn",
 }
 
 #client specific assets
@@ -54,6 +55,7 @@ enum {
 	client_spawn = 3,
 	npc_model = 4,
 	username_font = 5,
+	chicago_font_control = 23,
 	npc_server_model = 13,
 	spider = 15,
 	prowler_server_entity = 17,

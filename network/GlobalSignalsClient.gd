@@ -1,5 +1,6 @@
 extends Node
 
+#DESTINATIONS SIGNALS
 #emits new_destination signal
 signal new_destination(client_id,destination)
 func new_destination(client_id,destination):
@@ -25,12 +26,28 @@ signal destination_deleted(client_id,uuid)
 func destination_deleted(client_id,uuid):
 	emit_signal("destination_deleted",client_id,uuid)
 
+#INVENTORY SIGNALS
 #emits the item_added signal
 signal item_added(client_id,item)
 func item_added(client_id,item):
 	emit_signal("item_added",client_id,item)
 
+#emits the inventory signal (full inventory contents)
+signal inventory(client_id,contents)
+func inventory(client_id,contents):
+	emit_signal("inventory",client_id,contents)
+
+#PLAYER SIGNALS
 #emits player_position signal
 signal player_position(location)
 func player_position(location):
 	emit_signal("player_position",location)
+
+#INPUT SIGNALS
+#emits activate_ability signal
+signal activate_ability(client_id,slot_id)
+func activate_ability(client_id,slot_id):
+	emit_signal("activate_ability",client_id,slot_id)
+	
+
+

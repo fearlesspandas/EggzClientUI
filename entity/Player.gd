@@ -57,6 +57,7 @@ func _input(event):
 		socket.clear_destinations(id)
 	if is_active and event is InputEventKey and event.is_action_released("smack"):
 		socket.ability(client_id,0)	
+		GlobalSignalsClient.activate_ability(client_id,0)
 	if is_active and event is InputEventKey:
 		var vec = get_input_vec()
 		pointer.position(body.global_transform.origin - vec)

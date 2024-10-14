@@ -259,6 +259,9 @@ func handle_json(json) -> bool:
 			fizzle.center = player.body.global_transform.origin
 			spawn.add_child(fizzle)	
 			return false
+		{'Inventory': {'id':var id,'items':var items}}:
+			GlobalSignalsClient.inventory(id,items)	
+			return false
 		{'ItemAdded':{'id':var id, 'item':var item}}:
 			print_debug("Item added for ", id)
 			GlobalSignalsClient.item_added(id,item)
