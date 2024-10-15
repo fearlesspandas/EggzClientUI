@@ -2,9 +2,8 @@ extends Node
 
 var client_spawn:Spatial
 var server_spawn:Spatial
+#change this to be included in ability command
 var client_id_server:String
-#func _ready():
-#	assert(spawn != null)
 
 #spawns an abilities mesh at location (client only)
 func ability_client(ability_id:int,location:Vector3):

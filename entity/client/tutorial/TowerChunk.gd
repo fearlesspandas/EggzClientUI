@@ -35,6 +35,8 @@ func _ready():
 func set_color(color:Color):
 	self.mesh_instance.mesh.material.albedo_color = color
 
+func completed():
+	set_color(Color.green)
 
 func set_height(value:float):
 	collision_shape.shape.height = value

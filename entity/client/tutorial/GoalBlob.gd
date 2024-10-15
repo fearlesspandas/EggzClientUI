@@ -7,7 +7,7 @@ onready var color_timer:Timer = Timer.new()
 
 var id:int
 var radius = 10
-var colors = [Color.red,Color.aqua,Color.blue,Color.blueviolet,Color.aquamarine,Color.burlywood,Color.coral]
+var colors = [Color.aqua,Color.blue,Color.blueviolet,Color.aquamarine,]
 func _ready():
 	assert(id != null)
 	#initialize mesh

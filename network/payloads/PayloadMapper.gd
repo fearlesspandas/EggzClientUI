@@ -175,8 +175,8 @@ func fill_empty_chunk(uuid:String,trigger_entity:String):
 func get_cached_terrain(uuid:String):
 	return {'GET_CACHED_TERRAIN':{"id":uuid}}
 
-func ability(from:String,ability_id:int):
-	return {'ABILITY':{'from':from,'ability_id':ability_id}}
+func ability(from:String,ability_id:int,args:Dictionary = {'NoArgs':{}} ):
+	return {'ABILITY':{'from':from,'ability_id':ability_id,'args':args}}
 	
 func add_item(id:String,item:int):
 	return {'ADD_ITEM':{'id':id,'item':item}}
