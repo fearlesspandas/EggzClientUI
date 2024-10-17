@@ -63,6 +63,8 @@ func map_items(item_id:int) -> String:
 	match item_id:
 		0:
 			return "smash"
+		1:
+			return "glob tele"
 		_:
 			return "unknown item"
 

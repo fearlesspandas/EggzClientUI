@@ -58,6 +58,15 @@ func _input(event):
 	if is_active and event is InputEventKey and event.is_action_released("smack"):
 		socket.ability(client_id,0)	
 		GlobalSignalsClient.activate_ability(client_id,0)
+
+	if is_active and event is InputEventKey and event.is_action_released("globular_teleport_base"):
+		AbilityAPI.globular_teleport().add_base(client_id,body.global_transform.origin)
+	if is_active and event is InputEventKey and event.is_action_released("globular_teleport_point"):
+		AbilityAPI.globular_teleport().add_point(client_id,body.global_transform.origin)
+	if is_active and event is InputEventKey and event.is_action_released("globular_teleport_send"):
+		AbilityAPI.globular_teleport().do(client_id)
+		GlobalSignalsClient.activate_ability(client_id,1)
+
 	if is_active and event is InputEventKey:
 		var vec = get_input_vec()
 		pointer.position(body.global_transform.origin - vec)

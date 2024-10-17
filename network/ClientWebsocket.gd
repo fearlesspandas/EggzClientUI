@@ -229,8 +229,8 @@ func fill_empty_chunk(uuid:String,trigger_entity:String):
 func get_cached_terrain(uuid:String):
 	send_payload(PayloadMapper.get_cached_terrain(uuid))
 
-func ability(from:String,ability_id:int):
-	send_payload(PayloadMapper.ability(from,ability_id))
+func ability(from:String,ability_id:int,args = {'NoArgs':{}}):
+	send_payload(PayloadMapper.ability(from,ability_id,args))
 
 func add_item(id:String,item:int):
 	send_payload(PayloadMapper.add_item(id,item))

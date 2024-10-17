@@ -219,6 +219,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/client/command_menu/GetInventory.gd"
 }, {
+"base": "Spatial",
+"class": "GlobularTeleportClient",
+"language": "GDScript",
+"path": "res://entity/abilities/client/GlobularTeleportClient.gd"
+}, {
 "base": "Area",
 "class": "GoalBlob",
 "language": "GDScript",
@@ -507,6 +512,7 @@ _global_script_class_icons={
 "GameFileManager": "",
 "GetAllEntities": "",
 "GetInventory": "",
+"GlobularTeleportClient": "",
 "GoalBlob": "",
 "HealthDisplay": "",
 "HealthStars": "",
@@ -585,6 +591,7 @@ EntityTerrainMapper="*res://entity/EntityTerrainMapper.gd"
 ServerReferences="*res://user_interface/server/ServerReferences.gd"
 GlobalSignalsServer="*res://network/GlobalSignalsServer.gd"
 GlobalSignalsClient="*res://network/GlobalSignalsClient.gd"
+AbilityAPI="*res://abilities/AbilityAPI.gd"
 
 [input]
 
@@ -714,6 +721,21 @@ smack={
 camera_look_towards={
 "deadzone": 0.5,
 "events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":0,"physical_scancode":89,"unicode":0,"echo":false,"script":null)
+ ]
+}
+globular_teleport_point={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":0,"physical_scancode":46,"unicode":0,"echo":false,"script":null)
+ ]
+}
+globular_teleport_base={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":0,"physical_scancode":44,"unicode":0,"echo":false,"script":null)
+ ]
+}
+globular_teleport_send={
+"deadzone": 0.5,
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":0,"physical_scancode":16777221,"unicode":0,"echo":false,"script":null)
  ]
 }
 
