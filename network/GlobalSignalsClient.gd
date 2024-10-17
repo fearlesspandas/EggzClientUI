@@ -59,4 +59,8 @@ func activate_ability(client_id,slot_id):
 	emit_signal("activate_ability",client_id,slot_id)
 	
 
-
+#TERRAIN SIGNALS
+#emits spawn_node signal
+signal spawn_node(node,location)
+func spawn_node(node,location):
+	emit_signal("spawn_node",node,location)

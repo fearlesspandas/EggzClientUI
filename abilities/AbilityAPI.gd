@@ -31,6 +31,11 @@ class GlobularTeleport:
 			current_points = null
 		if current_points != null:
 			DataCache.add_data(client_id,field(Fields.globular_teleport_points),current_points)
+			var p : MeshInstance = MeshInstance.new()
+			p.mesh = SphereMesh.new()
+			p.mesh.radius = 10
+			p.mesh.height = 10
+			GlobalSignalsClient.spawn_node(p,location)
 		else: # should only hit this case if types are mismanaged and current_points is not a pooled array
 			assert(false)
 
@@ -56,6 +61,7 @@ class GlobularTeleport:
 	enum Fields{
 		globular_teleport_base = 0,
 		globular_teleport_points = 1
+		globular_teleport_pre_renders = 2,
 	}
 
 	func field(field:int) -> String:
@@ -64,5 +70,7 @@ class GlobularTeleport:
 				return 'globular_teleport_points'	
 			Fields.globular_teleport_base:
 				return 'globular_teleport_base'
+			Fields.globular_teleport_pre_renders:
+				return 'globular_teleport_pre_renders'
 			_:
 				return ""

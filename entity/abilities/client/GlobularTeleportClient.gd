@@ -9,6 +9,9 @@ var vertices = []
 var base: Vector3
 
 func _ready():
+	array_mesh_ready()
+
+func spheres_ready():
 	for point in vertices:
 		var mesh_instance = MeshInstance.new()
 		var mesh = SphereMesh.new()
@@ -30,13 +33,14 @@ func _ready():
 	self.add_child(base_instance)
 
 func array_mesh_ready():
+	self.global_transform.origin = base
 	# Initialize the ArrayMesh.
 	var arr_mesh = ArrayMesh.new()
 	var arrays = []
 	arrays.resize(ArrayMesh.ARRAY_MAX)
 	arrays[ArrayMesh.ARRAY_VERTEX] = vertices
 	# Create the Mesh.
-	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_LINE_LOOP, arrays)
 	#arr_mesh.material = SpatialMaterial.new()
 	#arr_mesh.material.albedo_color = Color.purple
 	teleport_mesh_instance.mesh = arr_mesh

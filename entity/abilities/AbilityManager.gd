@@ -20,13 +20,14 @@ func ability_client(ability_id:int,location:Vector3,args:Dictionary):
 			match args:
 				{'Shape':{'points':var points,'location':[var lx , var ly , var lz]}}:
 					var gt =  GlobularTeleportClient.new()
+					var base = Vector3(lx,ly,lz)
 					for point in points:
 						match point:
 							[var x, var y , var z]:
-								gt.vertices.push_back(Vector3(float(x),float(y),float(z)))
+								gt.vertices.push_back(Vector3(float(x),float(y),float(z)) - base)
 					gt.base = Vector3(lx,ly,lz)
 					#always unclear if i can add_child after setting global_transform.origin
-					#gt.global_transform.origin = Vector3(lx,ly,lz)
+					#gt.global_transform.origin = 
 					client_spawn.add_child(gt)
 				_:
 					assert(false)

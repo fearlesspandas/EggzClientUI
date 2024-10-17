@@ -24,6 +24,8 @@ func _ready():
 	#ready message controller
 	self.add_child(message_controller)
 
+	GlobalSignalsClient.connect("spawn_node",self,"spawn_node")
+
 	#ready player
 	self.connect("spawned_player_character",self,"set_player")
 
@@ -91,6 +93,10 @@ func route(cmd,delta):
 	if cmd != null:
 		parseJsonCmd(cmd,delta)
 	
+func spawn_node(node:Spatial,location:Vector3):
+	spawn.add_child(node)
+	node.global_transform.origin = location
+
 func spawn_client_world(parent:Node,location:Vector3):
 	print_debug("spawned client world")
 	var resource = AssetMapper.matchAsset(AssetMapper.client_spawn)
