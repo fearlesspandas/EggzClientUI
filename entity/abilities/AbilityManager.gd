@@ -37,12 +37,25 @@ func ability_client(ability_id:int,location:Vector3,args:Dictionary):
 
 
 #spawns an active ability at location
-func ability_server(ability_id:int,location:Vector3):
+func ability_server(ability_id:int,location:Vector3, args:Dictionary):
 	match ability_id:
 		Abilities.smack:
 			var sc = SmackServer.new()
 			server_spawn.add_child(sc)
 			sc.global_transform.origin = location
+		Abilities.globular_teleport:
+			match args:
+				{'Shape':{'points':var points,'location':[var lx , var ly , var lz]}}:
+					var gt =  GlobularTeleportServer.new()
+					var base = Vector3(lx,ly,lz)
+					for point in points:
+						match point:
+							[var x, var y , var z]:
+								gt.points.push_back(Vector3(float(x),float(y),float(z)) - base)
+					#always unclear if i can add_child after setting global_transform.origin
+					#gt.global_transform.origin = 
+					client_spawn.add_child(gt)
+
 		_:
 			print_debug("No ability found with id ", ability_id)
 

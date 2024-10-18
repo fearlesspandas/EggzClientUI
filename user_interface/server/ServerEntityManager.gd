@@ -228,7 +228,7 @@ func handle_json(json) -> bool:
 				var entity = server_entities[entity_id]
 				if entity == null:
 					assert(false,"entity with id is null")
-				AbilityManager.ability_server(int(ability_id),entity.body.global_transform.origin)	
+				AbilityManager.ability_server(int(ability_id),entity.body.global_transform.origin,args)	
 				return false
 			{'TerrainUnitm':{'entities':var entity_map,'location':var location, 'uuid':var uuid}}:
 				if terrain.has(uuid):

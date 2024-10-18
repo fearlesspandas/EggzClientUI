@@ -18,9 +18,11 @@ class GlobularTeleport:
 	#(the target teleport point)
 	func add_base(client_id:String,location:Vector3):
 		DataCache.add_data(client_id,field(Fields.globular_teleport_base),location)
+		ServerNetwork.get(client_id).ability(client_id,1,{'Base':{'x':location.x,'y':location.y,'z':location.z}})
 
 	#adds point to glob prism for globular teleport
 	func add_point(client_id:String,location:Vector3):
+		ServerNetwork.get(client_id).ability(client_id,1,{'Point':{'x':location.x,'y':location.y,'z':location.z}})
 		var current_points = DataCache.cached(client_id,field(Fields.globular_teleport_points)) 	
 		if current_points == null: 
 			current_points = PoolVector3Array()
@@ -32,9 +34,11 @@ class GlobularTeleport:
 		if current_points != null:
 			DataCache.add_data(client_id,field(Fields.globular_teleport_points),current_points)
 			var p : MeshInstance = MeshInstance.new()
-			p.mesh = SphereMesh.new()
-			p.mesh.radius = 10
-			p.mesh.height = 10
+			p.mesh = PointMesh.new()
+			p.mesh.material = SpatialMaterial.new()
+			p.mesh.material.flags_use_point_size = true
+			p.mesh.material.params_point_size = 10
+			p.mesh.material.params_billboard_keep_scale = false
 			GlobalSignalsClient.spawn_node(p,location)
 		else: # should only hit this case if types are mismanaged and current_points is not a pooled array
 			assert(false)
@@ -45,16 +49,15 @@ class GlobularTeleport:
 
 	#sends data state to server	
 	func do(client_id):
+		ServerNetwork.get(client_id).ability(client_id,1,{'Do':{}})
 		var base = DataCache.cached(client_id,field(Fields.globular_teleport_base))
 		var points = DataCache.cached(client_id,field(Fields.globular_teleport_points))
 		if base != null and points != null and base is Vector3 and points is PoolVector3Array:
 			var mapped_points = []
 			for point in points:
 				mapped_points.push_back([point.x,point.y,point.z])
-			ServerNetwork.get(client_id).ability(client_id,1,{'Shape':{'points':mapped_points,'location':[base.x,base.y,base.z]}})
+			#ServerNetwork.get(client_id).ability(client_id,1,{'Shape':{'points':mapped_points,'location':[base.x,base.y,base.z]}})
 			clear(client_id)
-		else:
-			assert(false)
 			
 	#Field concept is mainly used to ensure some amount of
 	#'type checking', and easy reorganization of values
