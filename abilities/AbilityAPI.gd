@@ -19,6 +19,14 @@ class GlobularTeleport:
 	func add_base(client_id:String,location:Vector3):
 		DataCache.add_data(client_id,field(Fields.globular_teleport_base),location)
 		ServerNetwork.get(client_id).ability(client_id,1,{'Base':{'x':location.x,'y':location.y,'z':location.z}})
+		var p : MeshInstance = MeshInstance.new()
+		p.mesh = PointMesh.new()
+		p.mesh.material = SpatialMaterial.new()
+		p.mesh.material.albedo_color = Color.red
+		p.mesh.material.flags_use_point_size = true
+		p.mesh.material.params_point_size = 10
+		p.mesh.material.params_billboard_keep_scale = false
+		GlobalSignalsClient.spawn_node(p,location)
 
 	#adds point to glob prism for globular teleport
 	func add_point(client_id:String,location:Vector3):

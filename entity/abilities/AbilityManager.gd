@@ -52,6 +52,7 @@ func ability_server(ability_id:int,location:Vector3, args:Dictionary):
 						match point:
 							[var x, var y , var z]:
 								gt.points.push_back(Vector3(float(x),float(y),float(z)) - base)
+					gt.base = Vector3(lx,ly,lz)
 					#always unclear if i can add_child after setting global_transform.origin
 					#gt.global_transform.origin = 
 					client_spawn.add_child(gt)

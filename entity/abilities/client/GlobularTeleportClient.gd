@@ -10,6 +10,30 @@ var base: Vector3
 
 func _ready():
 	array_mesh_ready()
+	#sphere_ready()
+
+func sphere_ready():
+	assert(vertices.size() >=2)
+	var mesh_instance = MeshInstance.new()
+	var mesh = SphereMesh.new()
+	var dist = (vertices[0] - vertices[1]).length()
+	mesh.radius = dist
+	mesh.height = 2*dist
+	mesh.material = SpatialMaterial.new()
+	mesh.material.albedo_color = Color.purple
+	mesh_instance.mesh = mesh
+	mesh_instance.global_transform.origin = vertices[0]
+	self.add_child(mesh_instance)
+
+	var base_instance = MeshInstance.new()
+	var base_mesh = SphereMesh.new()
+	base_mesh.radius = 10
+	base_mesh.material = SpatialMaterial.new()
+	base_mesh.material.albedo_color = Color.green
+	base_instance.mesh = base_mesh
+	base_instance.global_transform.origin = base
+	self.add_child(base_instance)
+	self.global_transform.origin = base
 
 func spheres_ready():
 	for point in vertices:

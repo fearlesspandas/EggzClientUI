@@ -224,7 +224,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://entity/abilities/client/GlobularTeleportClient.gd"
 }, {
-"base": "StaticBody",
+"base": "Area",
 "class": "GlobularTeleportServer",
 "language": "GDScript",
 "path": "res://entity/abilities/server/GlobularTeleportServer.gd"
