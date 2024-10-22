@@ -44,9 +44,9 @@ func _ready():
 		
 	collision_shape.shape = shape
 	self.add_child(collision_shape)
-	visibility_not.aabb = AABB(center - shape.extents,2*shape.extents)
-	visibility_not.max_distance = radius
-	visibility_not.connect("camera_entered",self,"chunk_is_visible")
+	#visibility_not.aabb = AABB(center - shape.extents,2*shape.extents)
+	#visibility_not.max_distance = radius
+	#visibility_not.connect("camera_entered",self,"chunk_is_visible")
 	self.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
 	self.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
 	self.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,true)

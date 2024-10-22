@@ -64,7 +64,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://entity/server/tutorial/AxisSpiderServer.gd"
 }, {
-"base": "KinematicBody",
+"base": "ServerEntityKinematicBody",
 "class": "AxisSpiderServerKinematicBody",
 "language": "GDScript",
 "path": "res://entity/server/tutorial/AxisSpiderServerKinematicBody.gd"

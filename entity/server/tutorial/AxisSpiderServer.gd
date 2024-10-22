@@ -40,18 +40,9 @@ func _ready():
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)	
 	self.body.set_collision_layer_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)	
-	#self.body.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
-	#self.body.set_collision_layer_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
 
-	#self.body.add_collision_exception_with(axis_core)
-	#self.body.add_collision_exception_with(axis_arm_1)
-	#self.body.add_collision_exception_with(axis_arm_2)
-	#self.body.add_collision_exception_with(axis_arm_3)
-	#self.body.add_collision_exception_with(axis_arm_4)
-	#self.body.add_collision_exception_with(axis_arm_5)
-	#self.body.add_collision_exception_with(axis_arm_6)
-	#self.body.add_collision_exception_with(axis_arm_7)
-	#self.body.add_collision_exception_with(axis_arm_8)
+	self.body.set_collision_mask_bit(EntityConstants.SERVER_BOSS_COLLISION_LAYER,true)	
+	self.body.set_collision_layer_bit(EntityConstants.SERVER_BOSS_COLLISION_LAYER,true)	
 
 	setup_timer.wait_time = 0.5
 	setup_timer.connect("timeout",self,"setup")
