@@ -195,6 +195,8 @@ func handle_json(json) -> bool:
 	match json:
 		{'Loc':{'id':var id, 'loc': var loc}}:
 			route_to_entity(id,loc)
+			#optimize to avoid branching when handled
+			GlobalSignalsClient.location_received(id)
 			return false
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
 			route_to_entity(id,json)

@@ -89,16 +89,15 @@ func default_handle_message(msg,_delta_accum):
 			assert(false)
 			movement.entity_stop(body)
 		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
+			assert(false)
 			body.global_transform.origin = location
 		{'NextDestination':{'id': var _id, 'destination': {'uuid':var uuid, 'dest_type':var dest_type, 'location':[var x, var y , var z] , 'radius': var radius}}}:
-			#requested_dest = false
 			destination.location = Vector3(x,y,z)
 			destination.type = dest_type
 			destination.radius = radius
 			destination.uuid = uuid
 			destination.is_empty = false
 		{'TeleportToNext':{'id':var _id, 'location':[var x, var y ,var z]}}:
-			print_debug("teleporting " , x,y,z)
 			queued_teleports.push_front(Vector3(x,y,z))
 		{'NoLocation':{'id':var _id}}:
 			destination.is_empty = true
@@ -108,9 +107,6 @@ func default_handle_message(msg,_delta_accum):
 			pass
 	pass
 	
-func freeze():
-	assert(false)
-	body.global_transform.origin = spawn
 	
 func update_lv_internal(body,delta):
 	if last_pos != null:

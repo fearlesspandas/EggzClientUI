@@ -309,6 +309,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/client/PhysicalStatsDisplay.gd"
 }, {
+"base": "RichTextLabel",
+"class": "PhysicsDataStats",
+"language": "GDScript",
+"path": "res://user_interface/client/PhysicsDataStats.gd"
+}, {
 "base": "ClientPlayerEntity",
 "class": "Player",
 "language": "GDScript",
@@ -540,6 +545,7 @@ _global_script_class_icons={
 "NonPlayerControlledEntity": "",
 "PhysicalPlayerEntity": "",
 "PhysicalStatsDisplay": "",
+"PhysicsDataStats": "",
 "Player": "",
 "PlayerPathPointer": "",
 "PlayerProfile": "",

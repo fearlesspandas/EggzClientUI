@@ -23,10 +23,5 @@ func timeout_polling():
 		if socket != null:
 			socket.lazy_lv(client_id)
 		self.text = base_label + str(DataCache.cached(client_id,'lv'))
-	
-func _handle_message(msg,delta):
-	match msg:
-		{'LV':{'id':var id,'lv': [var x , var y , var z]}}:
-			self.text = base_label + str([x,y,z])
 			
 

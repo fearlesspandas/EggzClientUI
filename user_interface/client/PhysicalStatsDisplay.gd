@@ -4,12 +4,14 @@ class_name PhysicalStatsDisplay
 onready var bg_rect:ColorRect = ColorRect.new()
 onready var lv_indicator: LinearVelocityIndicator = LinearVelocityIndicator.new()
 onready var position_indicator: PositionIndicator = PositionIndicator.new()
+onready var physics_data_stats : PhysicsDataStats = PhysicsDataStats.new()
 
 var is_active:bool = false
 
 func _ready():
 	self.add_child(lv_indicator)
 	self.add_child(position_indicator)
+	self.add_child(physics_data_stats)
 	self.add_child(bg_rect)
 	bg_rect.color = Color.black
 	bg_rect.color.a = 0.7
@@ -22,12 +24,14 @@ func size_and_position():
 	bg_rect.rect_size = self.rect_size
 	lv_indicator.rect_size = Vector2(self.rect_size.x,30)
 	position_indicator.rect_size = Vector2(self.rect_size.x,30)
+	physics_data_stats.rect_size = Vector2(self.rect_size.x,30)
 
 	#set position
 	self.set_position(Vector2((OS.window_size.x - self.rect_size.x)/2,0))
 	bg_rect.set_position(Vector2(0,0))
 	lv_indicator.set_position(Vector2(0,0))
 	position_indicator.set_position(Vector2(0,lv_indicator.rect_size.y))
+	physics_data_stats.set_position(Vector2(0,lv_indicator.rect_size.y + position_indicator.rect_size.y))
 
 func set_active(value:bool):
 	self.is_active = value
@@ -41,7 +45,9 @@ func _process(delta):
 	if is_active and self.visible:
 		lv_indicator.is_active = true
 		position_indicator.is_active = true
+		physics_data_stats.is_active = true
 		size_and_position()
 	else:
 		lv_indicator.is_active = false
 		position_indicator.is_active = false
+		physics_data_stats.is_active = false

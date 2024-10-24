@@ -81,6 +81,7 @@ func load_scene(id,secret):
 	self.add_child(physical_stats)
 	entity_management.connect("spawned_player_character",physical_stats.position_indicator,"player_character_spawned")
 	physical_stats.lv_indicator.client_id = profile.id
+	physical_stats.physics_data_stats.client_id = profile.id
 	self.connect("is_active",physical_stats,"set_active")
 	entity_management.spawn_client_world(viewport,Vector3(0,-10,0))
 	
