@@ -52,6 +52,10 @@ signal player_position(location)
 func player_position(location):
 	emit_signal("player_position",location)
 
+signal location_received(id)
+func location_received(id):
+	emit_signal("location_received",id)
+
 #INPUT SIGNALS
 #emits activate_ability signal
 signal activate_ability(client_id,slot_id)

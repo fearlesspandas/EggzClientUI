@@ -193,14 +193,14 @@ func handle_entity(entity):
 
 func handle_json(json) -> bool:
 	match json:
+		{'Loc':{'id':var id, 'loc': var loc}}:
+			route_to_entity(id,loc)
+			return false
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
 			route_to_entity(id,json)
 			return false
 		{'Rot':{'id':var id, 'vec':[var x, var y , var z]}}:
 			route_to_entity(id,json)
-			return false
-		{"SendLocation":{'id':var id, 'loc': var loc}}:
-			route_to_entity(id,loc)
 			return false
 		{'MSG':{'route':var route,'message':var msg}}:
 			route_to_entity(route,msg)
@@ -208,6 +208,7 @@ func handle_json(json) -> bool:
 		{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
 			return false
 		{"Location":{"id":var id, "location": [var x , var y , var z]}}:
+			assert(false)
 			route_to_entity(id,json)
 			return false
 		{'Entity':{'entity':var entity}}:
