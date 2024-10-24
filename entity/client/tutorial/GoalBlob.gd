@@ -1,6 +1,6 @@
 extends Area
 class_name GoalBlob
-signal collided(id)
+signal collided(id,entity_id)
 onready var mesh_instance:MeshInstance = MeshInstance.new()
 onready var collision_shape : CollisionShape = CollisionShape.new()
 onready var color_timer:Timer = Timer.new()
@@ -50,7 +50,8 @@ func _ready():
 
 
 func entered(body):
-	emit_signal("collided",id)
+	if body is ClientEntityKinematicBody:
+		emit_signal("collided",id,body.client_player_entity.id)
 
 func despawn():
 	get_parent().remove_child(self)

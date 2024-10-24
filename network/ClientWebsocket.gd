@@ -238,5 +238,8 @@ func add_item(id:String,item:int):
 func get_inventory(id:String):
 	send_payload(PayloadMapper.get_inventory(id))
 
+func progress(id:String,args:Dictionary):
+	send_payload(PayloadMapper.progress(id,args))
+
 func get_next_command():
 	send_payload(PayloadMapper.get_next_command())

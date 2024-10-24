@@ -12,6 +12,8 @@ var height = 128
 var blob_count:int = 100
 var rotation_speed = 0.01
 
+var client_id = null
+
 func _ready():
 	assert(center_point != null and center_point != Vector3())
 	assert(radius != null)
@@ -34,6 +36,7 @@ func completed():
 	var spider:AxisSpider = AssetMapper.matchAsset(AssetMapper.local_spider_entity).instance()
 	spider.global_transform.origin = Vector3(0,0,800)
 	center.add_child(spider)
+	ServerNetwork.get(client_id).progress(client_id,ProgressArgsMapper.tutorial_stage(0))
 
 func set_random_rotation():
 	var x = rand_range(0,360)
@@ -65,9 +68,11 @@ func random_reposition(blob:GoalBlob):
 		rand_range(-radius,radius)
 	)
 
-func blob_collision(id):
+func blob_collision(id,entity_id):
 	tower.increment()
 	random_reposition(blobs[id])
+	client_id = entity_id
+
 	
 func tick_rotate(delta):
 	center.global_rotation += Vector3(0,delta * self.rotation_speed,0)

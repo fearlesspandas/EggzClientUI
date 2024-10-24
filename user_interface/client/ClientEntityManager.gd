@@ -273,6 +273,9 @@ func handle_json(json) -> bool:
 			print_debug("Item added for ", id)
 			GlobalSignalsClient.item_added(id,item)
 			return false
+		{'ProgressUpdate':{'id':var id,'args':var args}}:
+			ProgressHandlerClient.handle_message(id,args)
+			return false
 		{'TerrainUnitm':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
 			if terrain.has(uuid):
 				return true

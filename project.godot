@@ -94,6 +94,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/client/ClientControl.gd"
 }, {
+"base": "KinematicBody",
+"class": "ClientEntityKinematicBody",
+"language": "GDScript",
+"path": "res://entity/client/ClientEntityKinematicBody.gd"
+}, {
 "base": "EntityManagement",
 "class": "ClientEntityManager",
 "language": "GDScript",
@@ -492,6 +497,7 @@ _global_script_class_icons={
 "ClickMenu": "",
 "ClickOption": "",
 "ClientControl": "",
+"ClientEntityKinematicBody": "",
 "ClientEntityManager": "",
 "ClientKinematicMovement": "",
 "ClientPlayerEntity": "",
@@ -598,6 +604,8 @@ ServerReferences="*res://user_interface/server/ServerReferences.gd"
 GlobalSignalsServer="*res://network/GlobalSignalsServer.gd"
 GlobalSignalsClient="*res://network/GlobalSignalsClient.gd"
 AbilityAPI="*res://abilities/AbilityAPI.gd"
+ProgressArgsMapper="*res://network/payloads/ProgressArgsMapper.gd"
+ProgressHandlerClient="*res://progress/client/ProgressHandlerClient.gd"
 
 [input]
 

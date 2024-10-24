@@ -184,5 +184,8 @@ func add_item(id:String,item:int):
 func get_inventory(id:String):
 	return {'GET_INVENTORY':{'id':id}}
 	
+func progress(id:String,args:Dictionary):
+	return {'PROGRESS':{'id':id,'args':args}}
+
 func get_next_command():
 	return {'NEXT_CMD':{}}

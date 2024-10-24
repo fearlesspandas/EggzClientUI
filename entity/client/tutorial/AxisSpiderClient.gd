@@ -43,6 +43,19 @@ var dest_positions = [
 	self.global_transform.origin + Vector3(0,-250,-500),
 ]
 
+func set_visibility(is_visible:bool):
+	top_legs.visible = is_visible
+	bottom_legs.visible = is_visible
+	axis_core.visible = is_visible
+	axis_arm_1.visible = is_visible
+	axis_arm_2.visible = is_visible
+	axis_arm_3.visible = is_visible
+	axis_arm_4.visible = is_visible
+	axis_arm_5.visible = is_visible
+	axis_arm_6.visible = is_visible
+	axis_arm_7.visible = is_visible
+	axis_arm_8.visible = is_visible
+
 func _ready():
 	self.radius = 500
 	assert(top_legs != null)	
@@ -70,12 +83,19 @@ func _ready():
 	self.body.add_collision_exception_with(axis_arm_7)
 	self.body.add_collision_exception_with(axis_arm_8)
 
+	set_visibility(false)
+
 	setup_timer.wait_time = 0.5
 	setup_timer.connect("timeout",self,"setup")
 	self.add_child(setup_timer)
 	setup_timer.start()
 
 	GlobalSignalsClient.connect("player_location",self,"default_update_player_location")
+	#will have to remove this when a generic spider entity is made
+	ProgressHandlerClient.connect("tutorial_stage_completed",self,"tutorial_stage_completed")
+
+func tutorial_stage_completed(stage:int):
+	set_visibility(true)
 
 func destination_mesh() -> MeshInstance:
 	var mesh:CubeMesh = CubeMesh.new()

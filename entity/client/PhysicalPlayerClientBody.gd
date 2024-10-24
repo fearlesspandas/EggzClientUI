@@ -1,9 +1,8 @@
-extends KinematicBody
+extends ClientEntityKinematicBody
 
 #nodes that will 'extened' PhysicalPlayerEntity simply
 export var mesh_instance:Resource
 onready var mesh
-onready var client_player_entity:ClientPlayerEntity = get_parent()
 func _ready():
 	mesh = load(mesh_instance.resource_path).instance()
 	self.add_child(mesh)
