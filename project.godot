@@ -606,6 +606,7 @@ GlobalSignalsClient="*res://network/GlobalSignalsClient.gd"
 AbilityAPI="*res://abilities/AbilityAPI.gd"
 ProgressArgsMapper="*res://network/payloads/ProgressArgsMapper.gd"
 ProgressHandlerClient="*res://progress/client/ProgressHandlerClient.gd"
+ProgressHandlerServer="*res://progress/server/ProgressHandlerServer.gd"
 
 [input]
 

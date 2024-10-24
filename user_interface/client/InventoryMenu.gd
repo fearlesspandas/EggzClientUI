@@ -62,7 +62,7 @@ func refresh_contents(id,contents):
 			
 
 func add_item(id,item):
-	pass
+	socket.get_inventory(client_id)
 
 func _process(delta):
 	size_and_position()

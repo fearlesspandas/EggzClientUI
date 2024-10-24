@@ -38,6 +38,8 @@ func load_scene(id,secret:String):
 	
 	entity_management.spawn_server_world(self,Vector3(0,-10,0))
 
+	GlobalSignalsServer.client_id_verified(profile.id)
+
 
 
 func handle_new_entity(entity,parent,server_entity):

@@ -3,7 +3,7 @@ class_name ProgressTower
 signal completed
 var segments = []
 
-var num_segments = 32
+var num_segments = 3
 var total_height = 128
 var chunk_radius = 100
 

@@ -176,7 +176,6 @@ func handle_entity(entity):
 				var spawned_character = spawn_character_entity_server(id,Vector3(x,y,z))
 				#temporary - adding basic ability to all players
 				socket.add_item(id,0)	
-				socket.add_item(id,1)
 		{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 			if server_entities.has(id):
 				despawn_prowler(id)
@@ -229,6 +228,9 @@ func handle_json(json) -> bool:
 				if entity == null:
 					assert(false,"entity with id is null")
 				AbilityManager.ability_server(int(ability_id),entity.body.global_transform.origin,args)	
+				return false
+			{'ProgressUpdate':{'id':var id,'args':var args}}:
+				ProgressHandlerServer.handle_message(id,args)
 				return false
 			{'TerrainUnitm':{'entities':var entity_map,'location':var location, 'uuid':var uuid}}:
 				if terrain.has(uuid):

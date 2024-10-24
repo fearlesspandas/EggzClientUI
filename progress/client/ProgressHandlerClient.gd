@@ -10,3 +10,11 @@ func handle_message(id:String,progress_args):
 signal tutorial_stage_completed(stage)
 func tutorial_stage_completed(stage:int):
 	emit_signal("tutorial_stage_completed",stage)
+
+enum TutorialStages{
+	not_started = -1,
+	stage_1 = 0,
+	
+
+
+}
