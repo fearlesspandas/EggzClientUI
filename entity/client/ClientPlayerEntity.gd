@@ -71,13 +71,20 @@ func default_handle_message(msg,delta_accum):
 
 func default_update_player_location(location):
 	assert(radius > 0)
-	if (location - self.body.global_transform.origin).length() < radius:	
-		self.mod = 4
-	elif (location - self.body.global_transform.origin).length() < 2 * radius:
-		self.mod = 4
-	elif (location - self.body.global_transform.origin).length() < 4 * radius:
-		self.mod = 6
-	elif (location - self.body.global_transform.origin).length() < 8 * radius:
-		self.mod = 16
-	else:
-		self.mod = 32
+	#could microoptimize this further by just inlining and not creating any variables
+	var less_than_radius = 2 * int((location - self.body.global_transform.origin).length() < radius) 
+	var radius_2         = 4 * int((location - self.body.global_transform.origin).length() < 2 * radius)
+	var radius_4         = 8 * int((location - self.body.global_transform.origin).length() < 4 * radius)
+	var radius_8         = 16 * int((location - self.body.global_transform.origin).length() < 8 * radius)
+	var radius_max       = 32 * int((location - self.body.global_transform.origin).length() > 8 * radius) 
+	var t_mod = (
+		2 * int(less_than_radius)
+		+ 4 * int(!less_than_radius and radius_2)
+		+ 8 * int(!radius_2 and radius_4)
+		+ 16 * int(!radius_4 and radius_8)
+		+ 32 * int(!radius_8 and radius_max)
+	)
+	#not sure if less reads impacts average performance between radius updates positively
+	if self.mod != t_mod:
+		self.mod = t_mod
+	

@@ -7,11 +7,12 @@ onready var mesh:SphereMesh = SphereMesh.new()
 onready var material:SpatialMaterial = SpatialMaterial.new()
 
 var location:Vector3
-var type:String
+var type:String = "Empty"
 var radius:float
 var uuid:String
 var is_empty:bool = false
 var base_color:Color
+
 func _ready():
 	material.albedo_color = Color.red
 	match type:

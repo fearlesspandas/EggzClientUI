@@ -3,7 +3,7 @@ extends NonPlayerControlledEntity
 class_name ProwlerEntity
 
 func _ready():
-	self.radius = 50
+	self.radius = 32
 	GlobalSignalsClient.connect("player_location",self,"default_update_player_location")
 
 func _physics_process(delta):
