@@ -1,14 +1,9 @@
 extends Spatial
 class_name NavigatorMesh
 
-onready var mesh_instance:MeshInstance = MeshInstance.new()
-onready var mesh:ArrayMesh = ArrayMesh.new()
-
 var vertices = {}
 
 func _ready():
-	mesh_instance.mesh = mesh
-	self.add_child(mesh_instance)
 	TerrainSignalsClient.connect("add_to_navigation_mesh",self,"add_terrain_to_mesh")
 	TerrainSignalsClient.connect("remove_from_navigation_mesh",self,"remove_terrain_from_mesh")
 
