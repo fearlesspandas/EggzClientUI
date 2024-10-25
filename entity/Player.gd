@@ -11,6 +11,7 @@ onready var curserRay:CursorRay = camera_root.find_node("CursorRay")
 onready var pointer:PlayerPathPointer = PlayerPathPointer.new()
 onready var input_timer:Timer = Timer.new()
 onready var position_data_timer : Timer = Timer.new()
+onready var navigator_mesh:NavigatorMesh = NavigatorMesh.new()
 
 var is_active = false
 
@@ -21,6 +22,7 @@ func _ready():
 	assert(physics_socket!=null)
 	input_timer.wait_time = 0.1
 	input_timer.connect("timeout",self,"muh_process")
+	body.add_child(navigator_mesh)
 	
 func set_destination_mode(mode):
 	var mode_text = str(mode).replace("{","").replace("}","").replace(":","")
