@@ -133,8 +133,12 @@ func _physics_process(delta):
 
 func _handle_message(msg,delta_accum):
 	match msg:
-		{'Rot':{'id':var id,'vec':[var x , var y ,var z]}}:
-			top_legs.global_rotation.y = y #Vector3(x,y,z)
-			bottom_legs.global_rotation.y = -y #Vector3(x,y,z)
+		{'typ':var typ,'id':var id,'vec' : [var x , var y , var z]}:
+			match typ:
+				'Rot':
+					top_legs.global_rotation.y = y
+					bottom_legs.global_rotation.y = -y
+				_:
+					default_handle_message(msg,delta_accum)
 		_:
 			self.default_handle_message(msg,delta_accum)

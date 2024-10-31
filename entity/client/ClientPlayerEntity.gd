@@ -57,21 +57,19 @@ func poll_physics():
 	if physics_socket.connected:
 		physics_socket.get_location_physics(id)
 		
+var loc:Vector3 = Vector3()
 func default_handle_message(msg,delta_accum):
 	match msg:
 		{'typ':var typ,'id':var id,'vec' : [var x , var y , var z]}:
 			match typ:
 				"Loc":
-					movement.entity_move(delta_accum,Vector3(x,y,z),body)
+					loc.x = x
+					loc.y = y
+					loc.z = z
+					movement.entity_move(delta_accum,loc,body)
 				"Dir":
 					assert(false)
 					movement.entity_set_direction(Vector3(x,y,z))
-					
-		[var x,var y,var z]:
-			movement.entity_move(delta_accum,Vector3(x,y,z),body)
-			pass
-		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
-			movement.entity_set_direction(Vector3(x,y,z))
 		{'HealthSet':{'id':var id,'value':var value}}:
 			set_health(value)
 		_ :

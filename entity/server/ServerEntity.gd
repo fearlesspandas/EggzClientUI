@@ -49,12 +49,15 @@ func check_dir():
 	physics_socket.get_dir_physics(id)
 
 var proc:int = 0
+var dir:Vector3 = Vector3()
 func default_handle_message(msg,_delta_accum):
 	match msg:
 		{'typ':var typ,'id':var id,'vec' : [var x , var y , var z]}:
 			match typ:
 				'Dir':
-					var dir = Vector3(x,y,z)
+					dir.x = x
+					dir.y = y
+					dir.z = z
 					var max_speed = movement.get_max_speed()
 					#proc is needed to ensure network doesn't get clogged in a loop when trying to reset speed
 					#todo remove this entirely in favor of physics server managing this
@@ -66,22 +69,11 @@ func default_handle_message(msg,_delta_accum):
 					proc += 1
 					if (not destinations_active) or gravity_active:
 						movement.entity_set_direction(dir)
-		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
-			var dir = Vector3(x,y,z)
-			var max_speed = movement.get_max_speed()
-			#proc is needed to ensure network doesn't get clogged in a loop when trying to reset speed
-			#todo remove this entirely in favor of physics server managing this
-			dir = (dir.normalized() * min(dir.length(),max_speed) * int(max_speed != null))
-			if proc %2 == 0:
-				#print("direction ", Vector3(x,y,z))
-				proc = 0
-				physics_socket.set_dir_physics(id,dir)
-			proc += 1
-			if (not destinations_active) or gravity_active:
-				movement.entity_set_direction(dir)
-		{'Input':{"id":var _id, "vec":[var x ,var y ,var z]}}:
-			assert(false)
-			queued_input = Vector3(x,y,z)
+				'Input':
+					assert(false)
+					queued_input.x = x
+					queued_input.y = y
+					queued_input.z = z
 		{'GravityActive':{'id': var _id, 'is_active':var active}}:
 			print_debug("gravity active " , active)
 			gravity_active = bool(active)
