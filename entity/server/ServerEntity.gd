@@ -51,6 +51,21 @@ func check_dir():
 var proc:int = 0
 func default_handle_message(msg,_delta_accum):
 	match msg:
+		{'typ':var typ,'id':var id,'vec' : [var x , var y , var z]}:
+			match typ:
+				'Dir':
+					var dir = Vector3(x,y,z)
+					var max_speed = movement.get_max_speed()
+					#proc is needed to ensure network doesn't get clogged in a loop when trying to reset speed
+					#todo remove this entirely in favor of physics server managing this
+					dir = (dir.normalized() * min(dir.length(),max_speed) * int(max_speed != null))
+					if proc %2 == 0:
+						#print("direction ", Vector3(x,y,z))
+						proc = 0
+						physics_socket.set_dir_physics(id,dir)
+					proc += 1
+					if (not destinations_active) or gravity_active:
+						movement.entity_set_direction(dir)
 		{'Dir':{'id':var id, 'vec':[var x, var y , var z]}}:
 			var dir = Vector3(x,y,z)
 			var max_speed = movement.get_max_speed()

@@ -190,97 +190,100 @@ func handle_entity(entity):
 
 func handle_json(json) -> bool:
 	match json:
-			{'MSG':{'route':var route,'message':var msg}}:
-				route_to_entity(route,msg)
-				return false
-			{'NoInput':{'id': var id}}:
-				route_to_entity(id,json)
-				return false
-			{'Dir':{"id":var id , "vec":[var x ,var y ,var z]}}:
-				route_to_entity(id,json)
-				return false
-			{'Input':{"id":var id , "vec":[var x ,var y ,var z]}}:
-				route_to_entity(id,json)
-				return false
-			{'Entity':{'entity':var entity}}:
-				handle_entity(entity)
-				return false
-			{"GlobSet":{"globs":var globs}}:
-				var res = false
-				handle_globset(globs)
-				return res
-			{"NextDestination":{"id": var id, "destination": var dest}}:
-				route_to_entity(id,json)
-				return false
-			{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
-				return false
-			{'NoLocation':{'id':var id}}:
-				route_to_entity(id,json)
-				return false
-			{'PhysStat':{'id':var id, 'max_speed':var max_speed,'speed':var speed}}:
-				DataCache.add_data(id,'max_speed',max_speed)
-				DataCache.add_data(id,'speed',speed)
-				return false
-			{'DoAbility':{'ability_id':var ability_id,'entity_id':var entity_id, 'args': var args}}:
-				if !server_entities.has(entity_id):
-					assert(false, "no entity found with id " + entity_id)
-				var entity = server_entities[entity_id]
-				if entity == null:
-					assert(false,"entity with id is null")
-				AbilityManager.ability_server(int(ability_id),entity.body.global_transform.origin,args)	
-				return false
-			{'ProgressUpdate':{'id':var id,'args':var args}}:
-				ProgressHandlerServer.handle_message(id,args)
-				return false
-			{'TerrainUnitm':{'entities':var entity_map,'location':var location, 'uuid':var uuid}}:
-				if terrain.has(uuid):
-					pass
-				else:
-					var keys = entity_map.keys()
-					var loc = Vector3(location[0],location[1],location[2])
-					for k in keys:
-						var resource_id = int(k)
-						assert(resource_id != 9)
-						var asset = AssetMapper.matchServerAsset(resource_id)
-						for i in range(0,entity_map[k]):
-							spawn_terrain(str(uuid),loc,spawn,asset,true)
-							socket.get_top_level_terrain_in_distance(1024 * 5,loc)
-					terrain[uuid] = true
-				return true
-			{'TerrainRegionm':{'terrain':var innerterain}}:
-				for it in innerterain:
-					match it:
-						[var location,var entity_map, var uuid]:
-							var keys = entity_map.keys()
-							var loc = Vector3(location[0],location[1],location[2])
-							for k in keys:
-								var resource_id = int(k)
-								var asset = AssetMapper.matchServerAsset(resource_id)
-								for i in range(0,entity_map[k]):
-									spawn_terrain(str(uuid),loc,spawn,asset,true)
-				return true
-			{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
-				if !terrain.has(uuid):
-					var chunk = Chunk.new()
-					chunk.client_id = client_id
-					chunk.uuid = uuid
-					chunk.spawn = spawn
-					chunk.center = Vector3(x,y,z)
-					chunk.radius = radius
-					chunk.is_empty = false
-					chunk.is_server = true
-					terrain[uuid] = chunk
-					spawn.add_child(chunk)
-				return true
-			{'EmptyChunk':{'uuid':var uuid, 'location': [var x ,var y ,var z], 'radius': var radius}}:
-				if !terrain.has(uuid):
-					empty_terrain_queue.push_front(json)
-					var chunk = Chunk.new()
-					terrain[uuid] = chunk
-				return false
-			_:
-				print_debug("No handler found for command " , json)
-				return false
+		{'typ':var typ,'id':var id,'vec' : [var x , var y , var z]}:
+			route_to_entity(id,json)
+			return false
+		{'MSG':{'route':var route,'message':var msg}}:
+			route_to_entity(route,msg)
+			return false
+		{'NoInput':{'id': var id}}:
+			route_to_entity(id,json)
+			return false
+		{'Dir':{"id":var id , "vec":[var x ,var y ,var z]}}:
+			route_to_entity(id,json)
+			return false
+		{'Input':{"id":var id , "vec":[var x ,var y ,var z]}}:
+			route_to_entity(id,json)
+			return false
+		{'Entity':{'entity':var entity}}:
+			handle_entity(entity)
+			return false
+		{"GlobSet":{"globs":var globs}}:
+			var res = false
+			handle_globset(globs)
+			return res
+		{"NextDestination":{"id": var id, "destination": var dest}}:
+			route_to_entity(id,json)
+			return false
+		{"NEW_ENTITY": {"id":var id,"location":var location, "type": var type}}:
+			return false
+		{'NoLocation':{'id':var id}}:
+			route_to_entity(id,json)
+			return false
+		{'PhysStat':{'id':var id, 'max_speed':var max_speed,'speed':var speed}}:
+			DataCache.add_data(id,'max_speed',max_speed)
+			DataCache.add_data(id,'speed',speed)
+			return false
+		{'DoAbility':{'ability_id':var ability_id,'entity_id':var entity_id, 'args': var args}}:
+			if !server_entities.has(entity_id):
+				assert(false, "no entity found with id " + entity_id)
+			var entity = server_entities[entity_id]
+			if entity == null:
+				assert(false,"entity with id is null")
+			AbilityManager.ability_server(int(ability_id),entity.body.global_transform.origin,args)	
+			return false
+		{'ProgressUpdate':{'id':var id,'args':var args}}:
+			ProgressHandlerServer.handle_message(id,args)
+			return false
+		{'TerrainUnitm':{'entities':var entity_map,'location':var location, 'uuid':var uuid}}:
+			if terrain.has(uuid):
+				pass
+			else:
+				var keys = entity_map.keys()
+				var loc = Vector3(location[0],location[1],location[2])
+				for k in keys:
+					var resource_id = int(k)
+					assert(resource_id != 9)
+					var asset = AssetMapper.matchServerAsset(resource_id)
+					for i in range(0,entity_map[k]):
+						spawn_terrain(str(uuid),loc,spawn,asset,true)
+						socket.get_top_level_terrain_in_distance(1024 * 5,loc)
+				terrain[uuid] = true
+			return true
+		{'TerrainRegionm':{'terrain':var innerterain}}:
+			for it in innerterain:
+				match it:
+					[var location,var entity_map, var uuid]:
+						var keys = entity_map.keys()
+						var loc = Vector3(location[0],location[1],location[2])
+						for k in keys:
+							var resource_id = int(k)
+							var asset = AssetMapper.matchServerAsset(resource_id)
+							for i in range(0,entity_map[k]):
+								spawn_terrain(str(uuid),loc,spawn,asset,true)
+			return true
+		{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
+			if !terrain.has(uuid):
+				var chunk = Chunk.new()
+				chunk.client_id = client_id
+				chunk.uuid = uuid
+				chunk.spawn = spawn
+				chunk.center = Vector3(x,y,z)
+				chunk.radius = radius
+				chunk.is_empty = false
+				chunk.is_server = true
+				terrain[uuid] = chunk
+				spawn.add_child(chunk)
+			return true
+		{'EmptyChunk':{'uuid':var uuid, 'location': [var x ,var y ,var z], 'radius': var radius}}:
+			if !terrain.has(uuid):
+				empty_terrain_queue.push_front(json)
+				var chunk = Chunk.new()
+				terrain[uuid] = chunk
+			return false
+		_:
+			print_debug("No handler found for command " , json)
+			return false
 func parseJsonCmd(cmd,delta):
 	#print("raw comand:",cmd)
 	var parsed = JSON.parse(cmd)

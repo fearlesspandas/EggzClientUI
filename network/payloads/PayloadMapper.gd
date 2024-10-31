@@ -104,7 +104,7 @@ func getLocationPhysics(id:String):
 	return {'type':'GET_LOC','body':{'id':id}}
 
 func setLocationPhysics(id:String,location:Vector3):
-	return {'type':'SET_LOC','body':{'id':id,'loc':[location.x,location.y,location.z]}}
+	return {'type':'SET_LOC','body':{'id':id,'vec':[location.x,location.y,location.z]}}
 
 func set_input_physics(id:String,vec:Vector3):
 	return {'type':'APPLY_VECTOR','body':{'id':id,'vec':[vec.x,vec.y,vec.z]}}

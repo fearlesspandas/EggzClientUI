@@ -59,6 +59,14 @@ func poll_physics():
 		
 func default_handle_message(msg,delta_accum):
 	match msg:
+		{'typ':var typ,'id':var id,'vec' : [var x , var y , var z]}:
+			match typ:
+				"Loc":
+					movement.entity_move(delta_accum,Vector3(x,y,z),body)
+				"Dir":
+					assert(false)
+					movement.entity_set_direction(Vector3(x,y,z))
+					
 		[var x,var y,var z]:
 			movement.entity_move(delta_accum,Vector3(x,y,z),body)
 			pass

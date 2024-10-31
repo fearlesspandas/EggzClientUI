@@ -4,8 +4,8 @@ class_name PlayerServerEntity
 
 func _ready():
 	self.is_npc = false
-	timer.connect("timeout",self,"timer_polling")
-	timer.wait_time = 0.25
+	self.timer.connect("timeout",self,"timer_polling")
+	self.timer.wait_time = 0.25
 	self.body.set_collision_layer_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,true)
 	self.body.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,true)
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
@@ -13,7 +13,7 @@ func _ready():
 
 
 func timer_polling():
-	socket.set_lv(id,get_lv())
+	self.socket.set_lv(self.id,get_lv())
 
 #instance - don't abstract out
 func _physics_process(delta):

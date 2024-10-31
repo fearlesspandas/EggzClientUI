@@ -193,6 +193,9 @@ func handle_entity(entity):
 
 func handle_json(json) -> bool:
 	match json:
+		{'typ':var typ,'id':var id,'vec' : var vec}:
+			route_to_entity(id,json)
+			return false
 		{'Loc':{'id':var id, 'loc': var loc}}:
 			route_to_entity(id,loc)
 			#optimize to avoid branching when handled
