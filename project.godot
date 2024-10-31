@@ -289,6 +289,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://entity/server/NPCServerEntity.gd"
 }, {
+"base": "Spatial",
+"class": "NavigationPointMesh",
+"language": "GDScript",
+"path": "res://entity/client/navigation/NavigationPointMesh.gd"
+}, {
+"base": "Spatial",
+"class": "NavigatorMesh",
+"language": "GDScript",
+"path": "res://entity/client/navigation/NavigatorMesh.gd"
+}, {
 "base": "Control",
 "class": "NewProfileTab",
 "language": "GDScript",
@@ -353,6 +363,11 @@ _global_script_classes=[ {
 "class": "ProgressTower",
 "language": "GDScript",
 "path": "res://entity/client/tutorial/ProgressTower.gd"
+}, {
+"base": "MeshInstance",
+"class": "ProwlerAnchorMesh",
+"language": "GDScript",
+"path": "res://world/client/ProwlerAnchorMesh.gd"
 }, {
 "base": "Spatial",
 "class": "ProwlerAnchorServer",
@@ -541,6 +556,8 @@ _global_script_class_icons={
 "Movement": "",
 "NPCPlayerEntity": "",
 "NPCServerEntity": "",
+"NavigationPointMesh": "",
+"NavigatorMesh": "",
 "NewProfileTab": "",
 "NonPlayerControlledEntity": "",
 "PhysicalPlayerEntity": "",
@@ -554,6 +571,7 @@ _global_script_class_icons={
 "Profiles": "",
 "ProfilesList": "",
 "ProgressTower": "",
+"ProwlerAnchorMesh": "",
 "ProwlerAnchorServer": "",
 "ProwlerEntity": "",
 "ProwlerServerEntity": "",
@@ -613,6 +631,7 @@ AbilityAPI="*res://abilities/AbilityAPI.gd"
 ProgressArgsMapper="*res://network/payloads/ProgressArgsMapper.gd"
 ProgressHandlerClient="*res://progress/client/ProgressHandlerClient.gd"
 ProgressHandlerServer="*res://progress/server/ProgressHandlerServer.gd"
+TerrainSignalsClient="*res://world/client/TerrainSignalsClient.gd"
 
 [input]
 

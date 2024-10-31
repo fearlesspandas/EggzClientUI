@@ -1,4 +1,6 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://world/client/ProwlerAnchorMesh.gd" type="Script" id=1]
 
 [sub_resource type="CapsuleMesh" id=1]
 
@@ -18,3 +20,4 @@ refraction_texture_channel = 0
 [node name="MeshInstance" type="MeshInstance"]
 mesh = SubResource( 1 )
 material/0 = SubResource( 2 )
+script = ExtResource( 1 )
