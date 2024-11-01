@@ -1,0 +1,18 @@
+[package]
+name = "NativeTools"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde_json = "1.0.132"
+serde = {version = "1.0.214", features = ["derive"]}
+gdnative = { version = "0.11", features = ["async"]}
+#tokio = { version = "1.41.0", features = ["full"] }
+#web-socket = "0.7"
+#base64 = "0.21"
+#sha-1 = "0.10"
+
+[lib]
+crate-type = ["cdylib"]

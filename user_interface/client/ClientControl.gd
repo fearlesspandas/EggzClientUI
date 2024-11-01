@@ -16,6 +16,7 @@ onready var destination_display_window:DestinationWindow = DestinationWindow.new
 onready var destination_type_indicator:DestinationTypeIndicator = DestinationTypeIndicator.new()
 onready var command_menu : CommandMenu = CommandMenu.new()
 onready var inventory_menu : InventoryMenu = InventoryMenu.new()
+onready var client_terminal = load("res://native_lib/ClientTerminal.gdns").new()
 var profile_id:String
 var connection_ind_size = 30
 
@@ -88,6 +89,9 @@ func load_scene(id,secret):
 	command_menu.client_id = entity_management.client_id
 	self.add_child(command_menu)
 	
+	client_terminal.custom_viewport = viewport
+	self.add_child(client_terminal)
+	client_terminal.visible = false
 	#self.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	#viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
