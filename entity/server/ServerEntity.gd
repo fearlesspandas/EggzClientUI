@@ -8,12 +8,9 @@ onready var spawn
 
 var socket:ClientWebSocket
 var physics_socket:RustSocket
-#var requested_dest = false
-var last_request = null
 var destination:Destination = Destination.new()
 var destinations_active:bool
 var gravity_active:bool
-var epsilon = 3
 var isSubbed:bool = false
 var is_npc:bool = false
 var queued_teleports = []
@@ -70,27 +67,9 @@ func default_handle_message(msg,_delta_accum):
 		{'GravityActive':{'id': var _id, 'is_active':var active}}:
 			print_debug("gravity active " , active)
 			gravity_active = bool(active)
-			if destinations_active and not gravity_active:
-				#physics_socket.lock_input_physics(id)
-				print_debug("input locked " )
-			else:
-				#physics_socket.unlock_input_physics(id)
-				print_debug("input unlocked")
 		{'DestinationsActive':{'id': var _id, 'is_active':var active}}:
 			print_debug("destinations active", active)
 			destinations_active = bool(active)
-			if destinations_active and not gravity_active:
-				#physics_socket.lock_input_physics(id)
-				print_debug("input locked")
-			else:
-				#physics_socket.unlock_input_physics(id)
-				print_debug("input unlocked")
-		{'NoInput':{'id':var _id}}:
-			assert(false)
-			movement.entity_stop(body)
-		{'SET_GLOB_LOCATION':{'id':id,'location':var location}}:
-			assert(false)
-			body.global_transform.origin = location
 		{'NextDestination':{'id': var _id, 'destination': {'uuid':var uuid, 'dest_type':var dest_type, 'location':[var x, var y , var z] , 'radius': var radius}}}:
 			destination.location = Vector3(x,y,z)
 			destination.type = dest_type
@@ -136,7 +115,8 @@ func default_physics_process(delta):
 			pass
 		'{WAYPOINT:{}}':
 			movement.entity_move_by_gravity(
-				id,delta * int(gravity_active) * int(destinations_active) * int(!destination.is_empty),
+				id,
+				delta * int(gravity_active) * int(destinations_active) * int(!destination.is_empty),
 				destination.location,
 				body
 			)
@@ -147,7 +127,8 @@ func default_physics_process(delta):
 			)
 		'{TELEPORT:{}}':
 			movement.entity_move_by_gravity(
-				id,delta * int(gravity_active) * int(destinations_active) * int(!destination.is_empty),
+				id,
+				delta * int(gravity_active) * int(destinations_active) * int(!destination.is_empty),
 				destination.location,
 				body
 			)

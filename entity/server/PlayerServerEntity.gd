@@ -10,6 +10,7 @@ func _ready():
 	self.body.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,true)
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
+	assert(body is KinematicBody)
 
 
 func timer_polling():
@@ -18,10 +19,9 @@ func timer_polling():
 #instance - don't abstract out
 func _physics_process(delta):
 	default_physics_process(delta)
-	if body is KinematicBody: 
-		var coll:KinematicCollision = body.get_last_slide_collision()
-		if coll != null and coll.collider.has_method("handle_collision"):
-			coll.collider.handle_collision(client_id,id)
+	var coll:KinematicCollision = body.get_last_slide_collision()
+	if coll != null and coll.collider.has_method("handle_collision"):
+		coll.collider.handle_collision(client_id,id)
 
 func _handle_message(msg,delta_accum):
 	self.default_handle_message(msg,delta_accum)
