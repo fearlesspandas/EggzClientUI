@@ -5,6 +5,7 @@ onready var message_controller:MessageController = MessageController.new()
 onready var timer:Timer = Timer.new()
 onready var health_add_timer: Timer = Timer.new()
 onready var spawn
+onready var physics_native_socket = null
 
 var socket:ClientWebSocket
 var physics_socket:RustSocket
@@ -48,6 +49,24 @@ func check_destinations():
 func check_dir():
 	physics_socket.get_dir_physics(id)
 
+func apply_direction(vec):
+	if vec != null:
+		dir.x = vec[0]
+		dir.y = vec[1]
+		dir.z = vec[2]
+		var max_speed = movement.get_max_speed()
+		#proc is needed to ensure network doesn't get clogged in a loop when trying to reset speed
+		#todo remove this entirely in favor of physics server managing this
+		dir = (dir.normalized() * min(dir.length(),max_speed) * int(max_speed != null))
+		if proc %2 == 0:
+			#print("direction ", Vector3(x,y,z))
+			proc = 0
+			#physics_socket.set_dir_physics(id,dir)
+			physics_native_socket.send_direction(id,dir.x,dir.y,dir.z)
+		proc += 1
+		if (not destinations_active) or gravity_active:
+			movement.entity_set_direction(dir)
+
 var proc:int = 0
 var dir:Vector3 = Vector3()
 func default_handle_message(msg,_delta_accum):
@@ -66,6 +85,7 @@ func default_handle_message(msg,_delta_accum):
 						#print("direction ", Vector3(x,y,z))
 						proc = 0
 						physics_socket.set_dir_physics(id,dir)
+						#physics_native_socket.send_direction(id,dir.x,dir.y,dir.z)
 					proc += 1
 					if (not destinations_active) or gravity_active:
 						movement.entity_set_direction(dir)
@@ -126,6 +146,51 @@ func get_lv() -> Vector3:
 	else:
 		return Vector3.ZERO
 		
+func default_physics_process2(delta):
+	physics_native_socket.get_direction(id)
+	apply_direction(physics_native_socket.cached_direction())
+	update_lv_internal(body,delta)
+	movement.entity_set_max_speed(DataCache.cached(id,'speed'))
+	movement.entity_move_by_direction(delta,body)
+	var should_tele:bool = body is KinematicBody and destinations_active
+	if !queued_teleports.empty():
+		var t = queued_teleports.pop_front()
+		var dir = (t - body.global_transform.origin)
+		body.translate(dir * int(should_tele))
+	match destination.type:
+		'Empty':
+			queued_teleports.pop_front()
+			pass
+		'{WAYPOINT:{}}':
+			movement.entity_move_by_gravity(
+				id,delta * int(gravity_active) * int(destinations_active) * int(!destination.is_empty),
+				destination.location,
+				body
+			)
+			movement.entity_move(
+				delta * int(!gravity_active)* int(destinations_active)* int(!destination.is_empty),
+				destination.location,
+				body
+			)
+		'{TELEPORT:{}}':
+			movement.entity_move_by_gravity(
+				id,delta * int(gravity_active) * int(destinations_active) * int(!destination.is_empty),
+				destination.location,
+				body
+			)
+			movement.entity_move(
+				delta * int(!gravity_active)* int(destinations_active)* int(!destination.is_empty),
+				destination.location,
+				body
+			)
+		"{GRAVITY_BIND:{}}":
+			movement.entity_move_by_gravity(id,delta,destination.location,body)
+		_:
+			print_debug("no handler found for destination with type ", destination.type)
+	#physics_socket.set_location_physics(id,body.global_transform.origin)
+	physics_native_socket.send_location(id,body.global_transform.origin.x,body.global_transform.origin.y,body.global_transform.origin.z)
+
+
 #default physics process for all server entities
 func default_physics_process(delta):
 	physics_socket.get_dir_physics(id)

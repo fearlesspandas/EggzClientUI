@@ -7,16 +7,6 @@ onready var core_resource = load("res://entity/server/tutorial/AxisCoreClient.ts
 onready var top_legs = body.find_node("TopLegs")
 onready var bottom_legs = body.find_node("BottomLegs")
 
-#onready var axis_core = core_resource.instance()
-#onready var axis_arm_1 = arm_resource.instance()
-#onready var axis_arm_2 = arm_resource.instance()
-#onready var axis_arm_3 = arm_resource.instance()
-#onready var axis_arm_4 = arm_resource.instance()
-#onready var axis_arm_5 = arm_resource.instance()
-#onready var axis_arm_6 = arm_resource.instance()
-#onready var axis_arm_7 = arm_resource.instance()
-#onready var axis_arm_8 = arm_resource.instance()
-
 onready var axis_core = body.find_node("AxisCore")
 onready var axis_arm_1 = body.find_node("AxisArm1")
 onready var axis_arm_2 = body.find_node("AxisArm2")
@@ -93,6 +83,7 @@ func _ready():
 	GlobalSignalsClient.connect("player_location",self,"default_update_player_location")
 	#will have to remove this when a generic spider entity is made
 	ProgressHandlerClient.connect("tutorial_stage_completed",self,"tutorial_stage_completed")
+	physics_native_socket = load("res://native_lib/ClientPhysicsSocket.gdns").new()
 
 func tutorial_stage_completed(stage:int):
 	set_visibility(true)
@@ -128,8 +119,12 @@ func setup():
 #	setup_path()
 
 func _physics_process(delta):
-	physics_socket.get_rot_physics(id)
-	self.default_physics_process(delta,2)
+	physics_native_socket.get_rotation(id)
+	var rot = physics_native_socket.cached_rotation()
+	if rot != null:
+		top_legs.global_rotation.y = rot[1]
+		bottom_legs.global_rotation.y = -rot[1]
+		self.default_physics_process(delta,2)
 
 func _handle_message(msg,delta_accum):
 	match msg:

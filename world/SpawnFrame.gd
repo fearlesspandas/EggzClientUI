@@ -8,15 +8,15 @@ onready var socket:ClientWebSocket
 var npc_ids = ["Doxier"] #["Doxier","Heisenfire","Convvay","Neumenimum"]
 func _ready():
 	socket = ServerNetwork.get(EntityTerrainMapper.client_id_server)
-	assert(socket != null)
-	GlobalSignalsServer.connect("axis_spider_created",self,"spider_created")
-	self.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,true)
-	self.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,true)
+	if socket != null:
+		GlobalSignalsServer.connect("axis_spider_created",self,"spider_created")
+		self.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,true)
+		self.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,true)
 
-	setup_timer.wait_time = 5
-	setup_timer.connect("timeout",self,"setup")
-	self.add_child(setup_timer)
-	setup_timer.start()
+		setup_timer.wait_time = 5
+		setup_timer.connect("timeout",self,"setup")
+		self.add_child(setup_timer)
+		setup_timer.start()
 
 
 

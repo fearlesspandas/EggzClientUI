@@ -7,7 +7,7 @@ class_name ClientPlayerEntity
 onready var message_controller:MessageController = MessageController.new()
 onready var username:Username = Username.new()
 onready var health:HealthDisplay = HealthDisplay.new()
-onready var physics_native_socket = load("res://native_lib/ClientPhysicsSocket.gdns").new()
+onready var physics_native_socket = null
 
 var isSubbed = false
 var is_npc = false
@@ -44,18 +44,19 @@ func get_direction():
 func get_location():
 	physics_socket.get_location_physics(id)
 
-func default_physics_process(delta,mod = 2):
+func default_physics_process2(delta,mod = 2):
 	physics_native_socket.get_location(id)
 	var l = physics_native_socket.cached_location()
-	loc.x = l[0]
-	loc.y = l[1]
-	loc.z = l[2]
-	movement.entity_move(delta,loc,body)
+	if l != null:
+		loc.x = l[0]
+		loc.y = l[1]
+		loc.z = l[2]
+		movement.entity_move(delta,loc,body)
 
 
 var proc = 0
 #basic location polling
-func default_physics_process2(delta,mod = 2):
+func default_physics_process(delta,mod = 2):
 	if mod == 2:
 		get_location()
 	if proc % mod == 0:
