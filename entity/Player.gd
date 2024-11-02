@@ -5,7 +5,7 @@ signal set_destination_mode(mode)
 signal set_gravity_active(is_active)
 signal set_destinations_active(is_active)
 
-onready var camera_root =find_node("CameraRoot")
+onready var camera_root = find_node("CameraRoot")
 onready var camera:Camera = camera_root.find_node("Camera")
 onready var curserRay:CursorRay = camera_root.find_node("CursorRay")
 onready var pointer:PlayerPathPointer = PlayerPathPointer.new()
@@ -118,7 +118,9 @@ func set_active(active:bool):
 	camera.set_active(active)
 	
 func _handle_message(msg,delta_accum):
+	#pass
 	self.default_handle_message(msg,delta_accum)
 
 func _physics_process(delta):
 	self.default_physics_process(delta)
+
