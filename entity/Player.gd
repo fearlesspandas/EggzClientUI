@@ -23,7 +23,6 @@ func _ready():
 	input_timer.wait_time = 0.1
 	input_timer.connect("timeout",self,"muh_process")
 	body.add_child(navigator_mesh)
-	#physics_native_socket = load("res://native_lib/ClientPhysicsSocket.gdns").new()
 	
 func set_destination_mode(mode):
 	var mode_text = str(mode).replace("{","").replace("}","").replace(":","")

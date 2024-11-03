@@ -16,11 +16,14 @@ var npc_ids = [EntityTerrainMapper.generate_name(EntityTerrainMapper.NPCType.PRO
 var npcs = {}
 
 
+
 var radius:float = 1000
 
 var socket:ClientWebSocket
 
 var has_loaded:bool = false
+
+var follow_body
 
 func _ready():
 	assert(EntityTerrainMapper.client_id_server != null)
@@ -55,10 +58,11 @@ func _ready():
 	self.add_child(setup_timer)
 	setup_timer.start()
 
-	#follow_timer.wait_time = 5
-	#follow_timer.connect("timeout",self,"follow_terrain")
-	#self.add_child(follow_timer)
-	#follow_timer.start()
+	follow_timer.wait_time = 8
+	follow_timer.connect("timeout",self,"follow_entity")
+	self.add_child(follow_timer)
+	follow_timer.start()
+	follow_timer.set_paused(true)
 
 	GlobalSignalsServer.connect("prowler_created",self,"init_prowler")
 		
@@ -94,13 +98,16 @@ func follow_terrain():
 		socket.add_destination(id,center.global_transform.origin,"WAYPOINT",1)
 		socket.set_gravitate(id,true)
 
+func follow_entity():
+	assert(follow_body != null)
+	for id in npc_ids:
+		socket.set_gravitate(id,false)
+		socket.follow_entity(id,follow_body)	
 
 func entered(body):
 	if body is ServerEntityKinematicBody:
-		for id in npc_ids:
-			socket.set_gravitate(id,false)
-			socket.follow_entity(id,body.parent.id)	
-	
+		follow_body = body.parent.id
+		follow_timer.set_paused(false)
 
 func exited(body):
 	if body is ServerEntityKinematicBody:

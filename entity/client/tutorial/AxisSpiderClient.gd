@@ -48,6 +48,7 @@ func set_visibility(is_visible:bool):
 
 func _ready():
 	self.radius = 500
+	self.mod = 2
 	assert(top_legs != null)	
 	assert(bottom_legs != null)	
 	assert(axis_core != null)
@@ -124,7 +125,7 @@ func _physics_process(delta):
 	if rot != null:
 		top_legs.global_rotation.y = rot[1]
 		bottom_legs.global_rotation.y = -rot[1]
-		self.default_physics_process(delta,2)
+		self.default_physics_process(delta,self.mod)
 
 func _handle_message(msg,delta_accum):
 	match msg:

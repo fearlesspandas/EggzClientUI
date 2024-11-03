@@ -95,14 +95,7 @@ func default_handle_message(msg,_delta_accum):
 					queued_input.y = y
 					queued_input.z = z
 		{'GravityActive':{'id': var _id, 'is_active':var active}}:
-			print_debug("gravity active " , active)
 			gravity_active = bool(active)
-			if destinations_active and not gravity_active:
-				#physics_socket.lock_input_physics(id)
-				print_debug("input locked " )
-			else:
-				#physics_socket.unlock_input_physics(id)
-				print_debug("input unlocked")
 		{'DestinationsActive':{'id': var _id, 'is_active':var active}}:
 			print_debug("destinations active", active)
 			destinations_active = bool(active)

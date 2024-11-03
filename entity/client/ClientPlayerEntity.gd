@@ -7,7 +7,7 @@ class_name ClientPlayerEntity
 onready var message_controller:MessageController = MessageController.new()
 onready var username:Username = Username.new()
 onready var health:HealthDisplay = HealthDisplay.new()
-onready var physics_native_socket = null
+onready var physics_native_socket = load("res://native_lib/ClientPhysicsSocket.gdns").new()
 
 var isSubbed = false
 var is_npc = false
@@ -16,6 +16,7 @@ var socket : ClientWebSocket
 var mod = 2
 var radius = 0
 
+var last_delta = 0
 func _ready():
 	username.init_id()
 	Subscriptions.subscribe(username.id,id)
@@ -44,19 +45,47 @@ func get_direction():
 func get_location():
 	physics_socket.get_location_physics(id)
 
-func default_physics_process2(delta,mod = 2):
-	physics_native_socket.get_location(id)
+#default physics process running native multithreaded sockets
+#Every client entity has a native socket process
+#Scales better but is technically less performant.
+#This is used mainly to guarentee that lots of entities
+#do not block other cpu actions.
+#When this does happen using the single threaded socket
+#handling network traffic becomes a frame bottleneck (probably due to message routing but not currently certain)
+func default_physics_process(delta,mod = 2):
+	if mod <= 2:
+		physics_native_socket.get_location(id)
+		physics_native_socket.get_direction(id)
+	else:
+		if proc%mod == 0:
+			proc = 0
+			physics_native_socket.get_location(id)
+		elif proc%mod == ceil(mod/2):
+			physics_native_socket.get_location(id)
+		else:
+			physics_native_socket.get_direction(id)
+		proc +=1
+
 	var l = physics_native_socket.cached_location()
-	if l != null:
-		loc.x = l[0]
-		loc.y = l[1]
-		loc.z = l[2]
-		movement.entity_move(delta,loc,body)
+	var d = physics_native_socket.cached_direction()
+	#if l != null:
+	last_delta = last_delta * int(loc.x != l[0] and loc.y!=l[1] and loc.z != l[2])
+	last_delta += delta
+	loc.x = l[0]
+	loc.y = l[1]
+	loc.z = l[2]
+	movement.entity_move(delta,loc,body)
+	loc.x = d[0]
+	loc.y = d[1]
+	loc.z = d[2]
+	movement.set_direction(-loc)
+	movement.move_by_direction(last_delta,body)
 
 
+#default physics process running non-native single threaded sockets
 var proc = 0
 #basic location polling
-func default_physics_process(delta,mod = 2):
+func default_physics_process2(delta,mod = 2):
 	if mod == 2:
 		get_location()
 	if proc % mod == 0:
@@ -82,7 +111,11 @@ func default_handle_message(msg,delta_accum):
 					movement.entity_move(delta_accum,loc,body)
 				"Dir":
 					assert(false)
-					movement.entity_set_direction(Vector3(x,y,z))
+					loc.x = x
+					loc.y = y
+					loc.z = z
+					movement.entity_set_direction(loc)
+					movement.move_by_direction(last_delta,body)
 		{'HealthSet':{'id':var id,'value':var value}}:
 			set_health(value)
 		_ :
@@ -95,12 +128,14 @@ func default_update_player_location(location):
 	var radius_2         = 4 * int((location - self.body.global_transform.origin).length() < 2 * radius)
 	var radius_4         = 8 * int((location - self.body.global_transform.origin).length() < 4 * radius)
 	var radius_8         = 16 * int((location - self.body.global_transform.origin).length() < 8 * radius)
-	var radius_max       = 32 * int((location - self.body.global_transform.origin).length() > 8 * radius) 
+	var radius_16        = 32 * int((location - self.body.global_transform.origin).length() < 16 * radius)
+	var radius_max       = 64 * int((location - self.body.global_transform.origin).length() > 16 * radius) 
 	var t_mod = (
 		2 * int(less_than_radius)
 		+ 4 * int(!less_than_radius and radius_2)
 		+ 8 * int(!radius_2 and radius_4)
 		+ 16 * int(!radius_4 and radius_8)
+		+ 32 * int(!radius_8 and radius_16)
 		+ 32 * int(!radius_8 and radius_max)
 	)
 	#not sure if less reads impacts average performance between radius updates positively
