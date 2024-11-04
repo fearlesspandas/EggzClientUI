@@ -1,0 +1,154 @@
+use gdnative::prelude::*;
+use gdnative::api::*;
+use serde_json::{Result as JResult, Value};
+use serde::{Deserialize,Serialize};
+use tokio::sync::mpsc;
+
+type Sender<T> = mpsc::UnboundedSender<T>;
+type Receiver<T> = mpsc::UnboundedReceiver<T>;
+
+#[derive(Deserialize,Serialize,Debug)]
+enum SocketMode{
+    Native,
+    GodotClient,
+}
+#[derive(Debug,Deserialize)]
+enum Command{
+    SetEntitySocketMode(String,SocketMode),
+}
+#[derive(Deserialize,Serialize)]
+enum CommandType{
+    set_entity_socket_mode,
+}
+trait FromArgs{
+    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized;
+}
+#[derive(Deserialize,Serialize)]
+pub struct InputCommand{
+    typ:CommandType,
+    args: Value
+}
+#[derive(Deserialize,Serialize)]
+pub struct SocketModeArgs{
+    id:String,
+    mode:SocketMode,
+}
+impl FromArgs for SocketModeArgs{
+    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
+        match args{
+            Value::Array(values) => {
+                if values.len() < 2{
+                    return Err("too few arguments for SocketModeArgs")
+                }
+                let mut fmt_args = serde_json::Map::new();
+                let id = &values[0];
+                let mode = &values[1];
+                fmt_args.insert("id".to_string(),id.clone());
+                fmt_args.insert("mode".to_string(),mode.clone());
+                serde_json::from_value::<SocketModeArgs>(Value::Object(fmt_args))
+                    .map_err(|e| "Error while parsing args for SocketModeArgs")
+            }
+            _ => {Err("unexpected value type for socket mode args; expected Value::Array")}
+        }
+    }
+}
+#[derive(NativeClass)]
+#[inherit(CanvasLayer)]
+pub struct ClientTerminal{
+    bg_rect: Ref<ColorRect>,
+    input:Ref<TextEdit>,
+    label:Ref<Label>,
+    cmd_tx:Sender<Command>,
+    cmd_rx:Receiver<Command>,
+}
+
+#[methods]
+impl ClientTerminal{
+    fn new(_base:&CanvasLayer) -> Self{
+        let (tx,rx) = mpsc::unbounded_channel::<Command>();
+        ClientTerminal{
+            bg_rect: ColorRect::new().into_shared(),
+            input : TextEdit::new().into_shared(),
+            label : Label::new().into_shared(),
+            cmd_tx: tx,
+            cmd_rx: rx,
+        }
+    }
+
+    #[method]
+    fn _ready(&self,#[base] owner:&CanvasLayer){
+        let rect  = unsafe{self.bg_rect.assume_safe()};
+        let input = unsafe{self.input.assume_safe()};
+        let label = unsafe{self.label.assume_safe()};
+        rect.set_anchors_preset(Control::PRESET_WIDE,true);
+        rect.set_frame_color(Color{r:0.0,g:0.0,b:0.0,a:0.5});
+        owner.add_child(rect,true);
+        owner.add_child(input,true);
+        owner.add_child(label,true);
+    }
+
+    fn get_command(mut raw: String) -> Result<Command,&'static str>{
+        let Some((typ,args)) = raw.split_once(" ") else {todo!()};
+        let arg_fmt = args.replace(' ',",").replace('"',"").replace("\n","");
+        let args_array = format!("[{arg_fmt:?}]").replace("\"","").replace('"',"");
+        godot_print!("{}", format!("args_fmt {arg_fmt:?}"));
+        let fmtd = format!("{{ \"typ\":{typ:?} , \"args\":{arg_array:?}}}");
+        godot_print!("{}", format!("formatted {fmtd:?}"));
+        serde_json::from_str::<InputCommand>(&fmtd)
+            .map_err(|e| "Error while parsing InputCommand")
+            .and_then(|cmd| match cmd.typ{
+                CommandType::set_entity_socket_mode => {
+                    SocketModeArgs::new(&cmd.args)
+                        .map(|smargs| Command::SetEntitySocketMode(smargs.id,smargs.mode))
+                }
+            })
+        
+    }
+
+    fn label_append_text(&self,text:GodotString){
+        let label = unsafe{self.label.assume_safe()};
+        label.set_text(label.text().clone() + text.clone());
+    }
+    #[method]
+    fn _input(&self,#[base] owner: &CanvasLayer,event: Ref<InputEvent>){
+        let input = unsafe{self.input.assume_safe()};
+        let label = unsafe{self.label.assume_safe()};
+        if let Ok(event) = event.try_cast::<InputEventKey>(){
+            let event = unsafe{ event.assume_safe()};
+            if event.is_action_released("terminal_toggle",false){
+                owner.set_visible(!owner.is_visible());
+                if owner.is_visible(){input.grab_focus();}
+            }
+            if event.is_action_released("terminal_accept",true){
+                let t_label = label.text();
+                let input_text = input.text();
+                let res = Self::get_command(input_text.to_string());
+                self.label_append_text(input_text);
+                self.label_append_text(format!("{res:?}").into());
+                res.map(|cmd| self.cmd_tx.send(cmd));
+                input.set_text("");
+            }
+        }
+    }
+
+    #[method]
+    fn _process(&mut self,#[base] owner:&CanvasLayer,delta:f64){
+        let rect = unsafe{ self.bg_rect.assume_safe()};
+        let input = unsafe{self.input.assume_safe()};
+        let label = unsafe{self.label.assume_safe()};
+        let r_size = rect.size();
+        let input_size = Vector2{x:r_size.x/2.0,y:r_size.y/2.0};
+        let input_loc = Vector2{x : 0.0 , y : r_size.y/2.0};
+        let label_size = Vector2{x:r_size.x/2.0,y:r_size.y/2.0};
+        let label_loc = Vector2{x : 0.0 , y : 0.0};
+        input.set_size(input_size,true);
+        input.set_position(input_loc,true);
+        label.set_size(label_size,true);
+        label.set_position(label_loc,true);
+
+        match self.cmd_rx.try_recv() {
+                Ok(Command::SetEntitySocketMode(id,mode)) => {self.label_append_text("set entity socket mode".into());}
+                _ => {}
+            }
+    }
+}
