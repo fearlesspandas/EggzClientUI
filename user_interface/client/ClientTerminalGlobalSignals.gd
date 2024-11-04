@@ -2,7 +2,9 @@ extends Node
 
 enum SocketMode{
 	Native,
+	NativeProcess,
 	GodotClient,
+	
 }
 signal set_entity_socket_mode(id,mode)
 func register_terminal(terminal):

@@ -11,12 +11,14 @@ type Receiver<T> = mpsc::UnboundedReceiver<T>;
 #[derive(Deserialize,Serialize,Debug)]
 enum SocketMode{
     Native,
+    NativeProcess,
     GodotClient,
 }
 impl fmt::Display for SocketMode{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result{
         match self{
             SocketMode::Native => { write!(f,"Native") }
+            SocketMode::NativeProcess => { write!(f,"NativeProcess") }
             SocketMode::GodotClient => { write!(f,"GodotClient") }
         }
     }

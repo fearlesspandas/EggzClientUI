@@ -27,13 +27,15 @@ func _ready():
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
 	self.add_child(physics_native_socket)
-
 	ClientTerminalGlobalSignals.connect("set_entity_socket_mode",self,"set_socket_mode")
-	#physics_native_socket.connect("physics",self,"update_cached_physics")
 	
 func set_socket_mode(id,mode):
 	if id == self.id:
 		self.socket_mode = mode
+		if self.socket_mode == ClientTerminalGlobalSignals.SocketMode.NativeProcess:
+			physics_native_socket.connect("physics",self,"update_cached_physics")
+		else:
+			physics_native_socket.disconnect("physics",self,"update_cached_physics")
 			
 func getSocket() -> ClientWebSocket:
 	var res = ServerNetwork.get(client_id)
@@ -61,6 +63,8 @@ func default_physics_process(delta,mod = 2):
 	match socket_mode:
 		ClientTerminalGlobalSignals.SocketMode.Native:
 			default_physics_process_native(delta,mod)
+		ClientTerminalGlobalSignals.SocketMode.NativeProcess:
+			default_physics_process_native_syncd(delta,mod)
 		ClientTerminalGlobalSignals.SocketMode.GodotClient:
 			default_physics_process2(delta,mod)
 ##################################	
@@ -118,11 +122,7 @@ func default_physics_process2(delta,mod = 2):
 ######################################
 #DEFAULT_PHYSICS_NATIVE_SYNCHRONIZED##
 var cached_loc:Vector3
-#default physics process that uses signals
-#WARNING:performance is horrible as the handling
-# of signals seems to delay way behind their production
-#Mainly used as a reference for benchmarking of
-# different approaches to networking
+#default physics native process that uses signals
 func update_cached_physics(typ,vec):
 	match typ:
 		"location":
@@ -132,7 +132,7 @@ func update_cached_physics(typ,vec):
 			cached_loc.z = vec.z
 			movement.entity_move(last_delta,cached_loc,body)
 
-func default_physics_process3(delta,mod = 2):
+func default_physics_process_native_syncd(delta,mod = 2):
 	if mod <= 2:
 		physics_native_socket.get_location(id)
 	else:
