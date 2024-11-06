@@ -26,10 +26,12 @@ impl fmt::Display for SocketMode{
 #[derive(Debug,Deserialize)]
 enum Command{
     SetEntitySocketMode(String,SocketMode),
+    SetAllEntitySocketMode(SocketMode),
 }
 #[derive(Deserialize,Serialize,Debug)]
 enum CommandType{
     set_entity_socket_mode,
+    set_all_entity_socket_mode,
 }
 impl fmt::Display for CommandType{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result{
@@ -37,11 +39,15 @@ impl fmt::Display for CommandType{
             CommandType::set_entity_socket_mode => {
                 write!(f,"set_entity_socket_mode")
             }
+            CommandType::set_all_entity_socket_mode => {
+                write!(f,"set_all_entity_socket_mode")
+            }
         }
     }
 }
 trait FromArgs{
     fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized;
+    fn autocomplete_args(args:Vec<String>) -> Vec<String>;
 }
 #[derive(Deserialize,Serialize)]
 pub struct InputCommand{
@@ -54,6 +60,7 @@ pub struct SocketModeArgs{
     mode:SocketMode,
 }
 impl FromArgs for SocketModeArgs{
+    fn autocomplete_args(args:Vec<String>) -> Vec<String> {todo!()}
     fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
         match args{
             Value::Array(values) => {
@@ -72,12 +79,35 @@ impl FromArgs for SocketModeArgs{
         }
     }
 }
+#[derive(Deserialize,Serialize)]
+pub struct SocketModeAllArgs{
+    mode:SocketMode,
+}
+impl FromArgs for SocketModeAllArgs{
+    fn autocomplete_args(args:Vec<String>) -> Vec<String>{todo!()}
+    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
+        match args{
+            Value::Array(values) => {
+                if values.len() < 1{
+                    return Err("too few arguments for SocketModeAllArgs")
+                }
+                let mut fmt_args = serde_json::Map::new();
+                let mode = &values[0];
+                fmt_args.insert("mode".to_string(),mode.clone());
+                serde_json::from_value::<SocketModeAllArgs>(Value::Object(fmt_args))
+                    .map_err(|e| "Error while parsing args for SocketModeAllArgs")
+            }
+            _ => {Err("unexpected value type for socket mode args; expected Value::Array")}
+        }
+    }
+}
 #[derive(NativeClass)]
 #[inherit(CanvasLayer)]
 #[register_with(Self::register_signals)]
 pub struct ClientTerminal{
     bg_rect: Ref<ColorRect>,
     input:Ref<TextEdit>,
+    suggestions: Ref<Label>,
     output:Ref<RichTextLabel>,
     cmd_tx:Sender<Command>,
     cmd_rx:Receiver<Command>,
@@ -93,6 +123,10 @@ impl ClientTerminal{
             .with_param("id"  ,VariantType::GodotString)
             .with_param("mode",VariantType::GodotString)
             .done();
+        builder
+            .signal(&CommandType::set_all_entity_socket_mode.to_string())
+            .with_param("mode",VariantType::GodotString)
+            .done();
     }
 
     fn new(_base:&CanvasLayer) -> Self{
@@ -100,6 +134,7 @@ impl ClientTerminal{
         ClientTerminal{
             bg_rect: ColorRect::new().into_shared(),
             input : TextEdit::new().into_shared(),
+            suggestions: Label::new().into_shared(),
             output : RichTextLabel::new().into_shared(),
             cmd_tx: tx,
             cmd_rx: rx,
@@ -113,14 +148,46 @@ impl ClientTerminal{
         let rect  = unsafe{self.bg_rect.assume_safe()};
         let input = unsafe{self.input.assume_safe()};
         let output = unsafe{self.output.assume_safe()};
+        let suggestions = unsafe{self.suggestions.assume_safe()};
         rect.set_anchors_preset(Control::PRESET_WIDE,true);
         rect.set_frame_color(Color{r:0.0,g:0.0,b:0.0,a:0.5});
         output.set_scroll_active(true);
         owner.add_child(rect,true);
         owner.add_child(input,true);
         owner.add_child(output,true);
+        owner.add_child(suggestions,true);
     }
     
+    fn get_suggestions_from_input(text_input:String) -> Vec<String>{
+        let split_input = text_input.split_ascii_whitespace().collect::<Vec<&str>>();
+        let len = split_input.len();
+        match split_input.len(){
+            0 => {Vec::new()},
+            1 => {
+                Self::get_all_command_types()
+                    .into_iter()
+                    .filter(|x| x.to_string().contains(text_input.as_str()))
+                    .map(|x| x.to_string())
+                    .collect()
+            }
+            2 => {
+                match split_input[0] {
+                    "set_entity_socket_mode" => {
+                        let mut vec = Vec::new();
+                        vec.push("id".to_string());
+                        vec
+                    }
+                    "set_all_entity_socket_mode" => {
+                        let mut vec = Vec::new();
+                        vec.push("mode".to_string());
+                        vec
+                    }
+                    _ => {Vec::new()}
+                }
+            }
+            _ => {godot_print!("{}",format!("Unhandled input length {len:?}"));Vec::new()} 
+        }
+    }
     fn input_update_from_idx(&self){
         let input = unsafe{self.input.assume_safe()};
         if self.hist_idx < 0{
@@ -195,15 +262,31 @@ impl ClientTerminal{
         let rect = unsafe{ self.bg_rect.assume_safe()};
         let input = unsafe{self.input.assume_safe()};
         let output = unsafe{self.output.assume_safe()};
+        let suggestions = unsafe{self.suggestions.assume_safe()};
         let r_size = rect.size();
         let input_size = Vector2{x:r_size.x/2.0,y:r_size.y/2.0};
         let input_loc = Vector2{x : 0.0 , y : r_size.y/2.0};
-        let label_size = Vector2{x:r_size.x/2.0,y:r_size.y/2.0};
-        let label_loc = Vector2{x : 0.0 , y : 0.0};
+        let output_size = Vector2{x:r_size.x/2.0,y:r_size.y/4.0};
+        let output_loc = Vector2{x : 0.0 , y : 0.0};
         input.set_size(input_size,true);
         input.set_position(input_loc,true);
-        output.set_size(label_size,true);
-        output.set_position(label_loc,true);
+        output.set_size(output_size,true);
+        output.set_position(output_loc,true);
+        //set suggestions
+        //
+        let suggestions_in = Self::get_suggestions_from_input(input.text().to_string());
+        let mut suggestion_text = "".to_string();
+        for s in &suggestions_in{
+            suggestion_text.push_str(s.as_str());
+            suggestion_text.push_str("\n");
+        }
+        let suggestion_size = Vector2{x:input_size.x, y : suggestions_in.len() as f32 * 20.0};
+        let suggestion_loc = Vector2{x:0.0,y:input_loc.y - suggestion_size.y};
+        suggestions.set_size(suggestion_size,false);
+        suggestions.set_position(suggestion_loc,false);
+        suggestions.set_text(suggestion_text);
+        
+
 
         //Command Handler loop
         match self.cmd_rx.try_recv() {
@@ -214,14 +297,35 @@ impl ClientTerminal{
                     );
                     self.output_append("signaled set entity socket mode".into());
                 }
+                Ok(Command::SetAllEntitySocketMode(mode)) => {
+                    owner.emit_signal(
+                        CommandType::set_all_entity_socket_mode.to_string(),
+                        &[Variant::new(mode.to_string())]
+                    );
+                    self.output_append("signaled set entity socket mode".into());
+                }
                 _ => {}
             }
     }
 
+    fn get_all_command_types() -> Vec<CommandType>{
+        let mut v = Vec::new();
+        v.push( CommandType::set_entity_socket_mode);
+        v.push( CommandType::set_all_entity_socket_mode);
+        v
+    }
+    fn get_all_socket_modes() -> Vec<SocketMode>{
+        let mut v = Vec::new();
+        v.push(SocketMode::Native);
+        v.push(SocketMode::GodotClient);
+        v.push(SocketMode::NativeProcess);
+        v
+    }
     #[method]
     fn get_all_signals() -> VariantArray<Unique> {
         let arr = VariantArray::new();
         arr.push(Variant::new(CommandType::set_entity_socket_mode.to_string()));
+        arr.push(Variant::new(CommandType::set_all_entity_socket_mode.to_string()));
         arr
     }
 
@@ -251,6 +355,10 @@ impl ClientTerminal{
                 CommandType::set_entity_socket_mode => {
                     SocketModeArgs::new(&cmd.args)
                         .map(|smargs| Command::SetEntitySocketMode(smargs.id,smargs.mode))
+                }
+                CommandType::set_all_entity_socket_mode => {
+                    SocketModeAllArgs::new(&cmd.args)
+                        .map(|smargs| Command::SetAllEntitySocketMode(smargs.mode))
                 }
             })
         
