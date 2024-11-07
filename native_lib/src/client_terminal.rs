@@ -1,158 +1,16 @@
+//mod terminal_commands; mod socket_mode; mod traits;
 use gdnative::prelude::*;
 use gdnative::api::*;
 use serde_json::{Result as JResult, Value};
 use serde::{Deserialize,Serialize};
 use tokio::sync::mpsc;
 use std::{fmt,str::FromStr};
+use crate::terminal_commands::{Command,CommandType,InputCommand,SocketModeArgs,SocketModeAllArgs};
+use crate::socket_mode::SocketMode;
+use crate::traits::{FromArgs,GetAll,Autocomplete,CreateSignal};
 type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
 
-#[derive(Deserialize,Serialize,Debug)]
-enum SocketMode{
-    Native,
-    NativeProcess,
-    GodotClient,
-}
-fn get_all_socket_modes() -> Vec<SocketMode>{
-    let mut v = Vec::new();
-    v.push(SocketMode::Native);
-    v.push(SocketMode::NativeProcess);
-    v.push(SocketMode::GodotClient);
-    v
-}
-impl fmt::Display for SocketMode{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result{
-        match self{
-            SocketMode::Native => { write!(f,"Native") }
-            SocketMode::NativeProcess => { write!(f,"NativeProcess") }
-            SocketMode::GodotClient => { write!(f,"GodotClient") }
-        }
-    }
-}
-#[derive(Debug,Deserialize)]
-enum Command{
-    SetEntitySocketMode(String,SocketMode),
-    SetAllEntitySocketMode(SocketMode),
-}
-trait Autocomplete{
-    fn auto_complete(&self) -> fn(Vec<&str>) -> Vec<String>;
-}
-#[derive(Deserialize,Serialize,Debug)]
-enum CommandType{
-    set_entity_socket_mode,
-    set_all_entity_socket_mode,
-}
-fn get_all_command_types() -> Vec<CommandType>{
-    let mut v = Vec::new();
-    v.push( CommandType::set_entity_socket_mode);
-    v.push( CommandType::set_all_entity_socket_mode);
-    v
-}
-impl Autocomplete for CommandType{
-    fn auto_complete(&self) -> fn(Vec<&str>) -> Vec<String> {
-        match self{
-            CommandType::set_entity_socket_mode => SocketModeArgs::autocomplete_args,
-            CommandType::set_all_entity_socket_mode => SocketModeAllArgs::autocomplete_args,
-            _ => todo!()
-        }
-    }
-}
-impl fmt::Display for CommandType{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result{
-        match self{
-            CommandType::set_entity_socket_mode => {
-                write!(f,"set_entity_socket_mode")
-            }
-            CommandType::set_all_entity_socket_mode => {
-                write!(f,"set_all_entity_socket_mode")
-            }
-        }
-    }
-}
-impl FromStr for CommandType {
-    type Err = String;
-    fn from_str(input:&str) -> Result<CommandType,Self::Err>{
-        match input{
-            "set_entity_socket_mode" => Ok(CommandType::set_entity_socket_mode),
-            "set_all_entity_socket_mode" => Ok(CommandType::set_all_entity_socket_mode),
-            _ => Err(format!("No result found for command type {input:?}"))
-        } 
-    }
-}
-trait FromArgs{
-    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized;
-    fn autocomplete_args(args:Vec<&str>) -> Vec<String>;
-}
-#[derive(Deserialize,Serialize)]
-pub struct InputCommand{
-    typ:CommandType,
-    args: Value
-}
-#[derive(Deserialize,Serialize)]
-pub struct SocketModeArgs{
-    id:String,
-    mode:SocketMode,
-}
-impl FromArgs for SocketModeArgs{
-    fn autocomplete_args(args:Vec<&str>) -> Vec<String> {
-        match args.len(){
-            0 | 1 => {
-                let mut v = Vec::new();
-                v.push("id:String".to_string());
-                v
-            }
-            2 => {
-                let modes = get_all_socket_modes();
-                let pattern = &args[1];
-                modes
-                    .into_iter()
-                    .map(|mode| mode.to_string())
-                    .filter(|mode| mode.contains(pattern))
-                    .collect()
-            }
-            _ => {Vec::new()}
-        }
-    }
-    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
-        match args{
-            Value::Array(values) => {
-                if values.len() < 2{
-                    return Err("too few arguments for SocketModeArgs")
-                }
-                let mut fmt_args = serde_json::Map::new();
-                let id = &values[0];
-                let mode = &values[1];
-                fmt_args.insert("id".to_string(),id.clone());
-                fmt_args.insert("mode".to_string(),mode.clone());
-                serde_json::from_value::<SocketModeArgs>(Value::Object(fmt_args))
-                    .map_err(|e| "Error while parsing args for SocketModeArgs")
-            }
-            _ => {Err("unexpected value type for socket mode args; expected Value::Array")}
-        }
-    }
-}
-#[derive(Deserialize,Serialize)]
-pub struct SocketModeAllArgs{
-    mode:SocketMode,
-}
-impl FromArgs for SocketModeAllArgs{
-    fn autocomplete_args(args:Vec<&str>) -> Vec<String>{Vec::new()}
-    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
-        match args{
-            Value::Array(values) => {
-                if values.len() < 1{
-                    return Err("too few arguments for SocketModeAllArgs")
-                }
-                let mut fmt_args = serde_json::Map::new();
-                let mode = &values[0];
-                fmt_args.insert("mode".to_string(),mode.clone());
-                serde_json::from_value::<SocketModeAllArgs>(Value::Object(fmt_args))
-                    .map_err(|e| "Error while parsing args for SocketModeAllArgs")
-            }
-            _ => {Err("unexpected value type for socket mode args; expected Value::Array")}
-        }
-    }
-}
 #[derive(NativeClass)]
 #[inherit(CanvasLayer)]
 #[register_with(Self::register_signals)]
@@ -170,15 +28,7 @@ pub struct ClientTerminal{
 #[methods]
 impl ClientTerminal{
     fn register_signals(builder:&ClassBuilder<Self>){
-        builder
-            .signal(&CommandType::set_entity_socket_mode.to_string())
-            .with_param("id"  ,VariantType::GodotString)
-            .with_param("mode",VariantType::GodotString)
-            .done();
-        builder
-            .signal(&CommandType::set_all_entity_socket_mode.to_string())
-            .with_param("mode",VariantType::GodotString)
-            .done();
+        CommandType::register(&builder);
     }
 
     fn new(_base:&CanvasLayer) -> Self{
@@ -213,21 +63,10 @@ impl ClientTerminal{
     fn get_suggestions_from_input(text_input:String) -> Vec<String>{
         let split_input = text_input.split_ascii_whitespace().collect::<Vec<&str>>();
         let len = split_input.len();
-        let mut v = Vec::new();
-        if len <= 0{
-            return v
-        }
-        if len >= 1 {
-            get_all_command_types()
-                .into_iter()
-                .map(|x| x.to_string())
-                .filter(|x| x.contains(text_input.as_str()))
-                .map(|x| v.push(x));
-        }
         match split_input.len(){
             0 => {Vec::new()},
             1 => {
-                get_all_command_types()
+                CommandType::get_all()
                     .into_iter()
                     .map(|x| x.to_string())
                     .filter(|x| x.contains(text_input.as_str()))
@@ -267,6 +106,9 @@ impl ClientTerminal{
         if let Ok(event) = event.try_cast::<InputEventKey>(){
             let event = unsafe{ event.assume_safe()};
             let tree = unsafe{owner.get_tree().unwrap().assume_safe()};
+            if event.is_action_released("terminal_autocomplete_accept",false){
+                todo!();
+            }
             if event.is_action_released("terminal_toggle",false){
                 owner.set_visible(!owner.is_visible());
                 if owner.is_visible(){input.grab_focus();}

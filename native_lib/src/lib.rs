@@ -1,5 +1,8 @@
 use gdnative::prelude::*;
 
+pub mod terminal_commands;
+pub mod socket_mode;
+pub mod traits;
 mod client_terminal;
 
 fn init(handle:InitHandle){
