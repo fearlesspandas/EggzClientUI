@@ -1,12 +1,15 @@
-use tokio::sync::mpsc;
-use std::{fmt,str::FromStr};
 use crate::traits::{CreateSignal,GetAll,Autocomplete,FromArgs};
 use crate::socket_mode::SocketMode;
+use crate::client_terminal::ClientTerminal;
+use tokio::sync::mpsc;
+use std::{fmt,str::FromStr};
 use serde_json::{Result as JResult, Value};
 use serde::{Deserialize,Serialize};
 use gdnative::prelude::*;
 use gdnative::api::*;
-use crate::client_terminal::ClientTerminal;
+
+///////////////////////////////
+///COMMANDS////////////////////
 #[derive(Debug,Deserialize)]
 pub enum Command{
     SetEntitySocketMode(String,SocketMode),
@@ -70,7 +73,8 @@ impl FromStr for CommandType {
         } 
     }
 }
-
+///////////////////////////////
+///INPUT COMMANDS//////////////
 #[derive(Deserialize,Serialize)]
 pub struct InputCommand{
     pub typ:CommandType,
@@ -81,7 +85,7 @@ pub struct SocketModeArgs{
     pub id:String,
     pub mode:SocketMode,
 }
-impl FromArgs for SocketModeArgs{
+impl FromArgs<Value> for SocketModeArgs{
     fn autocomplete_args(args:Vec<&str>) -> Vec<String> {
         match args.len(){
             0 | 1 => {
@@ -123,8 +127,27 @@ impl FromArgs for SocketModeArgs{
 pub struct SocketModeAllArgs{
     pub mode:SocketMode,
 }
-impl FromArgs for SocketModeAllArgs{
-    fn autocomplete_args(args:Vec<&str>) -> Vec<String>{Vec::new()}
+impl FromArgs<Value> for SocketModeAllArgs{
+    fn autocomplete_args(args:Vec<&str>) -> Vec<String>{
+        match args.len(){
+            0 => {
+                let pattern = &args[1];
+                SocketMode::get_all()
+                    .into_iter()
+                    .map(|mode| mode.to_string())
+                    .collect()
+            }
+            1 => {
+                let pattern = &args[1];
+                SocketMode::get_all()
+                    .into_iter()
+                    .map(|mode| mode.to_string())
+                    .filter(|mode| mode.contains(pattern))
+                    .collect()
+            }
+            _ => {Vec::new()}
+        }
+    }
     fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
         match args{
             Value::Array(values) => {
@@ -141,3 +164,4 @@ impl FromArgs for SocketModeAllArgs{
         }
     }
 }
+////////////////////////////////

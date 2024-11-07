@@ -14,8 +14,8 @@ pub trait Autocomplete{
     fn auto_complete(&self) -> fn(Vec<&str>) -> Vec<String>;
 }
 //handles creation of typed args as well as expects an autocomplete function implementation
-pub trait FromArgs{
-    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized;
+pub trait FromArgs<T>{
+    fn new(args:&T) -> Result<Self,&'static str> where Self:Sized;
     fn autocomplete_args(args:Vec<&str>) -> Vec<String>;
 }
 pub trait CreateSignal<T>{

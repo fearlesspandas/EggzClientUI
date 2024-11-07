@@ -1,4 +1,3 @@
-//mod terminal_commands; mod socket_mode; mod traits;
 use gdnative::prelude::*;
 use gdnative::api::*;
 use serde_json::{Result as JResult, Value};
@@ -6,6 +5,7 @@ use serde::{Deserialize,Serialize};
 use tokio::sync::mpsc;
 use std::{fmt,str::FromStr};
 use crate::terminal_commands::{Command,CommandType,InputCommand,SocketModeArgs,SocketModeAllArgs};
+use crate::terminal_actions::{Actions};
 use crate::socket_mode::SocketMode;
 use crate::traits::{FromArgs,GetAll,Autocomplete,CreateSignal};
 type Sender<T> = mpsc::UnboundedSender<T>;
@@ -17,29 +17,38 @@ type Receiver<T> = mpsc::UnboundedReceiver<T>;
 pub struct ClientTerminal{
     bg_rect: Ref<ColorRect>,
     input:Ref<TextEdit>,
+    auto_complete:Vec<String>,
     suggestions: Ref<Label>,
     output:Ref<RichTextLabel>,
     cmd_tx:Sender<Command>,
     cmd_rx:Receiver<Command>,
+    action_tx:Sender<Actions>,
+    action_rx:Receiver<Actions>,
     history:Vec<String>,
     hist_idx: i64,
 }
 
 #[methods]
 impl ClientTerminal{
+
     fn register_signals(builder:&ClassBuilder<Self>){
         CommandType::register(&builder);
+        Actions::register(&builder);
     }
 
     fn new(_base:&CanvasLayer) -> Self{
         let (tx,rx) = mpsc::unbounded_channel::<Command>();
+        let (atx,arx) = mpsc::unbounded_channel::<Actions>();
         ClientTerminal{
             bg_rect: ColorRect::new().into_shared(),
             input : TextEdit::new().into_shared(),
+            auto_complete: Vec::new(),
             suggestions: Label::new().into_shared(),
             output : RichTextLabel::new().into_shared(),
             cmd_tx: tx,
             cmd_rx: rx,
+            action_tx:atx,
+            action_rx:arx,
             history: Vec::new(),
             hist_idx: -1,
         }
@@ -60,6 +69,145 @@ impl ClientTerminal{
         owner.add_child(suggestions,true);
     }
     
+    #[method]
+    fn _input(&mut self,#[base] owner: &CanvasLayer,event: Ref<InputEvent>){
+        let input = unsafe{self.input.assume_safe()};
+        let output = unsafe{self.output.assume_safe()};
+        if let Ok(event) = event.try_cast::<InputEventKey>(){
+            let event = unsafe{ event.assume_safe()};
+            let tree = unsafe{owner.get_tree().unwrap().assume_safe()};
+            if event.is_action_pressed("terminal_autocomplete_accept",true,true){
+                self.action_tx.send(Actions::autocomplete_accept);
+                tree.set_input_as_handled();
+            }
+            if event.is_action_released("terminal_toggle",false){
+                owner.set_visible(!owner.is_visible());
+                if owner.is_visible(){input.grab_focus();}
+                tree.set_input_as_handled();
+            }
+            if event.is_action_pressed("terminal_hist_inc",false,true){
+                self.hist_idx = std::cmp::min(self.hist_idx + 1, (self.history.len() - 1) as i64);
+                self.input_update_from_idx();
+                tree.set_input_as_handled();
+            }
+            if event.is_action_pressed("terminal_hist_dec",false,true){
+                self.hist_idx = std::cmp::max(self.hist_idx -1,-1);
+                self.input_update_from_idx();
+                tree.set_input_as_handled();
+            }
+            if event.is_action_released("terminal_accept",true){
+                let input_text = input.text().to_string().replace("\n","");
+                match self.history.last() {
+                    Some(cmd) => {
+                            if !(cmd.to_string() == input_text){
+                                self.history.push(input_text.clone());
+                            }
+                    }
+                    None => {
+                        self.history.push(input_text.clone());
+                    }
+                }
+                let res = Self::get_command(&input_text.to_string());
+                self.output_append(input_text.to_string().into());
+                self.output_append(format!("{res:?}\n").into());
+                res.map(|cmd| self.cmd_tx.send(cmd));
+                self.hist_idx = -1;
+                self.input_update_from_idx();
+                let ov_scroh = unsafe{output.get_v_scroll().unwrap().assume_safe()};
+                ov_scroh.set_value(ov_scroh.max());
+                tree.set_input_as_handled();
+            }
+        }
+    }
+    
+    #[method]
+    fn handle_received_commands(&mut self, #[base] owner:&CanvasLayer){
+        match self.cmd_rx.try_recv() {
+                Ok(Command::SetEntitySocketMode(id,mode)) => {
+                    owner.emit_signal(
+                        CommandType::set_entity_socket_mode.to_string(),
+                        &[Variant::new(id), Variant::new(mode.to_string())]
+                    );
+                    self.output_append("signaled set entity socket mode".into());
+                }
+                Ok(Command::SetAllEntitySocketMode(mode)) => {
+                    owner.emit_signal(
+                        CommandType::set_all_entity_socket_mode.to_string(),
+                        &[Variant::new(mode.to_string())]
+                    );
+                    self.output_append("signaled set entity socket mode".into());
+                }
+                _ => {}
+            }
+
+    }
+    
+    #[method]
+    fn _process(&mut self,#[base] owner:&CanvasLayer,delta:f64){
+        let rect = unsafe{ self.bg_rect.assume_safe()};
+        let input = unsafe{self.input.assume_safe()};
+        let output = unsafe{self.output.assume_safe()};
+        let suggestions = unsafe{self.suggestions.assume_safe()};
+        /////derive sizes/////////////
+        let r_size = rect.size();
+        let input_size = Vector2{x:r_size.x/2.0,y:r_size.y/2.0};
+        let input_loc = Vector2{x : 0.0 , y : r_size.y/2.0};
+        let output_size = Vector2{x:r_size.x/2.0,y:r_size.y/4.0};
+        let output_loc = Vector2{x : 0.0 , y : 0.0};
+        ////set sizes and positions///
+        input.set_size(input_size,true);
+        input.set_position(input_loc,true);
+        output.set_size(output_size,true);
+        output.set_position(output_loc,true);
+        let suggestion_size = Vector2{x:input_size.x, y : self.auto_complete.len() as f32 * 20.0};
+        let suggestion_loc = Vector2{x:0.0,y:input_loc.y - suggestion_size.y};
+        suggestions.set_size(suggestion_size,false);
+        suggestions.set_position(suggestion_loc,false);
+        ////Main Render Loop////////// 
+        self.handle_received_commands(owner);
+        self.handle_received_actions(); 
+        self.update_auto_complete();
+    }
+
+    #[method]
+    fn get_all_signals() -> VariantArray<Unique> {
+        let arr = VariantArray::new();
+        arr.push(Variant::new(CommandType::set_entity_socket_mode.to_string()));
+        arr.push(Variant::new(CommandType::set_all_entity_socket_mode.to_string()));
+        arr
+    }
+
+    fn handle_received_actions(&mut self){
+        let input = unsafe{self.input.assume_safe()};
+        match self.action_rx.try_recv(){
+            Ok(Actions::autocomplete_accept) => {
+                let current_input = input.text().to_string();
+                let split_args = current_input.split_ascii_whitespace().collect::<Vec<&str>>();
+                let last = split_args.last().unwrap();
+                input.set_text(
+                    current_input.clone() + 
+                    &(self.auto_complete[0].replace(&last.to_string(),""))
+                );
+                input.cursor_set_line(0,false,false,0);
+                input.cursor_set_column(input.text().len() as i64,false);
+            }
+            _ => {}
+            //Err(e) => todo!(),
+        }
+    }
+
+    fn update_auto_complete(&mut self){
+        let input = unsafe{self.input.assume_safe()};
+        let suggestions = unsafe{self.suggestions.assume_safe()};
+        let mut suggestion_text = "".to_string();
+        for s in &self.auto_complete{
+            suggestion_text.push_str(s.as_str());
+            suggestion_text.push_str("\n");
+        }
+        suggestions.set_text(&suggestion_text);
+        self.auto_complete = Self::get_suggestions_from_input(input.text().to_string());
+    }
+
     fn get_suggestions_from_input(text_input:String) -> Vec<String>{
         let split_input = text_input.split_ascii_whitespace().collect::<Vec<&str>>();
         let len = split_input.len();
@@ -98,117 +246,6 @@ impl ClientTerminal{
         input.cursor_set_line(0,false,false,0);
         input.cursor_set_column(input.text().len() as i64,false);
 
-    }
-    #[method]
-    fn _input(&mut self,#[base] owner: &CanvasLayer,event: Ref<InputEvent>){
-        let input = unsafe{self.input.assume_safe()};
-        let output = unsafe{self.output.assume_safe()};
-        if let Ok(event) = event.try_cast::<InputEventKey>(){
-            let event = unsafe{ event.assume_safe()};
-            let tree = unsafe{owner.get_tree().unwrap().assume_safe()};
-            if event.is_action_released("terminal_autocomplete_accept",false){
-                todo!();
-            }
-            if event.is_action_released("terminal_toggle",false){
-                owner.set_visible(!owner.is_visible());
-                if owner.is_visible(){input.grab_focus();}
-                tree.set_input_as_handled();
-            }
-            if event.is_action_pressed("terminal_hist_inc",false,true){
-                self.hist_idx = std::cmp::min(self.hist_idx + 1, (self.history.len() - 1) as i64);
-                self.input_update_from_idx();
-                tree.set_input_as_handled();
-            }
-            if event.is_action_pressed("terminal_hist_dec",false,true){
-                self.hist_idx = std::cmp::max(self.hist_idx -1,-1);
-                self.input_update_from_idx();
-                tree.set_input_as_handled();
-            }
-            if event.is_action_released("terminal_accept",true){
-                let input_text = input.text().to_string().replace("\n","");
-                match self.history.last() {
-                    Some(cmd) => {
-                            if !(cmd.to_string() == input_text){
-                                self.history.push(input_text.clone());
-                            }
-                    }
-                    None => {
-                        self.history.push(input_text.clone());
-                    }
-                }
-                    
-                //self.history.push(input_text.clone());
-                let res = Self::get_command(&input_text.to_string());
-                self.output_append(input_text.to_string().into());
-                self.output_append(format!("{res:?}\n").into());
-                res.map(|cmd| self.cmd_tx.send(cmd));
-                self.hist_idx = -1;
-                self.input_update_from_idx();
-                let ov_scroh = unsafe{output.get_v_scroll().unwrap().assume_safe()};
-                //ov_scroh.set_as_ratio(1.0);
-                ov_scroh.set_value(ov_scroh.max());
-                tree.set_input_as_handled();
-            }
-        }
-    }
-
-    #[method]
-    fn _process(&mut self,#[base] owner:&CanvasLayer,delta:f64){
-        let rect = unsafe{ self.bg_rect.assume_safe()};
-        let input = unsafe{self.input.assume_safe()};
-        let output = unsafe{self.output.assume_safe()};
-        let suggestions = unsafe{self.suggestions.assume_safe()};
-        let r_size = rect.size();
-        let input_size = Vector2{x:r_size.x/2.0,y:r_size.y/2.0};
-        let input_loc = Vector2{x : 0.0 , y : r_size.y/2.0};
-        let output_size = Vector2{x:r_size.x/2.0,y:r_size.y/4.0};
-        let output_loc = Vector2{x : 0.0 , y : 0.0};
-        input.set_size(input_size,true);
-        input.set_position(input_loc,true);
-        output.set_size(output_size,true);
-        output.set_position(output_loc,true);
-        //set suggestions
-        //
-        let suggestions_in = Self::get_suggestions_from_input(input.text().to_string());
-        let mut suggestion_text = "".to_string();
-        for s in &suggestions_in{
-            suggestion_text.push_str(s.as_str());
-            suggestion_text.push_str("\n");
-        }
-        let suggestion_size = Vector2{x:input_size.x, y : suggestions_in.len() as f32 * 20.0};
-        let suggestion_loc = Vector2{x:0.0,y:input_loc.y - suggestion_size.y};
-        suggestions.set_size(suggestion_size,false);
-        suggestions.set_position(suggestion_loc,false);
-        suggestions.set_text(suggestion_text);
-        
-
-
-        //Command Handler loop
-        match self.cmd_rx.try_recv() {
-                Ok(Command::SetEntitySocketMode(id,mode)) => {
-                    owner.emit_signal(
-                        CommandType::set_entity_socket_mode.to_string(),
-                        &[Variant::new(id), Variant::new(mode.to_string())]
-                    );
-                    self.output_append("signaled set entity socket mode".into());
-                }
-                Ok(Command::SetAllEntitySocketMode(mode)) => {
-                    owner.emit_signal(
-                        CommandType::set_all_entity_socket_mode.to_string(),
-                        &[Variant::new(mode.to_string())]
-                    );
-                    self.output_append("signaled set entity socket mode".into());
-                }
-                _ => {}
-            }
-    }
-
-    #[method]
-    fn get_all_signals() -> VariantArray<Unique> {
-        let arr = VariantArray::new();
-        arr.push(Variant::new(CommandType::set_entity_socket_mode.to_string()));
-        arr.push(Variant::new(CommandType::set_all_entity_socket_mode.to_string()));
-        arr
     }
 
     fn output_append(&self,text:GodotString){
