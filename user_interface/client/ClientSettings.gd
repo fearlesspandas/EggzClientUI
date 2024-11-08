@@ -34,11 +34,17 @@ func camera_render_distance(value:float):
 
 func chunk_request_radius_multiplier(value:int):
 	pass
+var terminal_active = false
+func set_terminal_active(value):
+	self.terminal_active = value
 
 func _ready():
 	link_handler(self)
+	ClientTerminalGlobalSignals.connect("set_active",self,"set_terminal_active")
 	
 func _process(delta):
+	if terminal_active:
+		return
 	if Input.is_action_pressed("increase_render_distance"):
 		set_render_distance(CAMERA_RENDER_DISTANCE + 50)
 	if Input.is_action_pressed("decrease_render_distance"):

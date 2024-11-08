@@ -27,16 +27,24 @@ func _ready():
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
 	self.add_child(physics_native_socket)
-	ClientTerminalGlobalSignals.connect("set_entity_socket_mode",self,"set_socket_mode")
+	ClientTerminalGlobalSignals.connect("set_entity_socket_mode",self,"set_socket_mode_if_entity")
+	ClientTerminalGlobalSignals.connect("set_all_entity_socket_mode",self,"set_socket_mode")
 	
-func set_socket_mode(id,mode):
+func set_socket_mode_if_entity(id,mode):
 	if id == self.id:
 		self.socket_mode = mode
 		if self.socket_mode == ClientTerminalGlobalSignals.SocketMode.NativeProcess:
 			physics_native_socket.connect("physics",self,"update_cached_physics")
 		else:
 			physics_native_socket.disconnect("physics",self,"update_cached_physics")
-			
+
+func set_socket_mode(mode):
+	self.socket_mode = mode
+	if self.socket_mode == ClientTerminalGlobalSignals.SocketMode.NativeProcess:
+		physics_native_socket.connect("physics",self,"update_cached_physics")
+	else:
+		physics_native_socket.disconnect("physics",self,"update_cached_physics")
+	
 func getSocket() -> ClientWebSocket:
 	var res = ServerNetwork.get(client_id)
 	if res != null and !res.connected:

@@ -5,7 +5,7 @@ use serde::{Deserialize,Serialize};
 use tokio::sync::mpsc;
 use std::{fmt,str::FromStr};
 use crate::terminal_commands::{Command,CommandType,InputCommand,SocketModeArgs,SocketModeAllArgs};
-use crate::terminal_actions::{Actions};
+use crate::terminal_actions::{ActionType,Action};
 use crate::socket_mode::SocketMode;
 use crate::traits::{FromArgs,GetAll,Autocomplete,CreateSignal};
 type Sender<T> = mpsc::UnboundedSender<T>;
@@ -22,8 +22,8 @@ pub struct ClientTerminal{
     output:Ref<RichTextLabel>,
     cmd_tx:Sender<Command>,
     cmd_rx:Receiver<Command>,
-    action_tx:Sender<Actions>,
-    action_rx:Receiver<Actions>,
+    action_tx:Sender<Action>,
+    action_rx:Receiver<Action>,
     history:Vec<String>,
     hist_idx: i64,
 }
@@ -33,12 +33,12 @@ impl ClientTerminal{
 
     fn register_signals(builder:&ClassBuilder<Self>){
         CommandType::register(&builder);
-        Actions::register(&builder);
+        ActionType::register(&builder);
     }
 
     fn new(_base:&CanvasLayer) -> Self{
         let (tx,rx) = mpsc::unbounded_channel::<Command>();
-        let (atx,arx) = mpsc::unbounded_channel::<Actions>();
+        let (atx,arx) = mpsc::unbounded_channel::<Action>();
         ClientTerminal{
             bg_rect: ColorRect::new().into_shared(),
             input : TextEdit::new().into_shared(),
@@ -77,11 +77,12 @@ impl ClientTerminal{
             let event = unsafe{ event.assume_safe()};
             let tree = unsafe{owner.get_tree().unwrap().assume_safe()};
             if event.is_action_pressed("terminal_autocomplete_accept",true,true){
-                self.action_tx.send(Actions::autocomplete_accept);
+                self.action_tx.send(Action::AutoCompleteAccept);
                 tree.set_input_as_handled();
             }
             if event.is_action_released("terminal_toggle",false){
                 owner.set_visible(!owner.is_visible());
+                self.action_tx.send(Action::SetActive(owner.is_visible()));
                 if owner.is_visible(){input.grab_focus();}
                 tree.set_input_as_handled();
             }
@@ -165,7 +166,7 @@ impl ClientTerminal{
         suggestions.set_position(suggestion_loc,false);
         ////Main Render Loop////////// 
         self.handle_received_commands(owner);
-        self.handle_received_actions(); 
+        self.handle_received_actions(owner); 
         self.update_auto_complete();
     }
 
@@ -177,10 +178,13 @@ impl ClientTerminal{
         arr
     }
 
-    fn handle_received_actions(&mut self){
+    fn handle_received_actions(&mut self, owner:&CanvasLayer){
         let input = unsafe{self.input.assume_safe()};
         match self.action_rx.try_recv(){
-            Ok(Actions::autocomplete_accept) => {
+            Ok(Action::SetActive(value)) => {
+                owner.emit_signal(ActionType::set_active.to_string(),&[Variant::new(value)]);
+            }
+            Ok(Action::AutoCompleteAccept) => {
                 let current_input = input.text().to_string();
                 let split_args = current_input.split_ascii_whitespace().collect::<Vec<&str>>();
                 let last = split_args.last().unwrap();

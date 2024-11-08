@@ -51,7 +51,6 @@ func _input(event):
 	
 func _physics_process(delta):
 	delta_x = delta
-	#untested
 	if is_active:
 		camera_body.look_at(camera_root.global_transform.origin,Vector3.UP)
 	if is_active and is_following:

@@ -14,15 +14,17 @@ onready var position_data_timer : Timer = Timer.new()
 onready var navigator_mesh:NavigatorMesh = NavigatorMesh.new()
 
 var is_active = false
+var terminal_active = false
 
 func _ready():
 	self.is_npc = false
 	body.add_child(pointer)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket!=null)
-	input_timer.wait_time = 0.1
-	input_timer.connect("timeout",self,"muh_process")
+	#input_timer.wait_time = 0.1
+	#input_timer.connect("timeout",self,"muh_process")
 	body.add_child(navigator_mesh)
+	ClientTerminalGlobalSignals.connect("set_active",self,"set_terminal_active")
 	
 func set_destination_mode(mode):
 	var mode_text = str(mode).replace("{","").replace("}","").replace(":","")
@@ -36,6 +38,8 @@ func set_destinations_active(is_active):
 	
 #todo move destination logic to destination manager
 func _input(event):
+	if terminal_active:
+		return
 	if is_active and event is InputEventKey and event.is_action_released("reverse_queue_destinations"):
 		var socket = ServerNetwork.get(client_id)
 		socket.set_destination_mode(id,"REVERSE")
@@ -88,8 +92,7 @@ func _process(delta):
 	position_proc += 1
 
 func muh_process():
-	if is_active:
-		var vec = get_input_vec()
+	if is_active and not terminal_active:
 		physics_socket.send_input(id,get_input_vec())
 		
 func get_input_vec() -> Vector3:
@@ -117,6 +120,9 @@ func set_active(active:bool):
 	self.is_active = active
 	camera.set_active(active)
 	
+func set_terminal_active(active:bool):
+	self.terminal_active = active
+
 func _handle_message(msg,delta_accum):
 	#pass
 	self.default_handle_message(msg,delta_accum)

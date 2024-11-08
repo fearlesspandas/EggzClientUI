@@ -17,7 +17,6 @@ pub enum Command{
 }
 #[derive(Deserialize,Serialize,Debug)]
 pub enum CommandType{
-    //set_active,
     set_entity_socket_mode,
     set_all_entity_socket_mode,
 }
