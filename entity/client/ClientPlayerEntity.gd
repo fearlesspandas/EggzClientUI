@@ -6,6 +6,7 @@ onready var message_controller:MessageController = MessageController.new()
 onready var username:Username = Username.new()
 onready var health:HealthDisplay = HealthDisplay.new()
 onready var physics_native_socket = load("res://native_lib/ClientPhysicsSocket.gdns").new()
+onready var stream_data_timer:Timer = Timer.new()
 
 
 var isSubbed = false
@@ -16,6 +17,7 @@ var socket_mode = ClientTerminalGlobalSignals.SocketMode.Native
 var mod = 2
 var radius = 0
 
+var data_stream_mode
 func _ready():
 	username.init_id()
 	Subscriptions.subscribe(username.id,id)
@@ -27,8 +29,26 @@ func _ready():
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
 	self.add_child(physics_native_socket)
+
+	stream_data_timer.wait_time = 1
+	stream_data_timer.connect("timeout",self,"send_data_to_terminal")
+	stream_data_timer.paused = true
+	self.add_child(stream_data_timer)
+	stream_data_timer.start()
+	
 	ClientTerminalGlobalSignals.connect("set_entity_socket_mode",self,"set_socket_mode_if_entity")
 	ClientTerminalGlobalSignals.connect("set_all_entity_socket_mode",self,"set_socket_mode")
+	ClientTerminalGlobalSignals.connect("start_data_stream",self,"start_stream_data")
+
+func start_stream_data(data_type):
+	data_stream_mode = data_type
+	stream_data_timer.paused = false
+
+func send_data_to_terminal():
+	match data_stream_mode:
+		ClientTerminalGlobalSignals.StreamDataType.socket_mode:
+			ClientTerminalGlobalSignals.add_input_data(str(self.id + "_" +  str(data_stream_mode)),str(socket_mode))
+	
 	
 func set_socket_mode_if_entity(id,mode):
 	if id == self.id:

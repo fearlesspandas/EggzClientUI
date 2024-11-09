@@ -1,10 +1,14 @@
 extends Node
 
+var _terminal
 func register_terminal(terminal):
 	terminal.connect("set_entity_socket_mode",self,"set_entity_socket_mode")
 	terminal.connect("set_all_entity_socket_mode",self,"set_all_entity_socket_mode")
 	terminal.connect("set_active",self,"set_active")
+	terminal.connect("start_data_stream",self,"start_data_stream")
+	_terminal = terminal
 
+####SocketModes#######
 enum SocketMode{
 	Native,
 	NativeProcess,
@@ -15,10 +19,23 @@ signal set_entity_socket_mode(id,mode)
 func set_entity_socket_mode(id,mode):
 	emit_signal("set_entity_socket_mode",id,SocketMode.get(mode))
 
-signal set_all_entity_socket_mode(id,mode)
-func set_all_entity_socket_mode(id,mode):
+signal set_all_entity_socket_mode(mode)
+func set_all_entity_socket_mode(mode):
 	emit_signal("set_all_entity_socket_mode",SocketMode.get(mode))
 
+####SetActive########
 signal set_active(value)
 func set_active(value):
 	emit_signal("set_active",value)
+
+#####DataStreams####
+enum StreamDataType{
+	socket_mode,
+}
+signal start_data_stream(data_type)
+func start_data_stream(data_type):
+	emit_signal("start_data_stream",StreamDataType.get(data_type))
+
+func add_input_data(tag,data):
+	_terminal.add_incoming_data(tag,data)
+

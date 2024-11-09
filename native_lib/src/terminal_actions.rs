@@ -3,6 +3,7 @@ use crate::socket_mode::SocketMode;
 use crate::client_terminal::ClientTerminal;
 use std::{fmt,str::FromStr};
 use gdnative::prelude::*;
+
 pub enum Action{
     AutoCompleteAccept,
     SetActive(bool),
@@ -13,12 +14,9 @@ pub enum ActionType{
 }
 impl CreateSignal<ClientTerminal> for ActionType{
     fn register(builder:&ClassBuilder<ClientTerminal>){
-        //builder
-        //    .signal(&Actions::autocomplete_accept.to_string())
-        //    .done();
         builder
             .signal(&ActionType::set_active.to_string())
-            .with_param("mode",VariantType::Bool)
+            .with_param("value",VariantType::Bool)
             .done();
     }
 }

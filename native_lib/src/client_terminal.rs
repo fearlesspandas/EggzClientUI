@@ -4,10 +4,11 @@ use serde_json::{Result as JResult, Value};
 use serde::{Deserialize,Serialize};
 use tokio::sync::mpsc;
 use std::{fmt,str::FromStr};
-use crate::terminal_commands::{Command,CommandType,InputCommand,SocketModeArgs,SocketModeAllArgs};
+use crate::terminal_commands::{Command,CommandType,InputCommand,SocketModeArgs,SocketModeAllArgs,StartDataStreamArgs};
 use crate::terminal_actions::{ActionType,Action};
 use crate::socket_mode::SocketMode;
 use crate::traits::{FromArgs,GetAll,Autocomplete,CreateSignal};
+use crate::data_display::DataDisplay;
 type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
 
@@ -26,6 +27,7 @@ pub struct ClientTerminal{
     action_rx:Receiver<Action>,
     history:Vec<String>,
     hist_idx: i64,
+    data_display: Instance<DataDisplay>
 }
 
 #[methods]
@@ -39,6 +41,8 @@ impl ClientTerminal{
     fn new(_base:&CanvasLayer) -> Self{
         let (tx,rx) = mpsc::unbounded_channel::<Command>();
         let (atx,arx) = mpsc::unbounded_channel::<Action>();
+        //let data_display = DataDisplay::new_managed(Control::new().into_shared());
+        let data_display = DataDisplay::make().into_shared();
         ClientTerminal{
             bg_rect: ColorRect::new().into_shared(),
             input : TextEdit::new().into_shared(),
@@ -51,6 +55,7 @@ impl ClientTerminal{
             action_rx:arx,
             history: Vec::new(),
             hist_idx: -1,
+            data_display: data_display,
         }
     }
 
@@ -60,6 +65,7 @@ impl ClientTerminal{
         let input = unsafe{self.input.assume_safe()};
         let output = unsafe{self.output.assume_safe()};
         let suggestions = unsafe{self.suggestions.assume_safe()};
+        let display = unsafe{self.data_display.assume_safe()};
         rect.set_anchors_preset(Control::PRESET_WIDE,true);
         rect.set_frame_color(Color{r:0.0,g:0.0,b:0.0,a:0.5});
         output.set_scroll_active(true);
@@ -67,6 +73,7 @@ impl ClientTerminal{
         owner.add_child(input,true);
         owner.add_child(output,true);
         owner.add_child(suggestions,true);
+        owner.add_child(display,true);
     }
     
     #[method]
@@ -122,8 +129,63 @@ impl ClientTerminal{
     }
     
     #[method]
-    fn handle_received_commands(&mut self, #[base] owner:&CanvasLayer){
+    fn _process(&mut self,#[base] owner:&CanvasLayer,delta:f64){
+        let rect = unsafe{ self.bg_rect.assume_safe()};
+        let input = unsafe{self.input.assume_safe()};
+        let output = unsafe{self.output.assume_safe()};
+        let suggestions = unsafe{self.suggestions.assume_safe()};
+        let data_display = unsafe{self.data_display.assume_safe()};
+        /////derive sizes/////////////
+        let r_size = rect.size();
+        let input_size = Vector2{x:r_size.x/2.0,y:r_size.y/2.0};
+        let input_loc = Vector2{x : 0.0 , y : r_size.y/2.0};
+        let output_size = Vector2{x:r_size.x/2.0,y:r_size.y/4.0};
+        let output_loc = Vector2{x : 0.0 , y : 0.0};
+        let data_display_size = output_size;
+        let data_display_loc = Vector2{x:r_size.x/2.0,y:0.0};
+        ////set sizes and positions///
+        input.set_size(input_size,true);
+        input.set_position(input_loc,true);
+        output.set_size(output_size,true);
+        output.set_position(output_loc,true);
+        let suggestion_size = Vector2{x:input_size.x, y : self.auto_complete.len() as f32 * 20.0};
+        let suggestion_loc = Vector2{x:0.0,y:input_loc.y - suggestion_size.y};
+        suggestions.set_size(suggestion_size,false);
+        suggestions.set_position(suggestion_loc,false);
+        data_display.map(|dat,dat_own| {
+            dat_own.set_size(data_display_size,false);
+            dat_own.set_position(data_display_loc,false);
+        });
+        ////Main Render Loop////////// 
+        self.handle_received_commands(owner);
+        self.handle_received_actions(owner); 
+        self.update_auto_complete();
+    }
+
+    #[method]
+    fn add_incoming_data(&self,tag:String,data:String){
+        let data_display = unsafe{self.data_display.assume_safe()};
+        data_display.map_mut(|display,control| display.add_data(tag,data));
+    }
+
+    #[method]
+    fn get_all_signals() -> VariantArray<Unique> {
+        let arr = VariantArray::new();
+        arr.push(Variant::new(CommandType::set_entity_socket_mode.to_string()));
+        arr.push(Variant::new(CommandType::set_all_entity_socket_mode.to_string()));
+        arr.push(Variant::new(CommandType::start_data_stream.to_string()));
+        arr
+    }
+
+    fn handle_received_commands(&mut self, owner:&CanvasLayer){
         match self.cmd_rx.try_recv() {
+                Ok(Command::StartDataStream(data_type)) => {
+                    owner.emit_signal(
+                        CommandType::start_data_stream.to_string(),
+                        &[Variant::new(data_type.to_string())]
+                    );
+                    self.output_append("signaled start_data_stream".into());
+                }
                 Ok(Command::SetEntitySocketMode(id,mode)) => {
                     owner.emit_signal(
                         CommandType::set_entity_socket_mode.to_string(),
@@ -138,44 +200,9 @@ impl ClientTerminal{
                     );
                     self.output_append("signaled set entity socket mode".into());
                 }
-                _ => {}
+                Err(_) => {}
             }
 
-    }
-    
-    #[method]
-    fn _process(&mut self,#[base] owner:&CanvasLayer,delta:f64){
-        let rect = unsafe{ self.bg_rect.assume_safe()};
-        let input = unsafe{self.input.assume_safe()};
-        let output = unsafe{self.output.assume_safe()};
-        let suggestions = unsafe{self.suggestions.assume_safe()};
-        /////derive sizes/////////////
-        let r_size = rect.size();
-        let input_size = Vector2{x:r_size.x/2.0,y:r_size.y/2.0};
-        let input_loc = Vector2{x : 0.0 , y : r_size.y/2.0};
-        let output_size = Vector2{x:r_size.x/2.0,y:r_size.y/4.0};
-        let output_loc = Vector2{x : 0.0 , y : 0.0};
-        ////set sizes and positions///
-        input.set_size(input_size,true);
-        input.set_position(input_loc,true);
-        output.set_size(output_size,true);
-        output.set_position(output_loc,true);
-        let suggestion_size = Vector2{x:input_size.x, y : self.auto_complete.len() as f32 * 20.0};
-        let suggestion_loc = Vector2{x:0.0,y:input_loc.y - suggestion_size.y};
-        suggestions.set_size(suggestion_size,false);
-        suggestions.set_position(suggestion_loc,false);
-        ////Main Render Loop////////// 
-        self.handle_received_commands(owner);
-        self.handle_received_actions(owner); 
-        self.update_auto_complete();
-    }
-
-    #[method]
-    fn get_all_signals() -> VariantArray<Unique> {
-        let arr = VariantArray::new();
-        arr.push(Variant::new(CommandType::set_entity_socket_mode.to_string()));
-        arr.push(Variant::new(CommandType::set_all_entity_socket_mode.to_string()));
-        arr
     }
 
     fn handle_received_actions(&mut self, owner:&CanvasLayer){
@@ -190,12 +217,12 @@ impl ClientTerminal{
                 let last = split_args.last().unwrap();
                 input.set_text(
                     current_input.clone() + 
-                    &(self.auto_complete[0].replace(&last.to_string(),""))
+                    &(self.auto_complete.get(0).unwrap_or(&"".to_string()).replace(&last.to_string(),""))
                 );
                 input.cursor_set_line(0,false,false,0);
                 input.cursor_set_column(input.text().len() as i64,false);
             }
-            _ => {}
+            Err(_) => {}
             //Err(e) => todo!(),
         }
     }
@@ -282,6 +309,10 @@ impl ClientTerminal{
                 CommandType::set_all_entity_socket_mode => {
                     SocketModeAllArgs::new(&cmd.args)
                         .map(|smargs| Command::SetAllEntitySocketMode(smargs.mode))
+                }
+                CommandType::start_data_stream => {
+                    StartDataStreamArgs::new(&cmd.args)
+                        .map(|smargs| Command::StartDataStream(smargs.data_type))
                 }
             })
         
