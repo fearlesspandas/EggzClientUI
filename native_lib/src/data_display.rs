@@ -34,12 +34,6 @@ pub struct DataDisplay{
 } 
 #[methods]
 impl DataDisplay{
-    pub fn new_managed(base: Ref<Control>) -> Self{
-        DataDisplay{
-            tag_to_data: HashMap::new(),
-            text_display: RichTextLabel::new().into_shared(),
-        }
-    }
     pub fn new(base: &Control) -> Self{
         DataDisplay{
             tag_to_data: HashMap::new(),
@@ -48,8 +42,13 @@ impl DataDisplay{
     }
 
     pub fn make() -> Instance<DataDisplay,Unique>{
-        Instance::emplace(DataDisplay{tag_to_data:HashMap::new(),text_display: RichTextLabel::new().into_shared()})
+        Instance::emplace(
+            DataDisplay{
+                tag_to_data:HashMap::new(),
+                text_display: RichTextLabel::new().into_shared(),
+            })
     }
+
     #[method]
     fn _ready(&self,#[base] owner:&Control){
         let text_display = unsafe{self.text_display.assume_safe()};
@@ -69,7 +68,7 @@ impl DataDisplay{
         text_display.set_text(text_data);
     }
 
-    #[method]
+
     pub fn add_data(&mut self,tag:DataLabel,data:String){
         self.tag_to_data.insert(tag,data);
     }

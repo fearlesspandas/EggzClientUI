@@ -6,6 +6,7 @@ func register_terminal(terminal):
 	terminal.connect("set_all_entity_socket_mode",self,"set_all_entity_socket_mode")
 	terminal.connect("set_active",self,"set_active")
 	terminal.connect("start_data_stream",self,"start_data_stream")
+	terminal.connect("request_data",self,"request_data")
 	_terminal = terminal
 
 ####SocketModes#######
@@ -35,6 +36,10 @@ enum StreamDataType{
 signal start_data_stream(data_type)
 func start_data_stream(data_type):
 	emit_signal("start_data_stream",StreamDataType.get(data_type))
+
+signal request_data(data_type)
+func request_data(data_type):
+	emit_signal("request_data",StreamDataType.get(data_type))
 
 func add_input_data(tag,data):
 	_terminal.add_incoming_data(tag,data)

@@ -8,7 +8,7 @@ use crate::terminal_commands::{Command,CommandType,InputCommand,SocketModeArgs,S
 use crate::terminal_actions::{ActionType,Action};
 use crate::socket_mode::SocketMode;
 use crate::traits::{FromArgs,GetAll,Autocomplete,CreateSignal};
-use crate::data_display::DataDisplay;
+use crate::data_display::{DataDisplay,DataType};
 type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
 
@@ -27,7 +27,9 @@ pub struct ClientTerminal{
     action_rx:Receiver<Action>,
     history:Vec<String>,
     hist_idx: i64,
-    data_display: Instance<DataDisplay>
+    data_display: Instance<DataDisplay>,
+    data_collection_timer: Ref<Timer>,
+    data_collection_types: Vec<DataType>,
 }
 
 #[methods]
@@ -41,7 +43,6 @@ impl ClientTerminal{
     fn new(_base:&CanvasLayer) -> Self{
         let (tx,rx) = mpsc::unbounded_channel::<Command>();
         let (atx,arx) = mpsc::unbounded_channel::<Action>();
-        //let data_display = DataDisplay::new_managed(Control::new().into_shared());
         let data_display = DataDisplay::make().into_shared();
         ClientTerminal{
             bg_rect: ColorRect::new().into_shared(),
@@ -56,6 +57,8 @@ impl ClientTerminal{
             history: Vec::new(),
             hist_idx: -1,
             data_display: data_display,
+            data_collection_timer: Timer::new().into_shared(),
+            data_collection_types: Vec::new(),
         }
     }
 
@@ -66,6 +69,7 @@ impl ClientTerminal{
         let output = unsafe{self.output.assume_safe()};
         let suggestions = unsafe{self.suggestions.assume_safe()};
         let display = unsafe{self.data_display.assume_safe()};
+        let data_collection_timer = unsafe{self.data_collection_timer.assume_safe()};
         rect.set_anchors_preset(Control::PRESET_WIDE,true);
         rect.set_frame_color(Color{r:0.0,g:0.0,b:0.0,a:0.5});
         output.set_scroll_active(true);
@@ -74,6 +78,8 @@ impl ClientTerminal{
         owner.add_child(output,true);
         owner.add_child(suggestions,true);
         owner.add_child(display,true);
+        data_collection_timer.set_wait_time(1.0);
+        owner.add_child(data_collection_timer,true);
     }
     
     #[method]
@@ -129,7 +135,7 @@ impl ClientTerminal{
     }
     
     #[method]
-    fn _process(&mut self,#[base] owner:&CanvasLayer,delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<CanvasLayer>,delta:f64){
         let rect = unsafe{ self.bg_rect.assume_safe()};
         let input = unsafe{self.input.assume_safe()};
         let output = unsafe{self.output.assume_safe()};
@@ -165,9 +171,11 @@ impl ClientTerminal{
     #[method]
     fn add_incoming_data(&self,tag:String,data:String){
         let data_display = unsafe{self.data_display.assume_safe()};
-        data_display.map_mut(|display,control| display.add_data(tag,data));
+        data_display.map_mut(|display,control| display.add_data(tag,data))
+            .map_err(|e| godot_print!("{}",format!("Could not process incoming data due to {e:?}")));
     }
 
+    //incomplete
     #[method]
     fn get_all_signals() -> VariantArray<Unique> {
         let arr = VariantArray::new();
@@ -177,13 +185,13 @@ impl ClientTerminal{
         arr
     }
 
-    fn handle_received_commands(&mut self, owner:&CanvasLayer){
+    fn handle_received_commands(&mut self, owner:TRef<CanvasLayer>){
         match self.cmd_rx.try_recv() {
                 Ok(Command::StartDataStream(data_type)) => {
-                    owner.emit_signal(
-                        CommandType::start_data_stream.to_string(),
-                        &[Variant::new(data_type.to_string())]
-                    );
+                    self.data_collection_types.push(data_type);
+                    let data_collection_timer = unsafe{self.data_collection_timer.assume_safe()};
+                    data_collection_timer.connect("timeout",owner,"send_data_requests",VariantArray::new_shared(),0);
+                    data_collection_timer.start(-1.0);
                     self.output_append("signaled start_data_stream".into());
                 }
                 Ok(Command::SetEntitySocketMode(id,mode)) => {
@@ -205,7 +213,7 @@ impl ClientTerminal{
 
     }
 
-    fn handle_received_actions(&mut self, owner:&CanvasLayer){
+    fn handle_received_actions(&mut self, owner:TRef<CanvasLayer>){
         let input = unsafe{self.input.assume_safe()};
         match self.action_rx.try_recv(){
             Ok(Action::SetActive(value)) => {
@@ -222,11 +230,23 @@ impl ClientTerminal{
                 input.cursor_set_line(0,false,false,0);
                 input.cursor_set_column(input.text().len() as i64,false);
             }
+            Ok(Action::RequestData(data_type)) => {}
             Err(_) => {}
             //Err(e) => todo!(),
         }
     }
 
+    #[method]
+    fn send_data_requests(&self,#[base] owner:TRef<CanvasLayer>){
+        for req_type in &self.data_collection_types{
+            owner.emit_signal(
+                ActionType::request_data.to_string(),
+                &[Variant::new(req_type.to_string())]
+          );
+        }
+    }
+
+    //Input Handling
     fn update_auto_complete(&mut self){
         let input = unsafe{self.input.assume_safe()};
         let suggestions = unsafe{self.suggestions.assume_safe()};

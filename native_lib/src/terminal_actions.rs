@@ -1,22 +1,29 @@
 use crate::traits::{CreateSignal,GetAll,Autocomplete,FromArgs};
 use crate::socket_mode::SocketMode;
 use crate::client_terminal::ClientTerminal;
+use crate::data_display::DataType;
 use std::{fmt,str::FromStr};
 use gdnative::prelude::*;
 
 pub enum Action{
     AutoCompleteAccept,
     SetActive(bool),
+    RequestData(DataType)
 }
 pub enum ActionType{
     autocomplete_accept,
     set_active,
+    request_data,
 }
 impl CreateSignal<ClientTerminal> for ActionType{
     fn register(builder:&ClassBuilder<ClientTerminal>){
         builder
             .signal(&ActionType::set_active.to_string())
             .with_param("value",VariantType::Bool)
+            .done();
+        builder
+            .signal(&ActionType::request_data.to_string())
+            .with_param("data_type",VariantType::GodotString)
             .done();
     }
 }
@@ -28,6 +35,9 @@ impl fmt::Display for ActionType{
             }
             ActionType::set_active => {
                 write!(f,"set_active")
+            }
+            ActionType::request_data => {
+                write!(f,"request_data")
             }
         }
     }
