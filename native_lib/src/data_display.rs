@@ -11,12 +11,14 @@ type DataLabel = String;
 pub enum DataType{
     socket_mode,
     linear_velocity,
+    global_position,
 }
 impl GetAll for DataType{
     fn get_all() -> Vec<Self> where Self:Sized{
         let mut v = Vec::new();
         v.push(DataType::socket_mode);
         v.push(DataType::linear_velocity);
+        v.push(DataType::global_position);
         v
     }
 }
@@ -28,6 +30,9 @@ impl fmt::Display for DataType{
             }
             DataType::linear_velocity => {
                 write!(f,"linear_velocity")
+            }
+            DataType::global_position => {
+                write!(f,"global_position")
             }
         }
     }

@@ -23,7 +23,7 @@ type DataValue = f32;
 #[inherit(Control)]
 pub struct BarGraph{
     tag_to_data: HashMap<String,DataValue>,
-    columns: HashMap<String,Ref<ColorRect>>,
+    columns: HashMap<String,(Ref<ColorRect>,Ref<Label>)>,
     current_max: DataValue,
     current_min: DataValue,
     actions_tx: Sender<GraphActions>,
@@ -70,14 +70,15 @@ impl BarGraph{
                if !self.columns.contains_key(&tag){
                    let color_rect: Ref<ColorRect> = ColorRect::new().into_shared();
                    let tag_label : Ref<Label> = Label::new().into_shared();
+                   self.columns.insert(tag.clone(),(color_rect,tag_label));
                    let tag_label = unsafe{tag_label.assume_safe()};
                    tag_label.set_text(&tag);
-                   self.columns.insert(tag,color_rect);
                    let color_rect = unsafe{color_rect.assume_safe()};
                    color_rect.set_frame_color(Color{r:250.0,g:0.0,b:0.0,a:1.0});
-                  // color_rect.add_child(tag_label,true);
+                   //color_rect.add_child(tag_label,true);
                    
                    owner.add_child(color_rect,true);
+                   owner.add_child(tag_label,true);
                }
                
            }
@@ -90,15 +91,21 @@ impl BarGraph{
        let mut idx: f32 = 0.0;
        let mut loc:Vector2 = Vector2{x:0.0,y:0.0};
        let mut column_size = Vector2{x:column_width,y:0.0};
+       let mut label_size = Vector2{x:column_width, y: 10.0};
        for (tag,value) in &self.tag_to_data{
            let col = self.columns.get(tag);
            col.map(|column|{
+               let (column,label) = column;
                let column = unsafe{column.assume_safe()};
+               let label = unsafe{label.assume_safe()};
                column_size.y = (value/(max_diff + ((max_diff == 0.0) as i32 as f32 * value))) * owner_size.y;
                column.set_size(column_size,false);
                loc.x = column_width * idx;
                loc.y = owner_size.y - column_size.y;
                column.set_position(loc,false);
+               loc.y = owner_size.y - column_size.y - label_size.y;
+               label.set_size(label_size,false);
+               label.set_position(loc,false)
                //godot_print!("{}",format!("tag {tag:?} column size {column_size:?} loc {loc:?} max diff {max_diff:?}"));
            });
            idx+=1.0;

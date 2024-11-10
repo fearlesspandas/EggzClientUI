@@ -33,6 +33,7 @@ func set_active(value):
 enum StreamDataType{
 	socket_mode,
 	linear_velocity,
+	global_position,
 }
 signal start_data_stream(data_type)
 func start_data_stream(data_type):
