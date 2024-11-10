@@ -37,7 +37,10 @@ func _ready():
 func send_requested_data(data_type):
 	match data_type:
 		ClientTerminalGlobalSignals.StreamDataType.socket_mode:
-			ClientTerminalGlobalSignals.add_input_data(str(self.id + "_" +  str(data_type)),str(socket_mode))
+			ClientTerminalGlobalSignals.add_input_data(self.id + "_socket_mode" ,str(socket_mode))
+		ClientTerminalGlobalSignals.StreamDataType.linear_velocity:
+			ClientTerminalGlobalSignals.add_graph_data(self.id+ "_lv" ,movement.dir.length())
+
 	
 func set_socket_mode_if_entity(id,mode):
 	if id == self.id:

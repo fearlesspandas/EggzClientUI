@@ -4,16 +4,19 @@ use std::collections::HashMap;
 use std::fmt;
 use serde::{Deserialize,Serialize};
 use crate::traits::{GetAll};
+
 type DataLabel = String;
 
-#[derive(Deserialize,Serialize,Debug)]
+#[derive(Deserialize,Serialize,Debug,PartialEq)]
 pub enum DataType{
     socket_mode,
+    linear_velocity,
 }
 impl GetAll for DataType{
     fn get_all() -> Vec<Self> where Self:Sized{
         let mut v = Vec::new();
         v.push(DataType::socket_mode);
+        v.push(DataType::linear_velocity);
         v
     }
 }
@@ -22,6 +25,9 @@ impl fmt::Display for DataType{
         match self{
             DataType::socket_mode => {
                 write!(f,"socket_mode")
+            }
+            DataType::linear_velocity => {
+                write!(f,"linear_velocity")
             }
         }
     }

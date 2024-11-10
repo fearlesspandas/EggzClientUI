@@ -9,7 +9,8 @@ func move(delta,location:Vector3,body:KinematicBody):
 
 func set_direction(direction:Vector3):
 	dir = direction
-
+func get_direction():
+	return self.dir
 func move_by_direction(delta,body:KinematicBody):
 	#body.move_and_slide(dir* delta * 0.05,Vector3.UP)
 	body.move_and_slide(-dir*0.0005 * 20000,Vector3.UP)

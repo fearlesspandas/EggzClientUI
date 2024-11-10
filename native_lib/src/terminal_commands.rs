@@ -16,12 +16,14 @@ pub enum Command{
     SetEntitySocketMode(String,SocketMode),
     SetAllEntitySocketMode(SocketMode),
     StartDataStream(DataType),
+    StopDataStream(DataType),
 }
 #[derive(Deserialize,Serialize,Debug)]
 pub enum CommandType{
     set_entity_socket_mode,
     set_all_entity_socket_mode,
     start_data_stream,
+    stop_data_stream,
 }
 impl CreateSignal<ClientTerminal> for CommandType{
     fn register(builder:&ClassBuilder<ClientTerminal>){
@@ -38,6 +40,10 @@ impl CreateSignal<ClientTerminal> for CommandType{
             .signal(&CommandType::start_data_stream.to_string())
             .with_param("type",VariantType::GodotString)
             .done();
+        builder
+            .signal(&CommandType::stop_data_stream.to_string())
+            .with_param("type",VariantType::GodotString)
+            .done();
     }
 }
 impl GetAll for CommandType{
@@ -46,6 +52,7 @@ impl GetAll for CommandType{
         v.push( CommandType::set_entity_socket_mode);
         v.push( CommandType::set_all_entity_socket_mode);
         v.push( CommandType::start_data_stream);
+        v.push( CommandType::stop_data_stream);
         v
     }
 }
@@ -55,7 +62,28 @@ impl Autocomplete for CommandType{
             CommandType::set_entity_socket_mode => SocketModeArgs::autocomplete_args,
             CommandType::set_all_entity_socket_mode => SocketModeAllArgs::autocomplete_args,
             CommandType::start_data_stream => StartDataStreamArgs::autocomplete_args,
-            _ => todo!()
+            CommandType::stop_data_stream => StartDataStreamArgs::autocomplete_args,
+        }
+    }
+}
+pub trait ArgsConstructor<T,U,E>{
+    fn from_args(&self,args:U) -> Result<T,E>;
+}
+impl ArgsConstructor<Command,&Value,&'static str> for CommandType{
+    fn from_args(&self,args:&Value) -> Result<Command,&'static str>{
+        match self{
+            CommandType::set_entity_socket_mode => 
+                SocketModeArgs::new(args)
+                .map(|parsed| Command::SetEntitySocketMode(parsed.id,parsed.mode)),
+            CommandType::set_all_entity_socket_mode => 
+                SocketModeAllArgs::new(args)
+                .map(|parsed| Command::SetAllEntitySocketMode(parsed.mode)),
+            CommandType::start_data_stream => 
+                StartDataStreamArgs::new(args)
+                .map(|parsed| Command::StartDataStream(parsed.data_type)),
+            CommandType::stop_data_stream => 
+                StartDataStreamArgs::new(args)
+                .map(|parsed| Command::StopDataStream(parsed.data_type)),
         }
     }
 }
@@ -71,6 +99,9 @@ impl fmt::Display for CommandType{
             CommandType::start_data_stream => {
                 write!(f,"start_data_stream")
             }
+            CommandType::stop_data_stream => {
+                write!(f,"stop_data_stream")
+            }
         }
     }
 }
@@ -81,6 +112,7 @@ impl FromStr for CommandType {
             "set_entity_socket_mode" => Ok(CommandType::set_entity_socket_mode),
             "set_all_entity_socket_mode" => Ok(CommandType::set_all_entity_socket_mode),
             "start_data_stream" => Ok(CommandType::start_data_stream),
+            "stop_data_stream" => Ok(CommandType::stop_data_stream),
             _ => Err(format!("No result found for command type {input:?}"))
         } 
     }
@@ -91,6 +123,11 @@ impl FromStr for CommandType {
 pub struct InputCommand{
     pub typ:CommandType,
     pub args: Value
+}
+impl ArgsConstructor<Command,(),&'static str> for InputCommand{
+    fn from_args(&self,args:()) -> Result<Command,&'static str>{
+        self.typ.from_args(&self.args)
+    }
 }
 #[derive(Deserialize,Serialize)]
 pub struct SocketModeArgs{

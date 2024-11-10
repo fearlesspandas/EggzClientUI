@@ -32,6 +32,7 @@ func set_active(value):
 #####DataStreams####
 enum StreamDataType{
 	socket_mode,
+	linear_velocity,
 }
 signal start_data_stream(data_type)
 func start_data_stream(data_type):
@@ -43,4 +44,7 @@ func request_data(data_type):
 
 func add_input_data(tag,data):
 	_terminal.add_incoming_data(tag,data)
+
+func add_graph_data(tag,data):
+	_terminal.add_graph_data(tag,data)
 

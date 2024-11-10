@@ -4,11 +4,12 @@ use serde_json::{Result as JResult, Value};
 use serde::{Deserialize,Serialize};
 use tokio::sync::mpsc;
 use std::{fmt,str::FromStr};
-use crate::terminal_commands::{Command,CommandType,InputCommand,SocketModeArgs,SocketModeAllArgs,StartDataStreamArgs};
+use crate::terminal_commands::{Command,CommandType,InputCommand,SocketModeArgs,SocketModeAllArgs,StartDataStreamArgs,ArgsConstructor};
 use crate::terminal_actions::{ActionType,Action};
 use crate::socket_mode::SocketMode;
 use crate::traits::{FromArgs,GetAll,Autocomplete,CreateSignal};
 use crate::data_display::{DataDisplay,DataType};
+use crate::data_graphs::{BarGraph};
 type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
 
@@ -28,8 +29,10 @@ pub struct ClientTerminal{
     history:Vec<String>,
     hist_idx: i64,
     data_display: Instance<DataDisplay>,
+    graph_display: Instance<BarGraph>,
     data_collection_timer: Ref<Timer>,
     data_collection_types: Vec<DataType>,
+    
 }
 
 #[methods]
@@ -44,6 +47,7 @@ impl ClientTerminal{
         let (tx,rx) = mpsc::unbounded_channel::<Command>();
         let (atx,arx) = mpsc::unbounded_channel::<Action>();
         let data_display = DataDisplay::make().into_shared();
+        let graph_display = BarGraph::make().into_shared();
         ClientTerminal{
             bg_rect: ColorRect::new().into_shared(),
             input : TextEdit::new().into_shared(),
@@ -57,6 +61,7 @@ impl ClientTerminal{
             history: Vec::new(),
             hist_idx: -1,
             data_display: data_display,
+            graph_display: graph_display,
             data_collection_timer: Timer::new().into_shared(),
             data_collection_types: Vec::new(),
         }
@@ -69,6 +74,7 @@ impl ClientTerminal{
         let output = unsafe{self.output.assume_safe()};
         let suggestions = unsafe{self.suggestions.assume_safe()};
         let display = unsafe{self.data_display.assume_safe()};
+        let graph = unsafe{self.graph_display.assume_safe()};
         let data_collection_timer = unsafe{self.data_collection_timer.assume_safe()};
         rect.set_anchors_preset(Control::PRESET_WIDE,true);
         rect.set_frame_color(Color{r:0.0,g:0.0,b:0.0,a:0.5});
@@ -78,6 +84,7 @@ impl ClientTerminal{
         owner.add_child(output,true);
         owner.add_child(suggestions,true);
         owner.add_child(display,true);
+        owner.add_child(graph,true);
         data_collection_timer.set_wait_time(1.0);
         owner.add_child(data_collection_timer,true);
     }
@@ -141,6 +148,7 @@ impl ClientTerminal{
         let output = unsafe{self.output.assume_safe()};
         let suggestions = unsafe{self.suggestions.assume_safe()};
         let data_display = unsafe{self.data_display.assume_safe()};
+        let graph_display = unsafe{self.graph_display.assume_safe()};
         /////derive sizes/////////////
         let r_size = rect.size();
         let input_size = Vector2{x:r_size.x/2.0,y:r_size.y/2.0};
@@ -149,6 +157,8 @@ impl ClientTerminal{
         let output_loc = Vector2{x : 0.0 , y : 0.0};
         let data_display_size = output_size;
         let data_display_loc = Vector2{x:r_size.x/2.0,y:0.0};
+        let graph_display_size = Vector2{x:r_size.x/2.0 , y: r_size.y/2.0};
+        let graph_display_loc = Vector2{x:r_size.x - graph_display_size.x, y: r_size.y - graph_display_size.y};
         ////set sizes and positions///
         input.set_size(input_size,true);
         input.set_position(input_loc,true);
@@ -162,6 +172,10 @@ impl ClientTerminal{
             dat_own.set_size(data_display_size,false);
             dat_own.set_position(data_display_loc,false);
         });
+        graph_display.map(|graph,control| {
+            control.set_size(graph_display_size,false);
+            control.set_position(graph_display_loc,false);
+        });
         ////Main Render Loop////////// 
         self.handle_received_commands(owner);
         self.handle_received_actions(owner); 
@@ -171,8 +185,17 @@ impl ClientTerminal{
     #[method]
     fn add_incoming_data(&self,tag:String,data:String){
         let data_display = unsafe{self.data_display.assume_safe()};
-        data_display.map_mut(|display,control| display.add_data(tag,data))
+        data_display
+            .map_mut(|display,control| display.add_data(tag,data))
             .map_err(|e| godot_print!("{}",format!("Could not process incoming data due to {e:?}")));
+    }
+    #[method]
+    fn add_graph_data(&self,tag:String,data:f32){
+        let graph = unsafe{self.graph_display.assume_safe()};
+        graph
+            .map_mut(|graph_disp,_| graph_disp.add_data(tag,data))
+            .map_err(|e| godot_print!("{}",format!("Could not process incoming grpah data due to {e:?}")));
+
     }
 
     //incomplete
@@ -188,11 +211,29 @@ impl ClientTerminal{
     fn handle_received_commands(&mut self, owner:TRef<CanvasLayer>){
         match self.cmd_rx.try_recv() {
                 Ok(Command::StartDataStream(data_type)) => {
+                    let data_type_str = &data_type.to_string();
                     self.data_collection_types.push(data_type);
+                    self.output_append(format!("added data_type {data_type_str:?} to stream").into());
                     let data_collection_timer = unsafe{self.data_collection_timer.assume_safe()};
-                    data_collection_timer.connect("timeout",owner,"send_data_requests",VariantArray::new_shared(),0);
-                    data_collection_timer.start(-1.0);
-                    self.output_append("signaled start_data_stream".into());
+                    if data_collection_timer.is_stopped(){
+                        data_collection_timer.connect("timeout",owner,"send_data_requests",VariantArray::new_shared(),0);
+                        data_collection_timer.start(-1.0);
+                        self.output_append("started data stream".into());
+                    }
+                }
+                Ok(Command::StopDataStream(data_type)) => {
+                    let data_type_str = &data_type.to_string();
+                    self.data_collection_types.retain(|val| val != &data_type);
+                    self.output_append("removed data_type {data_type_str:?} from stream".into());
+                    let data_size = self.data_collection_types.len();
+                    self.output_append("data_types size:{data_size:?}".into());
+                    if data_size == 0{
+                        let data_collection_timer = unsafe{self.data_collection_timer.assume_safe()};
+                        data_collection_timer.disconnect("timeout",owner,"send_data_requests");
+                        data_collection_timer.stop();
+                        self.output_append("size 0 : stopped data stream".into());
+                    }
+
                 }
                 Ok(Command::SetEntitySocketMode(id,mode)) => {
                     owner.emit_signal(
@@ -206,7 +247,7 @@ impl ClientTerminal{
                         CommandType::set_all_entity_socket_mode.to_string(),
                         &[Variant::new(mode.to_string())]
                     );
-                    self.output_append("signaled set entity socket mode".into());
+                    self.output_append("signaled set all entity socket mode".into());
                 }
                 Err(_) => {}
             }
@@ -321,20 +362,7 @@ impl ClientTerminal{
         let cmd_obj = Value::Object(cmd_map);
         serde_json::from_value::<InputCommand>(cmd_obj)
             .map_err(|e| "Error while parsing InputCommand")
-            .and_then(|cmd| match cmd.typ{
-                CommandType::set_entity_socket_mode => {
-                    SocketModeArgs::new(&cmd.args)
-                        .map(|smargs| Command::SetEntitySocketMode(smargs.id,smargs.mode))
-                }
-                CommandType::set_all_entity_socket_mode => {
-                    SocketModeAllArgs::new(&cmd.args)
-                        .map(|smargs| Command::SetAllEntitySocketMode(smargs.mode))
-                }
-                CommandType::start_data_stream => {
-                    StartDataStreamArgs::new(&cmd.args)
-                        .map(|smargs| Command::StartDataStream(smargs.data_type))
-                }
-            })
+            .and_then(|cmd| cmd.from_args(()))
         
     }
 }
