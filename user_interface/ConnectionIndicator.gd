@@ -14,3 +14,7 @@ func _process(delta):
 	else:
 		self.color = Color.red
 	pass
+
+
+func set_terminal_active(value):
+	self.visible = !value

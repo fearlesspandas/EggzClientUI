@@ -30,6 +30,7 @@ func _ready():
 	destination_window_display_bar.mouse_filter = Control.MOUSE_FILTER_PASS
 	destinations_window_label.mouse_filter = Control.MOUSE_FILTER_PASS
 	destination_display.visible = is_open
+	ClientTerminalGlobalSignals.connect("set_active",self,"set_terminal_active")
 
 func entered():
 	hovering = true
@@ -81,3 +82,6 @@ func _input(event):
 
 func _process(delta):
 	size_display_bar()
+
+func set_terminal_active(value):
+	self.visible = !value

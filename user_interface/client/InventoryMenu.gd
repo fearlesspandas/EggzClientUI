@@ -26,6 +26,7 @@ func _ready():
 	setup_timer.connect("timeout",self,"setup")
 	self.add_child(setup_timer)
 	setup_timer.start()
+	ClientTerminalGlobalSignals.connect("set_active",self,"set_terminal_active")
 
 func setup():
 	setup_timer.one_shot = true
@@ -66,3 +67,6 @@ func add_item(id,item):
 
 func _process(delta):
 	size_and_position()
+
+func set_terminal_active(value):
+	self.visible = !value

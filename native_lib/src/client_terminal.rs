@@ -151,9 +151,9 @@ impl ClientTerminal{
         let graph_display = unsafe{self.graph_display.assume_safe()};
         /////derive sizes/////////////
         let r_size = rect.size();
-        let input_size = Vector2{x:r_size.x/2.0,y:r_size.y/2.0};
-        let input_loc = Vector2{x : 0.0 , y : r_size.y/2.0};
-        let output_size = Vector2{x:r_size.x/2.0,y:r_size.y/4.0};
+        let input_size = Vector2{x:r_size.x/2.0,y:50.0};
+        let input_loc = Vector2{x : 0.0 , y : r_size.y - input_size.y};
+        let output_size = Vector2{x:r_size.x/2.0,y:r_size.y/2.0};
         let output_loc = Vector2{x : 0.0 , y : 0.0};
         let data_display_size = output_size;
         let data_display_loc = Vector2{x:r_size.x/2.0,y:0.0};
@@ -273,7 +273,6 @@ impl ClientTerminal{
             }
             Ok(Action::RequestData(data_type)) => {}
             Err(_) => {}
-            //Err(e) => todo!(),
         }
     }
 
@@ -320,6 +319,7 @@ impl ClientTerminal{
             //_ => {godot_print!("{}",format!("Unhandled input length {len:?}"));Vec::new()} 
         }
     }
+
     fn input_update_from_idx(&self){
         let input = unsafe{self.input.assume_safe()};
         if self.hist_idx < 0{
@@ -363,6 +363,5 @@ impl ClientTerminal{
         serde_json::from_value::<InputCommand>(cmd_obj)
             .map_err(|e| "Error while parsing InputCommand")
             .and_then(|cmd| cmd.from_args(()))
-        
     }
 }

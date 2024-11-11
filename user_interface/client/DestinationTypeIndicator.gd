@@ -21,6 +21,7 @@ func _ready():
 	self.add_child(destination_direction_type)
 	main_bg.color = Color.black
 	self.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ClientTerminalGlobalSignals.connect("set_active",self,"set_terminal_active")
 	
 func _process(delta):
 	self.rect_size = Vector2(OS.get_window_safe_area().size.x/5,OS.get_window_safe_area().size.y/10)
@@ -53,3 +54,6 @@ func set_destinations_active(is_active:bool):
 		destinations_active_bg.color = Color.greenyellow
 	else:
 		destinations_active_bg.color = Color.gray
+
+func set_terminal_active(value):
+	self.visible = !value

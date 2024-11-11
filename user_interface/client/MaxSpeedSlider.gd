@@ -27,6 +27,7 @@ func _ready():
 	speed_label.scroll_active = false
 
 	slider.connect("adjust_speed",self,"adjust_speed")
+	ClientTerminalGlobalSignals.connect("set_active",self,"set_terminal_active")
 	pass
 
 
@@ -85,3 +86,6 @@ func set_active(active:bool):
 		var socket = ServerNetwork.get(client_id)
 		if socket != null:
 			socket.get_physical_stats(client_id)
+
+func set_terminal_active(value):
+	self.visible = !value

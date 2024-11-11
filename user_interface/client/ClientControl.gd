@@ -28,7 +28,6 @@ func _ready():
 	auth_request._initiate_auth_request(profile_id)
 	
 func load_scene(id,secret):
-	
 	var profile = ProfileManager.get_profile(profile_id)
 	#profile.set_secret_from_encrypted(secret)
 	viewport_container.set_size(self.rect_size)
@@ -72,6 +71,7 @@ func load_scene(id,secret):
 	connection_indicator.set_size(Vector2(connection_ind_size,connection_ind_size))
 	connection_indicator.set_global_position(Vector2(connection_ind_size,connection_ind_size))
 	connection_indicator.client_id = entity_management.client_id
+	ClientTerminalGlobalSignals.connect("set_active",connection_indicator,"set_terminal_active")
 	self.add_child(connection_indicator)
 	
 	self.add_child(destination_type_indicator)
