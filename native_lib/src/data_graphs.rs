@@ -24,49 +24,147 @@ enum GraphActions{
 type DataValue = f32;
 
 #[derive(NativeClass)]
+#[inherit(CanvasLayer)]
+pub struct HoverStats{
+    value:f64,
+    tag:String,
+    stats_label: Ref<Label>
+}
+#[methods]
+impl HoverStats{
+    fn new(base:&CanvasLayer) -> Self{
+        todo!()
+    }
+    fn make() -> Instance<HoverStats,Unique>{
+        Instance::emplace(
+            HoverStats{
+                value: 0.0,
+                tag:"".to_string(), 
+                stats_label: Label::new().into_shared(),
+            }
+        )
+    }
+
+    #[method]
+    fn _ready(&self, #[base] owner: TRef<CanvasLayer>){
+        let label = unsafe{self.stats_label.assume_safe()};
+        label.set_size(Vector2{x:200.0,y:100.0},false);
+        owner.add_child(label,true);
+        owner.set_layer(2);
+        owner.set_visible(false);
+
+    }
+
+    #[method]
+    fn _process(&self,#[base] owner:TRef<CanvasLayer>,delta:f64 ){
+        let label = unsafe{self.stats_label.assume_safe()};
+        let value = self.value;
+        let tag = &self.tag;
+        label.set_text(format!("{tag:?} \n value: {value:?}"));
+    }
+
+    #[method]
+    fn display_stats(&mut self,#[base] owner:TRef<CanvasLayer>,tag:String,value:f64){
+        self.tag = tag;
+        self.set_value(value);
+        owner.set_visible(true);
+    }
+    #[method]
+    fn hide_stats(&self, #[base] owner:TRef<CanvasLayer>){
+        owner.set_visible(false);
+    }
+    fn set_value(&mut self,val:f64){
+        self.value = val;
+    }
+
+}
+
+
+#[derive(NativeClass)]
 #[inherit(Control)]
+#[register_with(Self::register_signals)]
 pub struct BarGraphColumn{
+    tag: String,
+    value: f64,
     bar:Ref<ColorRect>,
+    hovering: bool,
 }
 #[methods]
 impl BarGraphColumn{
+    fn register_signals(builder:&ClassBuilder<Self>){
+        builder
+            .signal("hovered")
+            .with_param("tag",VariantType::GodotString)
+            .with_param("value",VariantType::F64)
+            .done();
+        builder
+            .signal("unhovered")
+            .done();
+    }
     fn new(base: &Control) -> Self{
         BarGraphColumn{
+            tag: "".to_string(),
+            value : 0.0,
             bar: ColorRect::new().into_shared(),
+            hovering: false,
         }
     }
     fn make() -> Instance<BarGraphColumn,Unique>{
         Instance::emplace(
             BarGraphColumn{
+                tag: "".to_string(),
+                value : 0.0,
                 bar: ColorRect::new().into_shared(),
+                hovering: false,
             }
         )
     }
+
+    fn set_tag(&mut self, tag:String){
+        self.tag = tag;
+    }
+    fn set_value(&mut self, value:f64){
+        self.value = value;
+    }
+
     #[method]
     fn _ready(&self,#[base] owner:TRef<Control>){
         let bar = unsafe{self.bar.assume_safe()};
-        bar.set_frame_color(Color{r:250.0,g:0.0,b:0.0,a:1.0});
+        //bar.set_frame_color(Color{r:250.0,g:0.0,b:0.0,a:1.0});
         owner.add_child(bar,true);
         owner.connect("mouse_entered",owner,"hover",VariantArray::new_shared(),0);
         owner.connect("mouse_exited",owner,"unhover",VariantArray::new_shared(),0);
+        bar.connect("mouse_entered",owner,"hover",VariantArray::new_shared(),0);
+        bar.connect("mouse_exited",owner,"unhover",VariantArray::new_shared(),0);
     }
 
     #[method]
     fn _process(&self,#[base] owner: TRef<Control>,delta:f64){
         let bar = unsafe{self.bar.assume_safe()};
         bar.set_size(owner.size(),false);
+        if self.hovering{
+            bar.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
+
+        }else{
+            bar.set_frame_color(Color{r:250.0,g:0.0,b:0.0,a:1.0});
+        }
+
     }
 
     #[method]
-    fn hover(&self,#[base] owner:TRef<Control>){
+    fn hover(&mut self,#[base] owner:TRef<Control>){
         let bar = unsafe{self.bar.assume_safe()};
+        self.hovering = true;
         bar.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
+        owner.emit_signal("hovered",&[Variant::new(&self.tag),Variant::new(&self.value)]);
     }
 
     #[method]
-    fn unhover(&self,#[base] owner:TRef<Control>){
+    fn unhover(&mut self,#[base] owner:TRef<Control>){
         let bar = unsafe{self.bar.assume_safe()};
+        self.hovering = false;
         bar.set_frame_color(Color{r:250.0,g:0.0,b:0.0,a:1.0});
+        owner.emit_signal("unhovered",&[]);
     }
 
 
@@ -77,6 +175,7 @@ pub struct BarGraph{
     tag_to_data: Arc<Mutex<HashMap<String,DataValue>>>,
     columns: HashMap<String,(Instance<BarGraphColumn>,Ref<Label>)>,
     labels_x: [Ref<Label>;3],
+    hover_stats: Instance<HoverStats>,
     current_max: Arc<AtomicU32>,
     current_min: Arc<AtomicU32>,
     actions_tx: Sender<DataActions>,
@@ -95,6 +194,7 @@ impl BarGraph{
             tag_to_data: todo!(),
             columns: todo!(),
             labels_x : todo!(),
+            hover_stats: todo!(),
             current_max: todo!(),
             current_min: todo!(),
             actions_tx: tx,
@@ -144,6 +244,7 @@ impl BarGraph{
                 tag_to_data: c_data,
                 columns: columns,
                 labels_x: [Label::new().into_shared(),Label::new().into_shared(),Label::new().into_shared()],
+                hover_stats: HoverStats::make().into_shared(),
                 current_max: c_max,
                 current_min: c_min,
                 actions_tx: tx,
@@ -160,6 +261,7 @@ impl BarGraph{
         let (max_label,center_label,min_label) = unsafe{ 
             (self.labels_x[0].assume_safe(),self.labels_x[1].assume_safe(),self.labels_x[2].assume_safe())
         };
+        let hover_stats = unsafe{self.hover_stats.assume_safe()};
         resize_timer.set_wait_time(3.0);
         resize_timer.connect("timeout",owner,"resize_graph",VariantArray::new_shared(),0);
         owner.add_child(resize_timer,true);
@@ -168,6 +270,10 @@ impl BarGraph{
         owner.add_child(max_label,true);
         owner.add_child(center_label,true);
         owner.add_child(min_label,true);
+
+        hover_stats.map(|obj,canvas| {
+            owner.add_child(canvas,true);
+        });
 
     }
 
@@ -193,6 +299,7 @@ impl BarGraph{
        let tag_to_data = self.tag_to_data.lock().unwrap();
        match self.graph_actions_rx.try_recv(){
            Ok(GraphActions::CreateColumn(tag)) => {
+               let hover_stats = unsafe{self.hover_stats.assume_safe()};
                let color_rect: Ref<ColorRect> = ColorRect::new().into_shared();
                let bar = BarGraphColumn::make().into_shared();
                let tag_label : Ref<Label> = Label::new().into_shared();
@@ -201,7 +308,15 @@ impl BarGraph{
                tag_label.set_text(&tag);
                let bar = unsafe{bar.assume_safe()};
                bar.map(|_,control| owner.add_child(control,true));
+               bar.map_mut(|obj,_| obj.set_tag(tag));
                owner.add_child(tag_label,true);
+
+               hover_stats.map(|_,canvas|{
+                   bar.map(|_,control|{
+                       control.connect("hovered",canvas,"display_stats",VariantArray::new_shared(),0);
+                       control.connect("unhovered",canvas,"hide_stats",VariantArray::new_shared(),0);
+                   });
+               });
                
            }
            Err(_) => {} 
@@ -223,10 +338,11 @@ impl BarGraph{
                let column = unsafe{column.assume_safe()};
                let label = unsafe{label.assume_safe()};
                column_size.y = (value/(max_diff + ((max_diff == 0.0) as i32 as f32 * value))) * owner_size.y;
-               column.map(|bar,control|control.set_size(column_size,false));
+               column.map(|_,control| control.set_size(column_size,false));
+               column.map_mut(|bar,_|bar.set_value(*value as f64));
                loc.x = column_width * idx;
                loc.y = owner_size.y - column_size.y;
-               column.map(|bar,control|control.set_position(loc,false));
+               column.map(|_,control| control.set_position(loc,false));
                loc.y = owner_size.y - column_size.y - label_size.y;
                label.set_size(label_size,false);
                label.set_position(loc,false)
