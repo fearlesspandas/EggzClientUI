@@ -22,17 +22,69 @@ enum GraphActions{
     CreateColumn(String),
 }
 type DataValue = f32;
+
+#[derive(NativeClass)]
+#[inherit(Control)]
+pub struct BarGraphColumn{
+    bar:Ref<ColorRect>,
+}
+#[methods]
+impl BarGraphColumn{
+    fn new(base: &Control) -> Self{
+        BarGraphColumn{
+            bar: ColorRect::new().into_shared(),
+        }
+    }
+    fn make() -> Instance<BarGraphColumn,Unique>{
+        Instance::emplace(
+            BarGraphColumn{
+                bar: ColorRect::new().into_shared(),
+            }
+        )
+    }
+    #[method]
+    fn _ready(&self,#[base] owner:TRef<Control>){
+        let bar = unsafe{self.bar.assume_safe()};
+        bar.set_frame_color(Color{r:250.0,g:0.0,b:0.0,a:1.0});
+        owner.add_child(bar,true);
+        owner.connect("mouse_entered",owner,"hover",VariantArray::new_shared(),0);
+        owner.connect("mouse_exited",owner,"unhover",VariantArray::new_shared(),0);
+    }
+
+    #[method]
+    fn _process(&self,#[base] owner: TRef<Control>,delta:f64){
+        let bar = unsafe{self.bar.assume_safe()};
+        bar.set_size(owner.size(),false);
+    }
+
+    #[method]
+    fn hover(&self,#[base] owner:TRef<Control>){
+        let bar = unsafe{self.bar.assume_safe()};
+        bar.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
+    }
+
+    #[method]
+    fn unhover(&self,#[base] owner:TRef<Control>){
+        let bar = unsafe{self.bar.assume_safe()};
+        bar.set_frame_color(Color{r:250.0,g:0.0,b:0.0,a:1.0});
+    }
+
+
+}
 #[derive(NativeClass)]
 #[inherit(Control)]
 pub struct BarGraph{
     tag_to_data: Arc<Mutex<HashMap<String,DataValue>>>,
-    columns: HashMap<String,(Ref<ColorRect>,Ref<Label>)>,
+    columns: HashMap<String,(Instance<BarGraphColumn>,Ref<Label>)>,
+    labels_x: [Ref<Label>;3],
     current_max: Arc<AtomicU32>,
     current_min: Arc<AtomicU32>,
     actions_tx: Sender<DataActions>,
     graph_actions_tx: Sender<GraphActions>,
     graph_actions_rx: Receiver<GraphActions>,
     runtime:Runtime,
+    resize_timer : Ref<Timer>,
+    
 } 
 #[methods]
 impl BarGraph{
@@ -42,12 +94,14 @@ impl BarGraph{
         BarGraph{
             tag_to_data: todo!(),
             columns: todo!(),
+            labels_x : todo!(),
             current_max: todo!(),
             current_min: todo!(),
             actions_tx: tx,
             graph_actions_tx: gtx,
             graph_actions_rx: grx,
             runtime:todo!(),
+            resize_timer : Timer::new().into_shared(),
         }
     }
 
@@ -89,33 +143,64 @@ impl BarGraph{
             BarGraph{
                 tag_to_data: c_data,
                 columns: columns,
+                labels_x: [Label::new().into_shared(),Label::new().into_shared(),Label::new().into_shared()],
                 current_max: c_max,
                 current_min: c_min,
                 actions_tx: tx,
                 graph_actions_tx: c_gtx,
                 graph_actions_rx: grx,
                 runtime:rt,
+                resize_timer : Timer::new().into_shared(),
             })
     }
 
     #[method]
-    fn _ready(&mut self,#[base] owner:&Control){
+    fn _ready(&mut self,#[base] owner:TRef<Control>){
+        let resize_timer = unsafe{self.resize_timer.assume_safe()};
+        let (max_label,center_label,min_label) = unsafe{ 
+            (self.labels_x[0].assume_safe(),self.labels_x[1].assume_safe(),self.labels_x[2].assume_safe())
+        };
+        resize_timer.set_wait_time(3.0);
+        resize_timer.connect("timeout",owner,"resize_graph",VariantArray::new_shared(),0);
+        owner.add_child(resize_timer,true);
+        resize_timer.start(-1.0);
+
+        owner.add_child(max_label,true);
+        owner.add_child(center_label,true);
+        owner.add_child(min_label,true);
+
+    }
+
+    #[method]
+    fn resize_graph(&self, #[base] owner:TRef<Control>){
+       let tag_to_data = self.tag_to_data.lock().unwrap();
+       let mut calculated_max:&f32  = &0.0;
+       let mut calculated_min:&f32  = &0.0;
+       for v in tag_to_data.values(){
+          if v > &calculated_max{calculated_max = v;} 
+          if v < &calculated_min {calculated_min = v;}
+       }
+       self.current_max.store(calculated_max.to_bits(),Ordering::Relaxed);
+       self.current_min.store(calculated_min.to_bits(),Ordering::Relaxed);
     }
     
     #[method]
     fn _process(&mut self,#[base] owner:&Control,delta:f64){
+        if !owner.is_visible(){
+            return;
+        }
        let mut columns = &mut self.columns;
        let tag_to_data = self.tag_to_data.lock().unwrap();
        match self.graph_actions_rx.try_recv(){
            Ok(GraphActions::CreateColumn(tag)) => {
                let color_rect: Ref<ColorRect> = ColorRect::new().into_shared();
+               let bar = BarGraphColumn::make().into_shared();
                let tag_label : Ref<Label> = Label::new().into_shared();
-               columns.insert(tag.clone(),(color_rect,tag_label));
+               columns.insert(tag.clone(),(bar.clone(),tag_label));
                let tag_label = unsafe{tag_label.assume_safe()};
                tag_label.set_text(&tag);
-               let color_rect = unsafe{color_rect.assume_safe()};
-               color_rect.set_frame_color(Color{r:250.0,g:0.0,b:0.0,a:1.0});
-               owner.add_child(color_rect,true);
+               let bar = unsafe{bar.assume_safe()};
+               bar.map(|_,control| owner.add_child(control,true));
                owner.add_child(tag_label,true);
                
            }
@@ -138,10 +223,10 @@ impl BarGraph{
                let column = unsafe{column.assume_safe()};
                let label = unsafe{label.assume_safe()};
                column_size.y = (value/(max_diff + ((max_diff == 0.0) as i32 as f32 * value))) * owner_size.y;
-               column.set_size(column_size,false);
+               column.map(|bar,control|control.set_size(column_size,false));
                loc.x = column_width * idx;
                loc.y = owner_size.y - column_size.y;
-               column.set_position(loc,false);
+               column.map(|bar,control|control.set_position(loc,false));
                loc.y = owner_size.y - column_size.y - label_size.y;
                label.set_size(label_size,false);
                label.set_position(loc,false)
@@ -149,6 +234,19 @@ impl BarGraph{
            });
            idx+=1.0;
        }
+       let max_label_x = unsafe{self.labels_x[0].assume_safe()};
+       let center_label_x = unsafe{self.labels_x[1].assume_safe()};
+       let min_label_x = unsafe{self.labels_x[2].assume_safe()};
+       max_label_x.set_text(format!("{current_max:?}"));
+       center_label_x.set_text(format!("{current_max:?}"));
+       min_label_x.set_text(format!("{current_max:?}"));
+       max_label_x.set_position(Vector2{x:0.0,y:owner_size.y},false);
+       center_label_x.set_position(Vector2{x:0.0,y:owner_size.y/2.0},false);
+       min_label_x.set_position(Vector2{x:0.0,y:0.0},false);
+       let label_x_size = Vector2{x:50.0,y:50.0};
+       max_label_x.set_size(label_x_size,false);
+       min_label_x.set_size(label_x_size,false);
+       center_label_x.set_size(label_x_size,false);
     }
 
     pub fn add_data(&mut self,tag:String,data:DataValue){

@@ -13,5 +13,6 @@ fn init(handle:InitHandle){
     handle.add_class::<client_terminal::ClientTerminal>();
     handle.add_class::<data_display::DataDisplay>();
     handle.add_class::<data_graphs::BarGraph>();
+    handle.add_class::<data_graphs::BarGraphColumn>();
 }
 godot_init!(init);
