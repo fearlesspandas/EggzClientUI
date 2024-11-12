@@ -24,7 +24,7 @@ enum GraphActions{
 type DataValue = f32;
 
 #[derive(NativeClass)]
-#[inherit(CanvasLayer)]
+#[inherit(Control)]
 pub struct HoverStats{
     value:f64,
     tag:String,
@@ -32,7 +32,7 @@ pub struct HoverStats{
 }
 #[methods]
 impl HoverStats{
-    fn new(base:&CanvasLayer) -> Self{
+    fn new(base:&Control) -> Self{
         todo!()
     }
     fn make() -> Instance<HoverStats,Unique>{
@@ -46,31 +46,45 @@ impl HoverStats{
     }
 
     #[method]
-    fn _ready(&self, #[base] owner: TRef<CanvasLayer>){
+    fn _ready(&self, #[base] owner: TRef<Control>){
         let label = unsafe{self.stats_label.assume_safe()};
         label.set_size(Vector2{x:200.0,y:100.0},false);
+        owner.set_size(Vector2{x:200.0,y:100.0},false);
         owner.add_child(label,true);
-        owner.set_layer(2);
+        //owner.set_layer(2);
         owner.set_visible(false);
-
     }
 
     #[method]
-    fn _process(&self,#[base] owner:TRef<CanvasLayer>,delta:f64 ){
+    fn _process(&self,#[base] owner:TRef<Control>,delta:f64 ){
         let label = unsafe{self.stats_label.assume_safe()};
         let value = self.value;
         let tag = &self.tag;
         label.set_text(format!("{tag:?} \n value: {value:?}"));
+        owner.get_parent().map(|parent|{
+            let parent = unsafe{parent.assume_safe()};
+            parent.cast::<Control>().map(|control|{
+                let parent_size = control.size();
+                let parent_position = control.global_position();
+                let current_position = owner.global_position();
+                let current_size = owner.size();
+                let max_x = parent_position.x + parent_size.x - current_size.x;
+                let label_position_x = (max_x * (current_position.x > max_x ) as i32 as f32) + (current_position.x * (current_position.x <= max_x ) as i32 as f32);
+                let label_position_y = parent_position.y - current_size.y;
+                owner.set_global_position(Vector2{x:label_position_x,y:label_position_y},false);
+            });
+        });
     }
 
     #[method]
-    fn display_stats(&mut self,#[base] owner:TRef<CanvasLayer>,tag:String,value:f64){
+    fn display_stats(&mut self,#[base] owner:TRef<Control>,tag:String,value:f64,bar_position:Vector2){
         self.tag = tag;
         self.set_value(value);
         owner.set_visible(true);
+        owner.set_global_position(Vector2{x:bar_position.x, y:bar_position.y - 100.0},false);
     }
     #[method]
-    fn hide_stats(&self, #[base] owner:TRef<CanvasLayer>){
+    fn hide_stats(&self, #[base] owner:TRef<Control>){
         owner.set_visible(false);
     }
     fn set_value(&mut self,val:f64){
@@ -96,6 +110,7 @@ impl BarGraphColumn{
             .signal("hovered")
             .with_param("tag",VariantType::GodotString)
             .with_param("value",VariantType::F64)
+            .with_param("position",VariantType::Vector2)
             .done();
         builder
             .signal("unhovered")
@@ -155,8 +170,9 @@ impl BarGraphColumn{
     fn hover(&mut self,#[base] owner:TRef<Control>){
         let bar = unsafe{self.bar.assume_safe()};
         self.hovering = true;
+        let global_pos = owner.global_position();
         bar.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
-        owner.emit_signal("hovered",&[Variant::new(&self.tag),Variant::new(&self.value)]);
+        owner.emit_signal("hovered",&[Variant::new(&self.tag),Variant::new(&self.value),Variant::new(global_pos)]);
     }
 
     #[method]
@@ -353,9 +369,10 @@ impl BarGraph{
        let max_label_x = unsafe{self.labels_x[0].assume_safe()};
        let center_label_x = unsafe{self.labels_x[1].assume_safe()};
        let min_label_x = unsafe{self.labels_x[2].assume_safe()};
+       let midpoint = (current_max - current_min)/2.0;
        max_label_x.set_text(format!("{current_max:?}"));
-       center_label_x.set_text(format!("{current_max:?}"));
-       min_label_x.set_text(format!("{current_max:?}"));
+       center_label_x.set_text(format!("{midpoint:?}"));
+       min_label_x.set_text(format!("{current_min:?}"));
        max_label_x.set_position(Vector2{x:0.0,y:owner_size.y},false);
        center_label_x.set_position(Vector2{x:0.0,y:owner_size.y/2.0},false);
        min_label_x.set_position(Vector2{x:0.0,y:0.0},false);
