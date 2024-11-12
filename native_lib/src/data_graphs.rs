@@ -16,10 +16,11 @@ type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
 
 enum DataActions{
-    UpdateColumn(String,DataValue)
+    UpdateColumn(String,DataValue),
 }
 enum GraphActions{
     CreateColumn(String),
+    ClearGraph,
 }
 type DataValue = f32;
 
@@ -163,7 +164,6 @@ impl BarGraphColumn{
         }else{
             bar.set_frame_color(Color{r:250.0,g:0.0,b:0.0,a:1.0});
         }
-
     }
 
     #[method]
@@ -307,14 +307,13 @@ impl BarGraph{
     }
     
     #[method]
-    fn _process(&mut self,#[base] owner:&Control,delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
         if !owner.is_visible(){
             return;
         }
-       let mut columns = &mut self.columns;
-       let tag_to_data = self.tag_to_data.lock().unwrap();
        match self.graph_actions_rx.try_recv(){
            Ok(GraphActions::CreateColumn(tag)) => {
+               let mut columns = &mut self.columns;
                let hover_stats = unsafe{self.hover_stats.assume_safe()};
                let color_rect: Ref<ColorRect> = ColorRect::new().into_shared();
                let bar = BarGraphColumn::make().into_shared();
@@ -326,17 +325,18 @@ impl BarGraph{
                bar.map(|_,control| owner.add_child(control,true));
                bar.map_mut(|obj,_| obj.set_tag(tag));
                owner.add_child(tag_label,true);
-
                hover_stats.map(|_,canvas|{
                    bar.map(|_,control|{
                        control.connect("hovered",canvas,"display_stats",VariantArray::new_shared(),0);
                        control.connect("unhovered",canvas,"hide_stats",VariantArray::new_shared(),0);
                    });
                });
-               
            }
+           Ok(GraphActions::ClearGraph) => {self.clear_graph(owner);}
            Err(_) => {} 
        } 
+       let tag_to_data = self.tag_to_data.lock().unwrap();
+       let columns = &self.columns;
        let num_columns = columns.len() as i32;
        let owner_size = owner.size();
        let column_width = owner_size.x/(num_columns + ((num_columns == 0) as i32 )) as f32;
@@ -361,7 +361,7 @@ impl BarGraph{
                column.map(|_,control| control.set_position(loc,false));
                loc.y = owner_size.y - column_size.y - label_size.y;
                label.set_size(label_size,false);
-               label.set_position(loc,false)
+               label.set_position(loc,false);
                //godot_print!("{}",format!("tag {tag:?} column size {column_size:?} loc {loc:?} max diff {max_diff:?}"));
            });
            idx+=1.0;
@@ -373,9 +373,9 @@ impl BarGraph{
        max_label_x.set_text(format!("{current_max:?}"));
        center_label_x.set_text(format!("{midpoint:?}"));
        min_label_x.set_text(format!("{current_min:?}"));
-       max_label_x.set_position(Vector2{x:0.0,y:owner_size.y},false);
+       min_label_x.set_position(Vector2{x:0.0,y:owner_size.y},false);
        center_label_x.set_position(Vector2{x:0.0,y:owner_size.y/2.0},false);
-       min_label_x.set_position(Vector2{x:0.0,y:0.0},false);
+       max_label_x.set_position(Vector2{x:0.0,y:0.0},false);
        let label_x_size = Vector2{x:50.0,y:50.0};
        max_label_x.set_size(label_x_size,false);
        min_label_x.set_size(label_x_size,false);
@@ -384,6 +384,29 @@ impl BarGraph{
 
     pub fn add_data(&mut self,tag:String,data:DataValue){
         self.actions_tx.send(DataActions::UpdateColumn(tag,data));
+    }
+    pub fn queue_clear(&mut self){
+        self.graph_actions_tx.send(GraphActions::ClearGraph);
+    }
+
+    fn clear_graph(&mut self , owner:TRef<Control>){
+        self.tag_to_data.lock().unwrap().clear();
+        let hover_stats = unsafe{self.hover_stats.assume_safe()};
+        hover_stats.map(|_,control| {
+            for (_,data_bar) in &self.columns {
+                let (column,label) = data_bar;
+                let (column,label) = (unsafe{column.assume_safe()},unsafe{label.assume_safe()});
+                column.map(|_,col|{
+                    col.disconnect("hovered",control,"display_stats");
+                    col.disconnect("unhovered",control,"hide_stats");
+                    owner.remove_child(col);
+                    col.queue_free();
+                });
+                owner.remove_child(label);
+                label.queue_free();
+            }
+        });
+        self.columns.clear();
     }
 }
 

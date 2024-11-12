@@ -12,6 +12,9 @@ pub enum DataType{
     socket_mode,
     linear_velocity,
     global_position,
+    requests_sent,
+    responses_received,
+    request_response_delta,
 }
 impl GetAll for DataType{
     fn get_all() -> Vec<Self> where Self:Sized{
@@ -19,6 +22,9 @@ impl GetAll for DataType{
         v.push(DataType::socket_mode);
         v.push(DataType::linear_velocity);
         v.push(DataType::global_position);
+        v.push(DataType::requests_sent);
+        v.push(DataType::responses_received);
+        v.push(DataType::request_response_delta);
         v
     }
 }
@@ -33,6 +39,15 @@ impl fmt::Display for DataType{
             }
             DataType::global_position => {
                 write!(f,"global_position")
+            }
+            DataType::requests_sent => {
+                write!(f,"requests_sent")
+            }
+            DataType::responses_received => {
+                write!(f,"responses_received")
+            }
+            DataType::request_response_delta => {
+                write!(f,"request_response_delta")
             }
         }
     }

@@ -17,6 +17,7 @@ pub enum Command{
     SetAllEntitySocketMode(SocketMode),
     StartDataStream(DataType),
     StopDataStream(DataType),
+    ClearData,
 }
 #[derive(Deserialize,Serialize,Debug)]
 pub enum CommandType{
@@ -24,6 +25,7 @@ pub enum CommandType{
     set_all_entity_socket_mode,
     start_data_stream,
     stop_data_stream,
+    clear_data,
 }
 impl CreateSignal<ClientTerminal> for CommandType{
     fn register(builder:&ClassBuilder<ClientTerminal>){
@@ -53,6 +55,7 @@ impl GetAll for CommandType{
         v.push( CommandType::set_all_entity_socket_mode);
         v.push( CommandType::start_data_stream);
         v.push( CommandType::stop_data_stream);
+        v.push( CommandType::clear_data);
         v
     }
 }
@@ -63,6 +66,7 @@ impl Autocomplete for CommandType{
             CommandType::set_all_entity_socket_mode => SocketModeAllArgs::autocomplete_args,
             CommandType::start_data_stream => StartDataStreamArgs::autocomplete_args,
             CommandType::stop_data_stream => StartDataStreamArgs::autocomplete_args,
+            CommandType::clear_data => ClearDataArgs::autocomplete_args,
         }
     }
 }
@@ -84,6 +88,9 @@ impl ArgsConstructor<Command,&Value,&'static str> for CommandType{
             CommandType::stop_data_stream => 
                 StartDataStreamArgs::new(args)
                 .map(|parsed| Command::StopDataStream(parsed.data_type)),
+            CommandType::clear_data => 
+                ClearDataArgs::new(args)
+                .map(|parsed| Command::ClearData),
         }
     }
 }
@@ -102,6 +109,9 @@ impl fmt::Display for CommandType{
             CommandType::stop_data_stream => {
                 write!(f,"stop_data_stream")
             }
+            CommandType::clear_data => {
+                write!(f,"clear_data")
+            }
         }
     }
 }
@@ -113,6 +123,7 @@ impl FromStr for CommandType {
             "set_all_entity_socket_mode" => Ok(CommandType::set_all_entity_socket_mode),
             "start_data_stream" => Ok(CommandType::start_data_stream),
             "stop_data_stream" => Ok(CommandType::stop_data_stream),
+            "clear_data" => Ok(CommandType::clear_data),
             _ => Err(format!("No result found for command type {input:?}"))
         } 
     }
@@ -251,6 +262,14 @@ impl FromArgs<Value> for StartDataStreamArgs{
             }
             _ => {Err("unexpected value type for StartDataStreamArgs; expected Value::Array")}
         }
+    }
+}
+#[derive(Deserialize,Serialize)]
+pub struct ClearDataArgs;
+impl FromArgs<Value> for ClearDataArgs{
+    fn autocomplete_args(args:Vec<&str>) -> Vec<String> {Vec::new()}
+    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
+        Ok(ClearDataArgs)
     }
 }
 ////////////////////////////////

@@ -32,7 +32,6 @@ pub struct ClientTerminal{
     graph_display: Instance<BarGraph>,
     data_collection_timer: Ref<Timer>,
     data_collection_types: Vec<DataType>,
-    
 }
 
 #[methods]
@@ -210,6 +209,10 @@ impl ClientTerminal{
 
     fn handle_received_commands(&mut self, owner:TRef<CanvasLayer>){
         match self.cmd_rx.try_recv() {
+                Ok(Command::ClearData) => {
+                    let bar_graph = unsafe{self.graph_display.assume_safe()};
+                    bar_graph.map_mut(|obj,_| obj.queue_clear());
+                }
                 Ok(Command::StartDataStream(data_type)) => {
                     let data_type_str = &data_type.to_string();
                     self.data_collection_types.push(data_type);

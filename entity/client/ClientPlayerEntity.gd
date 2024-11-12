@@ -42,6 +42,12 @@ func send_requested_data(data_type):
 			ClientTerminalGlobalSignals.add_graph_data(self.id + "_lv" ,movement.dir.length())
 		ClientTerminalGlobalSignals.StreamDataType.global_position:
 			ClientTerminalGlobalSignals.add_graph_data(self.id + "_position" ,body.global_transform.origin.length())
+		ClientTerminalGlobalSignals.StreamDataType.requests_sent:
+			ClientTerminalGlobalSignals.add_graph_data(self.id + "_req_sent" ,float(physics_native_socket.num_sent()))
+		ClientTerminalGlobalSignals.StreamDataType.responses_received:
+			ClientTerminalGlobalSignals.add_graph_data(self.id + "_resp_recv" ,float(physics_native_socket.num_received()))
+		ClientTerminalGlobalSignals.StreamDataType.request_response_delta:
+			ClientTerminalGlobalSignals.add_graph_data(self.id + "_resp_delta" ,float(physics_native_socket.num_sent() - physics_native_socket.num_received()))
 
 	
 func set_socket_mode_if_entity(id,mode):
