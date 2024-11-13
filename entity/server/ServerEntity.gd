@@ -22,6 +22,8 @@ var queued_input = Vector3()
 var last_pos:Vector3 #used for lv
 var lv:Vector3
 
+var debug_mesh = null
+
 func _ready():
 	destination.is_empty = true
 	spawn = body.global_transform.origin
@@ -31,6 +33,8 @@ func _ready():
 	timer.connect("timeout",self,"check_destinations")
 	timer.start(rand_range(0,2))
 	init_sockets()
+	ServerTerminalGlobalSignals.connect("entities_add_mesh",self,"add_mesh")
+	ServerTerminalGlobalSignals.connect("entities_remove_mesh",self,"remove_mesh")
 	
 func init_sockets():
 	socket = ServerNetwork.get(client_id)
@@ -39,9 +43,20 @@ func init_sockets():
 	assert(physics_socket != null)
 	self.movement.physics_socket = physics_socket
 
-#func add_health():
-#	socket.add_health(id,10)
 	
+func add_mesh():
+	var mesh_instance = MeshInstance.new()
+	var mesh = SphereMesh.new()
+	mesh.radius = 2 
+	mesh.height = 1
+	mesh_instance.mesh = mesh
+	body.add_child(mesh_instance)
+	debug_mesh = mesh_instance
+
+func remove_mesh():
+	body.remove_child(debug_mesh)
+	debug_mesh.queue_free()
+
 	
 func check_destinations():
 	socket.get_next_destination(id)
