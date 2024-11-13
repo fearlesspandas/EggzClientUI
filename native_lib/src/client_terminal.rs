@@ -217,6 +217,8 @@ impl ClientTerminal{
 
     fn handle_received_commands(&mut self, owner:TRef<CanvasLayer>){
         match self.cmd_rx.try_recv() {
+                Ok(Command::EntitiesAddMesh) => { owner.emit_signal(CommandType::entities_add_mesh.to_string(),&[]); }
+                Ok(Command::EntitiesRemoveMesh) => { owner.emit_signal(CommandType::entities_remove_mesh.to_string(),&[]); }
                 Ok(Command::ClearData) => {
                     let bar_graph = unsafe{self.graph_display.assume_safe()};
                     bar_graph.map_mut(|obj,_| obj.queue_clear());

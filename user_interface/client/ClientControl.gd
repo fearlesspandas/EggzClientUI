@@ -89,7 +89,7 @@ func load_scene(id,secret):
 	command_menu.client_id = entity_management.client_id
 	self.add_child(command_menu)
 	
-	#client_terminal.custom_viewport = viewport
+	client_terminal.custom_viewport = viewport
 	self.connect("is_active",client_terminal,"set_active")
 	self.add_child(client_terminal)
 	client_terminal.visible = false

@@ -7,6 +7,8 @@ func register_terminal(terminal):
 	terminal.connect("set_active",self,"set_active")
 	terminal.connect("start_data_stream",self,"start_data_stream")
 	terminal.connect("request_data",self,"request_data")
+	terminal.connect("entities_add_mesh",self,"entities_add_mesh")
+	terminal.connect("entities_remove_mesh",self,"entities_remove_mesh")
 	_terminal = terminal
 
 ####SocketModes#######
@@ -46,9 +48,16 @@ signal request_data(data_type)
 func request_data(data_type):
 	emit_signal("request_data",StreamDataType.get(data_type))
 
+signal entities_add_mesh
+func entities_add_mesh():
+	emit_signal("entities_add_mesh")
+
+signal entities_remove_mesh
+func entities_remove_mesh():
+	emit_signal("entities_remove_mesh")
+
 func add_input_data(tag,data):
 	_terminal.add_incoming_data(tag,data)
 
 func add_graph_data(tag,data):
 	_terminal.add_graph_data(tag,data)
-

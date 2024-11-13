@@ -18,6 +18,8 @@ pub enum Command{
     StartDataStream(DataType),
     StopDataStream(DataType),
     ClearData,
+    EntitiesAddMesh,
+    EntitiesRemoveMesh,
 }
 #[derive(Deserialize,Serialize,Debug)]
 pub enum CommandType{
@@ -26,6 +28,11 @@ pub enum CommandType{
     start_data_stream,
     stop_data_stream,
     clear_data,
+    entities_add_mesh,
+    entities_remove_mesh,
+}
+impl CommandType{
+    fn default(args:Vec<&str>) -> Vec<String>{Vec::new()}
 }
 impl CreateSignal<ClientTerminal> for CommandType{
     fn register(builder:&ClassBuilder<ClientTerminal>){
@@ -46,6 +53,12 @@ impl CreateSignal<ClientTerminal> for CommandType{
             .signal(&CommandType::stop_data_stream.to_string())
             .with_param("type",VariantType::GodotString)
             .done();
+        builder
+            .signal(&CommandType::entities_add_mesh.to_string())
+            .done();
+        builder
+            .signal(&CommandType::entities_remove_mesh.to_string())
+            .done();
     }
 }
 impl GetAll for CommandType{
@@ -56,6 +69,8 @@ impl GetAll for CommandType{
         v.push( CommandType::start_data_stream);
         v.push( CommandType::stop_data_stream);
         v.push( CommandType::clear_data);
+        v.push( CommandType::entities_add_mesh);
+        v.push( CommandType::entities_remove_mesh);
         v
     }
 }
@@ -67,6 +82,8 @@ impl Autocomplete for CommandType{
             CommandType::start_data_stream => StartDataStreamArgs::autocomplete_args,
             CommandType::stop_data_stream => StartDataStreamArgs::autocomplete_args,
             CommandType::clear_data => ClearDataArgs::autocomplete_args,
+            CommandType::entities_add_mesh => CommandType::default,
+            CommandType::entities_remove_mesh => CommandType::default,
         }
     }
 }
@@ -91,6 +108,8 @@ impl ArgsConstructor<Command,&Value,&'static str> for CommandType{
             CommandType::clear_data => 
                 ClearDataArgs::new(args)
                 .map(|parsed| Command::ClearData),
+            CommandType::entities_add_mesh => Ok(Command::EntitiesAddMesh),
+            CommandType::entities_remove_mesh => Ok(Command::EntitiesRemoveMesh),
         }
     }
 }
@@ -112,6 +131,12 @@ impl fmt::Display for CommandType{
             CommandType::clear_data => {
                 write!(f,"clear_data")
             }
+            CommandType::entities_add_mesh => {
+                write!(f,"entities_add_mesh")
+            }
+            CommandType::entities_remove_mesh => {
+                write!(f,"entities_remove_mesh")
+            }
         }
     }
 }
@@ -124,6 +149,8 @@ impl FromStr for CommandType {
             "start_data_stream" => Ok(CommandType::start_data_stream),
             "stop_data_stream" => Ok(CommandType::stop_data_stream),
             "clear_data" => Ok(CommandType::clear_data),
+            "entities_add_mesh" => Ok(CommandType::entities_add_mesh),
+            "entities_remove_mesh" => Ok(CommandType::entities_remove_mesh),
             _ => Err(format!("No result found for command type {input:?}"))
         } 
     }
