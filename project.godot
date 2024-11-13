@@ -633,6 +633,7 @@ ProgressHandlerClient="*res://progress/client/ProgressHandlerClient.gd"
 ProgressHandlerServer="*res://progress/server/ProgressHandlerServer.gd"
 TerrainSignalsClient="*res://world/client/TerrainSignalsClient.gd"
 ClientTerminalGlobalSignals="*res://user_interface/client/ClientTerminalGlobalSignals.gd"
+ServerTerminalGlobalSignals="*res://user_interface/server/ServerTerminalGlobalSignals.gd"
 
 [input]
 

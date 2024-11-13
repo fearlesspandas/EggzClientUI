@@ -17,6 +17,7 @@ type Receiver<T> = mpsc::UnboundedReceiver<T>;
 #[inherit(CanvasLayer)]
 #[register_with(Self::register_signals)]
 pub struct ClientTerminal{
+    active:bool,
     bg_rect: Ref<ColorRect>,
     input:Ref<TextEdit>,
     auto_complete:Vec<String>,
@@ -48,6 +49,7 @@ impl ClientTerminal{
         let data_display = DataDisplay::make().into_shared();
         let graph_display = BarGraph::make().into_shared();
         ClientTerminal{
+            active: false,
             bg_rect: ColorRect::new().into_shared(),
             input : TextEdit::new().into_shared(),
             auto_complete: Vec::new(),
@@ -64,6 +66,11 @@ impl ClientTerminal{
             data_collection_timer: Timer::new().into_shared(),
             data_collection_types: Vec::new(),
         }
+    }
+
+    #[method]
+    fn set_active(&mut self,active:bool){
+        self.active = active;
     }
 
     #[method]
@@ -93,6 +100,7 @@ impl ClientTerminal{
         let input = unsafe{self.input.assume_safe()};
         let output = unsafe{self.output.assume_safe()};
         if let Ok(event) = event.try_cast::<InputEventKey>(){
+            if !self.active {return;}
             let event = unsafe{ event.assume_safe()};
             let tree = unsafe{owner.get_tree().unwrap().assume_safe()};
             if event.is_action_pressed("terminal_autocomplete_accept",true,true){
