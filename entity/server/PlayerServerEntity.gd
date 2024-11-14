@@ -5,7 +5,7 @@ class_name PlayerServerEntity
 func _ready():
 	self.is_npc = false
 	self.timer.connect("timeout",self,"timer_polling")
-	self.timer.wait_time = 0.25
+	self.timer.wait_time = 10 
 	self.body.set_collision_layer_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,true)
 	self.body.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,true)
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)

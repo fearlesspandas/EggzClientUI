@@ -359,7 +359,7 @@ impl ClientTerminal{
     }
 
     fn get_command(mut raw: &str) -> Result<Command,&'static str>{
-        let Some((typ,args)) = raw.split_once(" ") else {todo!()};
+        let Some((typ,args)) = raw.split_once(" ") else {return Err("cannot split command whitespace")};
         let typ_value = Value::String(typ.to_string());
         let args_value = Value::Array(
                 args

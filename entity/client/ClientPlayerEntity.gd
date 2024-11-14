@@ -12,7 +12,7 @@ var isSubbed = false
 var is_npc = false
 var physics_socket:RustSocket
 var socket : ClientWebSocket
-var socket_mode = ClientTerminalGlobalSignals.SocketMode.Native
+var socket_mode = ClientTerminalGlobalSignals.SocketMode.NativeLocOnly
 var mod = 2
 var radius = 0
 
@@ -27,7 +27,7 @@ func _ready():
 	assert(socket != null)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
-	self.add_child(physics_native_socket)
+	body.add_child(physics_native_socket)
 
 	ClientTerminalGlobalSignals.connect("set_entity_socket_mode",self,"set_socket_mode_if_entity")
 	ClientTerminalGlobalSignals.connect("set_all_entity_socket_mode",self,"set_socket_mode")
@@ -95,6 +95,10 @@ func default_physics_process(delta,mod = 2):
 			default_physics_process_native_syncd(delta,mod)
 		ClientTerminalGlobalSignals.SocketMode.GodotClient:
 			default_physics_process2(delta,mod)
+		ClientTerminalGlobalSignals.SocketMode.NativeLocOnly:
+			default_physics_process_native_locate_only(delta,mod)
+		ClientTerminalGlobalSignals.SocketMode.NativeDirOnly:
+			default_physics_process_native_direction_only(delta,mod)
 ##################################	
 #DEFAULT_PHYSICS_NATIVE###########
 #default physics process running native multithreaded sockets
@@ -122,17 +126,57 @@ func default_physics_process_native(delta,mod = 2):
 
 	var l = physics_native_socket.cached_location()
 	var d = physics_native_socket.cached_direction()
-	last_delta = last_delta * int(loc.x != l[0] and loc.y!=l[1] and loc.z != l[2])
+	last_delta = last_delta * int(loc.x != d[0] and loc.y!=d[1] and loc.z != d[2])
 	last_delta += delta
 	loc.x = l[0]
 	loc.y = l[1]
 	loc.z = l[2]
-	movement.entity_move(delta,loc,body)
+	movement.move(delta,loc,body)
 	loc.x = d[0]
 	loc.y = d[1]
 	loc.z = d[2]
 	movement.set_direction(-loc)
 	movement.move_by_direction(last_delta,body)
+
+func default_physics_process_native_direction_only(delta,mod = 2):
+	if mod <= 2:
+		physics_native_socket.get_direction(id)
+	else:
+		if proc%mod == 0:
+			proc = 0
+			physics_native_socket.get_direction(id)
+		if proc%mod == ceil(mod/2):
+			physics_native_socket.get_direction(id)
+		proc +=1
+	var l = physics_native_socket.cached_location()
+	var d = physics_native_socket.cached_direction()
+	last_delta = last_delta * int(loc.x != l[0] and loc.y!=l[1] and loc.z != l[2])
+	last_delta += delta
+	loc.x = d[0]
+	loc.y = d[1]
+	loc.z = d[2]
+	movement.set_direction(-loc)
+	movement.move_by_direction(last_delta,body)
+
+func default_physics_process_native_locate_only(delta,mod = 2):
+	if mod <= 2:
+		physics_native_socket.get_location(id)
+	else:
+		if proc%mod == 0:
+			proc = 0
+			physics_native_socket.get_location(id)
+		if proc%mod == ceil(mod/2):
+			physics_native_socket.get_location(id)
+		proc +=1
+	var l = physics_native_socket.cached_location()
+	loc.x = l[0]
+	loc.y = l[1]
+	loc.z = l[2]
+	self.global_transform.origin = body.global_transform.origin
+	movement.entity_move(delta,loc,body)
+
+
+	
 ######################################
 #DEFAULT_PHYSICS_GODOT################
 #default physics process running non-native single threaded sockets

@@ -73,6 +73,7 @@ func load_scene(id,secret):
 	connection_indicator.client_id = entity_management.client_id
 	ClientTerminalGlobalSignals.connect("set_active",connection_indicator,"set_terminal_active")
 	self.add_child(connection_indicator)
+
 	
 	self.add_child(destination_type_indicator)
 	
@@ -94,6 +95,7 @@ func load_scene(id,secret):
 	self.add_child(client_terminal)
 	client_terminal.visible = false
 	ClientTerminalGlobalSignals.register_terminal(client_terminal)
+	ServerTerminalGlobalSignals.connect_terminal(client_terminal)
 	#self.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	#viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	

@@ -2,6 +2,10 @@ extends Node
 
 var _terminal
 func register_terminal(terminal):
+	connect_terminal(terminal)
+	_terminal = terminal
+
+func connect_terminal(terminal):
 	terminal.connect("set_entity_socket_mode",self,"set_entity_socket_mode")
 	terminal.connect("set_all_entity_socket_mode",self,"set_all_entity_socket_mode")
 	terminal.connect("set_active",self,"set_active")
@@ -9,7 +13,6 @@ func register_terminal(terminal):
 	terminal.connect("request_data",self,"request_data")
 	terminal.connect("entities_add_mesh",self,"entities_add_mesh")
 	terminal.connect("entities_remove_mesh",self,"entities_remove_mesh")
-	_terminal = terminal
 
 ####SocketModes#######
 enum SocketMode{

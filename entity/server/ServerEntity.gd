@@ -210,36 +210,43 @@ func default_physics_process(delta):
 		var t = queued_teleports.pop_front()
 		var dir = (t - body.global_transform.origin)
 		body.translate(dir * int(should_tele))
+	if !destinations_active or destination.is_empty:
+		physics_socket.set_location_physics(id,body.global_transform.origin)
+		return
+
+	if !gravity_active:
+		match destination.type:
+			'Empty':
+				queued_teleports.pop_front()
+				pass
+			'{WAYPOINT:{}}':
+				movement.entity_move(
+					delta ,
+					destination.location,
+					body
+				)
+			'{TELEPORT:{}}':
+				movement.entity_move(
+					delta,
+					destination.location,
+					body
+				)
+			"{GRAVITY_BIND:{}}":
+				movement.entity_move_by_gravity(id,delta,destination.location,body)
+			_:
+				print_debug("no handler found for destination with type ", destination.type)
+
 	match destination.type:
 		'Empty':
 			queued_teleports.pop_front()
 			pass
-		'{WAYPOINT:{}}':
-			movement.entity_move_by_gravity(
-				id,delta * int(gravity_active) * int(destinations_active) * int(!destination.is_empty),
-				destination.location,
-				body
-			)
-			movement.entity_move(
-				delta * int(!gravity_active)* int(destinations_active)* int(!destination.is_empty),
-				destination.location,
-				body
-			)
-		'{TELEPORT:{}}':
-			movement.entity_move_by_gravity(
-				id,delta * int(gravity_active) * int(destinations_active) * int(!destination.is_empty),
-				destination.location,
-				body
-			)
-			movement.entity_move(
-				delta * int(!gravity_active)* int(destinations_active)* int(!destination.is_empty),
-				destination.location,
-				body
-			)
-		"{GRAVITY_BIND:{}}":
-			movement.entity_move_by_gravity(id,delta,destination.location,body)
 		_:
-			print_debug("no handler found for destination with type ", destination.type)
+			movement.entity_move_by_gravity(
+				id,
+				delta,
+				destination.location,
+				body
+			)
 	physics_socket.set_location_physics(id,body.global_transform.origin)
 
 func _process(delta):
