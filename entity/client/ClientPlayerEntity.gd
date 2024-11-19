@@ -169,6 +169,8 @@ func default_physics_process_native_locate_only(delta,mod = 2):
 			physics_native_socket.get_location(id)
 		proc +=1
 	var l = physics_native_socket.cached_location()
+	if l == null:
+		return
 	loc.x = l[0]
 	loc.y = l[1]
 	loc.z = l[2]

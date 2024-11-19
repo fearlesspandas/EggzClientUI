@@ -6,6 +6,7 @@ pub mod traits;
 pub mod terminal_actions;
 pub mod data_display;
 pub mod data_graphs;
+pub mod client_entity;
 mod client_terminal;
 
 

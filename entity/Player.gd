@@ -79,7 +79,7 @@ func _input(event):
 		physics_socket.send_input(id,vec)
 	
 var position_proc = 0
-var position_mod = 60
+var position_mod = 120
 func _process(delta):
 	if is_active:
 		camera_root.global_transform.origin = body.global_transform.origin
