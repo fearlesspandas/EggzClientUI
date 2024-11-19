@@ -5,7 +5,7 @@ class_name ClientPlayerEntity
 onready var message_controller:MessageController = MessageController.new()
 onready var username:Username = Username.new()
 onready var health:HealthDisplay = HealthDisplay.new()
-onready var physics_native_socket = load("res://native_lib/ClientPhysicsSocket.gdns").new()
+onready var physics_native_socket = null #load("res://native_lib/ClientPhysicsSocket.gdns").new()
 onready var physics_native_shared_socket = SharedRuntimeEnv.physics_native_shared_socket
 
 
@@ -28,11 +28,12 @@ func _ready():
 	assert(socket != null)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
-	body.add_child(physics_native_socket)
+	#body.add_child(physics_native_socket)
 
 
 
-	physics_native_shared_socket.make_client_socket([id])
+	#physics_native_shared_socket.make_client_socket([id])
+	physics_native_shared_socket.add_entity_to_queue(id)
 	ClientTerminalGlobalSignals.connect("set_entity_socket_mode",self,"set_socket_mode_if_entity")
 	ClientTerminalGlobalSignals.connect("set_all_entity_socket_mode",self,"set_socket_mode")
 	ClientTerminalGlobalSignals.connect("request_data",self,"send_requested_data")
@@ -47,27 +48,27 @@ func send_requested_data(data_type):
 		ClientTerminalGlobalSignals.StreamDataType.global_position:
 			ClientTerminalGlobalSignals.add_graph_data(self.id + "_position" ,body.global_transform.origin.length())
 		ClientTerminalGlobalSignals.StreamDataType.requests_sent:
-			ClientTerminalGlobalSignals.add_graph_data(self.id + "_req_sent" ,float(physics_native_socket.num_sent()))
+			ClientTerminalGlobalSignals.add_graph_data(self.id + "_req_sent" ,float(physics_native_shared_socket.num_sent(id)))
 		ClientTerminalGlobalSignals.StreamDataType.responses_received:
-			ClientTerminalGlobalSignals.add_graph_data(self.id + "_resp_recv" ,float(physics_native_socket.num_received()))
+			ClientTerminalGlobalSignals.add_graph_data(self.id + "_resp_recv" ,float(physics_native_shared_socket.num_received(id)))
 		ClientTerminalGlobalSignals.StreamDataType.request_response_delta:
-			ClientTerminalGlobalSignals.add_graph_data(self.id + "_resp_delta" ,float(physics_native_socket.num_sent() - physics_native_socket.num_received()))
+			ClientTerminalGlobalSignals.add_graph_data(self.id + "_resp_delta" ,float(physics_native_shared_socket.num_sent(id) - physics_native_shared_socket.num_received(id)))
 
 	
 func set_socket_mode_if_entity(id,mode):
 	if id == self.id:
 		self.socket_mode = mode
-		if self.socket_mode == ClientTerminalGlobalSignals.SocketMode.NativeProcess:
-			physics_native_socket.connect("physics",self,"update_cached_physics")
-		else:
-			physics_native_socket.disconnect("physics",self,"update_cached_physics")
+		#if self.socket_mode == ClientTerminalGlobalSignals.SocketMode.NativeProcess:
+		#	physics_native_socket.connect("physics",self,"update_cached_physics")
+		#else:
+		#	physics_native_socket.disconnect("physics",self,"update_cached_physics")
 
 func set_socket_mode(mode):
 	self.socket_mode = mode
-	if self.socket_mode == ClientTerminalGlobalSignals.SocketMode.NativeProcess:
-		physics_native_socket.connect("physics",self,"update_cached_physics")
-	else:
-		physics_native_socket.disconnect("physics",self,"update_cached_physics")
+	#if self.socket_mode == ClientTerminalGlobalSignals.SocketMode.NativeProcess:
+	#	physics_native_socket.connect("physics",self,"update_cached_physics")
+	#else:
+	#	physics_native_socket.disconnect("physics",self,"update_cached_physics")
 	
 func getSocket() -> ClientWebSocket:
 	var res = ServerNetwork.get(client_id)
@@ -117,20 +118,20 @@ func default_physics_process(delta,mod = 2):
 # (probably due to message routing but not currently certain)
 func default_physics_process_native(delta,mod = 2):
 	if mod <= 2:
-		physics_native_socket.get_location(id)
-		physics_native_socket.get_direction(id)
+		physics_native_shared_socket.request_location(id)
+		physics_native_shared_socket.request_direction(id)
 	else:
 		if proc%mod == 0:
 			proc = 0
-			physics_native_socket.get_location(id)
+			physics_native_shared_socket.request_location(id)
 		elif proc%mod == ceil(mod/2):
-			physics_native_socket.get_location(id)
+			physics_native_shared_socket.request_location(id)
 		else:
-			physics_native_socket.get_direction(id)
+			physics_native_shared_socket.request_direction(id)
 		proc +=1
 
-	var l = physics_native_socket.cached_location()
-	var d = physics_native_socket.cached_direction()
+	var l = physics_native_shared_socket.get_location(id)
+	var d = physics_native_shared_socket.get_direction(id)
 	last_delta = last_delta * int(loc.x != d[0] and loc.y!=d[1] and loc.z != d[2])
 	last_delta += delta
 	loc.x = l[0]
@@ -145,16 +146,16 @@ func default_physics_process_native(delta,mod = 2):
 
 func default_physics_process_native_direction_only(delta,mod = 2):
 	if mod <= 2:
-		physics_native_socket.get_direction(id)
+		physics_native_shared_socket.get_direction(id)
 	else:
 		if proc%mod == 0:
 			proc = 0
-			physics_native_socket.get_direction(id)
+			physics_native_shared_socket.request_direction(id)
 		if proc%mod == ceil(mod/2):
-			physics_native_socket.get_direction(id)
+			physics_native_shared_socket.request_direction(id)
 		proc +=1
-	var l = physics_native_socket.cached_location()
-	var d = physics_native_socket.cached_direction()
+	var l = physics_native_shared_socket.get_location(id)
+	var d = physics_native_shared_socket.get_direction(id)
 	last_delta = last_delta * int(loc.x != l[0] and loc.y!=l[1] and loc.z != l[2])
 	last_delta += delta
 	loc.x = d[0]
@@ -165,7 +166,7 @@ func default_physics_process_native_direction_only(delta,mod = 2):
 
 func default_physics_process_native_locate_only(delta,mod = 2):
 	if mod <= 2:
-		physics_native_socket.get_location(id)
+		physics_native_shared_socket.get_location(id)
 	else:
 		if proc%mod == 0:
 			proc = 0
@@ -193,6 +194,8 @@ func default_physics_process_shared_locate_only(delta,mod = 2):
 			physics_native_shared_socket.request_location(id)
 		proc +=1
 	var l = physics_native_shared_socket.get_location(id)
+	if l == null:
+		return
 	loc.x = l[0]
 	loc.y = l[1]
 	loc.z = l[2]
