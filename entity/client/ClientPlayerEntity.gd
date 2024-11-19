@@ -6,6 +6,7 @@ onready var message_controller:MessageController = MessageController.new()
 onready var username:Username = Username.new()
 onready var health:HealthDisplay = HealthDisplay.new()
 onready var physics_native_socket = load("res://native_lib/ClientPhysicsSocket.gdns").new()
+onready var physics_native_shared_socket = SharedRuntimeEnv.physics_native_shared_socket
 
 
 var isSubbed = false
@@ -29,6 +30,9 @@ func _ready():
 	assert(physics_socket != null)
 	body.add_child(physics_native_socket)
 
+
+
+	physics_native_shared_socket.make_client_socket([id])
 	ClientTerminalGlobalSignals.connect("set_entity_socket_mode",self,"set_socket_mode_if_entity")
 	ClientTerminalGlobalSignals.connect("set_all_entity_socket_mode",self,"set_socket_mode")
 	ClientTerminalGlobalSignals.connect("request_data",self,"send_requested_data")
@@ -96,7 +100,8 @@ func default_physics_process(delta,mod = 2):
 		ClientTerminalGlobalSignals.SocketMode.GodotClient:
 			default_physics_process2(delta,mod)
 		ClientTerminalGlobalSignals.SocketMode.NativeLocOnly:
-			default_physics_process_native_locate_only(delta,mod)
+			#default_physics_process_native_locate_only(delta,mod)
+			default_physics_process_shared_locate_only(delta,mod)
 		ClientTerminalGlobalSignals.SocketMode.NativeDirOnly:
 			default_physics_process_native_direction_only(delta,mod)
 ##################################	
@@ -176,6 +181,24 @@ func default_physics_process_native_locate_only(delta,mod = 2):
 	loc.z = l[2]
 	self.global_transform.origin = body.global_transform.origin
 	movement.entity_move(delta,loc,body)
+
+func default_physics_process_shared_locate_only(delta,mod = 2):
+	if mod <= 2:
+		physics_native_shared_socket.request_location(id)
+	else:
+		if proc%mod == 0:
+			proc = 0
+			physics_native_shared_socket.request_location(id)
+		if proc%mod == ceil(mod/2):
+			physics_native_shared_socket.request_location(id)
+		proc +=1
+	var l = physics_native_shared_socket.get_location(id)
+	loc.x = l[0]
+	loc.y = l[1]
+	loc.z = l[2]
+	self.global_transform.origin = body.global_transform.origin
+	movement.entity_move(delta,loc,body)
+
 
 
 	
