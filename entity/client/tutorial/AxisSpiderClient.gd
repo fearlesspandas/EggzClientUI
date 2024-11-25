@@ -21,17 +21,16 @@ onready var axis_arm_8 = body.find_node("AxisArm8")
 onready var setup_timer : Timer = Timer.new()
 
 var rotation_speed:float = 0.1
-var dest_positions = [
-
-	self.global_transform.origin + Vector3(500,250,0),
-	self.global_transform.origin + Vector3(-500,250,0),
-	self.global_transform.origin + Vector3(500,-250,0),
-	self.global_transform.origin + Vector3(-500,-250,0),
-	self.global_transform.origin + Vector3(0,250,500),
-	self.global_transform.origin + Vector3(0,250,-500),
-	self.global_transform.origin + Vector3(0,-250,500),
-	self.global_transform.origin + Vector3(0,-250,-500),
-]
+#var dest_positions = [
+#	self.global_transform.origin + Vector3(500,250,0),
+#	self.global_transform.origin + Vector3(-500,250,0),
+#	self.global_transform.origin + Vector3(500,-250,0),
+#	self.global_transform.origin + Vector3(-500,-250,0),
+#	self.global_transform.origin + Vector3(0,250,500),
+#	self.global_transform.origin + Vector3(0,250,-500),
+#	self.global_transform.origin + Vector3(0,-250,500),
+#	self.global_transform.origin + Vector3(0,-250,-500),
+#]
 
 func set_visibility(is_visible:bool):
 	top_legs.visible = is_visible
@@ -64,15 +63,15 @@ func _ready():
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
 	self.body.set_collision_layer_bit(EntityConstants.SERVER_NPC_COLLISION_LAYER,false)
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_NPC_COLLISION_LAYER,false)
-	self.body.add_collision_exception_with(axis_core)
-	self.body.add_collision_exception_with(axis_arm_1)
-	self.body.add_collision_exception_with(axis_arm_2)
-	self.body.add_collision_exception_with(axis_arm_3)
-	self.body.add_collision_exception_with(axis_arm_4)
-	self.body.add_collision_exception_with(axis_arm_5)
-	self.body.add_collision_exception_with(axis_arm_6)
-	self.body.add_collision_exception_with(axis_arm_7)
-	self.body.add_collision_exception_with(axis_arm_8)
+	#self.body.add_collision_exception_with(axis_core)
+	#self.body.add_collision_exception_with(axis_arm_1)
+	#self.body.add_collision_exception_with(axis_arm_2)
+	#self.body.add_collision_exception_with(axis_arm_3)
+	#self.body.add_collision_exception_with(axis_arm_4)
+	#self.body.add_collision_exception_with(axis_arm_5)
+	#self.body.add_collision_exception_with(axis_arm_6)
+	#self.body.add_collision_exception_with(axis_arm_7)
+	#self.body.add_collision_exception_with(axis_arm_8)
 
 	set_visibility(false)
 
@@ -81,7 +80,7 @@ func _ready():
 	self.add_child(setup_timer)
 	setup_timer.start()
 
-	GlobalSignalsClient.connect("player_location",self,"default_update_player_location")
+	GlobalSignalsClient.connect("player_position",self,"default_update_player_location")
 	#will have to remove this when a generic spider entity is made
 	ProgressHandlerClient.connect("tutorial_stage_completed",self,"tutorial_stage_completed")
 	physics_native_socket = load("res://native_lib/ClientPhysicsSocket.gdns").new()

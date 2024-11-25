@@ -24,3 +24,32 @@ pub trait CreateSignal<T>{
 pub trait EmitSignal{
     fn emit_signal<T>(&self, owner:T);
 }
+pub trait Instanced<T>{
+    fn make() -> Self where Self:Sized;
+    fn new(base:&T) -> Self where Self:Sized{
+        Self::make()
+    }
+    fn make_instance() -> Instance<Self,Unique> 
+        where Self:Sized,Self:NativeClass, 
+        <Self as gdnative::prelude::NativeClass>::Base: Instanciable
+    {
+        Instance::emplace(Self::make())
+    }
+}
+
+#[derive(NativeClass)]
+#[inherit(Control)]
+pub struct TestClassInstance{}
+impl Instanced<Control> for TestClassInstance{
+    fn make() -> Self where Self:Sized{
+        TestClassInstance{}
+    }
+}
+#[methods]
+impl TestClassInstance{
+    #[method]
+    fn _ready(&self,#[base]owner:TRef<Control>){
+        TestClassInstance::new(&owner);
+        TestClassInstance::make_instance();
+    }
+}

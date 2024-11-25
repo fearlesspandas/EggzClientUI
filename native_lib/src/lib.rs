@@ -7,6 +7,7 @@ pub mod terminal_actions;
 pub mod data_display;
 pub mod data_graphs;
 pub mod client_entity;
+pub mod entity_flight_tail;
 mod client_terminal;
 
 
@@ -16,5 +17,7 @@ fn init(handle:InitHandle){
     handle.add_class::<data_graphs::BarGraph>();
     handle.add_class::<data_graphs::BarGraphColumn>();
     handle.add_class::<data_graphs::HoverStats>();
+    handle.add_class::<entity_flight_tail::BeltOrbital>();
+    handle.add_class::<entity_flight_tail::OrbitNode>();
 }
 godot_init!(init);
