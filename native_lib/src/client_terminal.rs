@@ -7,7 +7,7 @@ use std::{fmt,str::FromStr};
 use crate::terminal_commands::{Command,CommandType,InputCommand,SocketModeArgs,SocketModeAllArgs,StartDataStreamArgs,ArgsConstructor};
 use crate::terminal_actions::{ActionType,Action};
 use crate::socket_mode::SocketMode;
-use crate::traits::{FromArgs,GetAll,Autocomplete,CreateSignal};
+use crate::traits::{FromArgs,GetAll,Autocomplete,CreateSignal,Instanced};
 use crate::data_display::{DataDisplay,DataType};
 use crate::data_graphs::{BarGraph};
 type Sender<T> = mpsc::UnboundedSender<T>;
@@ -47,7 +47,7 @@ impl ClientTerminal{
         let (tx,rx) = mpsc::unbounded_channel::<Command>();
         let (atx,arx) = mpsc::unbounded_channel::<Action>();
         let data_display = DataDisplay::make().into_shared();
-        let graph_display = BarGraph::make().into_shared();
+        let graph_display = BarGraph::make_instance().into_shared();
         ClientTerminal{
             active: false,
             bg_rect: ColorRect::new().into_shared(),

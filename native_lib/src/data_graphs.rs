@@ -243,29 +243,8 @@ pub struct BarGraph{
     runtime:Runtime,
     resize_timer : Ref<Timer>,
 } 
-
-#[methods]
-impl BarGraph{
-    pub fn new(base: &Control) -> Self{
-        let (tx,rx) = mpsc::unbounded_channel::<DataActions>();
-        let (gtx,grx) = mpsc::unbounded_channel::<GraphActions>();
-        BarGraph{
-            tag_to_data: todo!(),
-            columns: todo!(),
-            labels_y : todo!(),
-            aggregate_stats:todo!(),
-            hover_stats: todo!(),
-            current_max: todo!(),
-            current_min: todo!(),
-            actions_tx: tx,
-            graph_actions_tx: gtx,
-            graph_actions_rx: grx,
-            runtime:todo!(),
-            resize_timer : Timer::new().into_shared(),
-        }
-    }
-
-    pub fn make() -> Instance<BarGraph,Unique>{
+impl Instanced<Control> for BarGraph{
+    fn make() -> Self{
         let (tx,mut rx) = mpsc::unbounded_channel::<DataActions>();
         let (gtx,grx) = mpsc::unbounded_channel::<GraphActions>();
         let c_gtx = gtx.clone();
@@ -299,23 +278,24 @@ impl BarGraph{
                 }
             }
         });
-        Instance::emplace(
-            BarGraph{
-                tag_to_data: c_data,
-                columns: columns,
-                labels_y: [Label::new().into_shared(),Label::new().into_shared(),Label::new().into_shared()],
-                aggregate_stats:AggregateStats::make_instance().into_shared(),
-                hover_stats: HoverStats::make_instance().into_shared(),
-                current_max: c_max,
-                current_min: c_min,
-                actions_tx: tx,
-                graph_actions_tx: c_gtx,
-                graph_actions_rx: grx,
-                runtime:rt,
-                resize_timer : Timer::new().into_shared(),
-            })
+        BarGraph{
+            tag_to_data: c_data,
+            columns: columns,
+            labels_y: [Label::new().into_shared(),Label::new().into_shared(),Label::new().into_shared()],
+            aggregate_stats:AggregateStats::make_instance().into_shared(),
+            hover_stats: HoverStats::make_instance().into_shared(),
+            current_max: c_max,
+            current_min: c_min,
+            actions_tx: tx,
+            graph_actions_tx: c_gtx,
+            graph_actions_rx: grx,
+            runtime:rt,
+            resize_timer : Timer::new().into_shared(),
+        }
     }
-
+}
+#[methods]
+impl BarGraph{
     #[method]
     fn _ready(&mut self,#[base] owner:TRef<Control>){
         let resize_timer = unsafe{self.resize_timer.assume_safe()};

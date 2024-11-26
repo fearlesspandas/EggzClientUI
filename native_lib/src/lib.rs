@@ -16,6 +16,7 @@ fn init(handle:InitHandle){
     handle.add_class::<data_display::DataDisplay>();
     handle.add_class::<data_graphs::BarGraph>();
     handle.add_class::<data_graphs::BarGraphColumn>();
+    handle.add_class::<data_graphs::AggregateStats>();
     handle.add_class::<data_graphs::HoverStats>();
     handle.add_class::<entity_flight_tail::BeltOrbital>();
     handle.add_class::<entity_flight_tail::OrbitNode>();
