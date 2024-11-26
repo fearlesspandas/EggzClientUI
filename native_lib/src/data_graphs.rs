@@ -5,7 +5,7 @@ use std::fmt;
 use std::cmp::max;
 use std::sync::{Arc,Mutex,atomic::{AtomicU32,AtomicU64,Ordering}};
 use serde::{Deserialize,Serialize};
-use crate::traits::{GetAll};
+use crate::traits::{GetAll,Instanced};
 use tokio::{
     runtime::Runtime,
     io::{AsyncBufRead, AsyncBufReadExt, AsyncWriteExt, BufReader,BufWriter,ReadHalf,WriteHalf},
@@ -23,6 +23,63 @@ enum GraphActions{
     ClearGraph,
 }
 type DataValue = f32;
+
+#[derive(NativeClass)]
+#[inherit(Control)]
+pub struct AggregateStats{
+    label: Ref<Label>,
+    avg:f64,
+    min:f64,
+    max:f64,
+}
+impl Instanced<Control> for AggregateStats{
+    fn make() -> Self{
+        AggregateStats{
+            label: Label::new().into_shared(),
+            avg:0.0,
+            min:0.0,
+            max:0.0,
+        }
+    }
+}
+#[methods]
+impl AggregateStats{
+    #[method]
+    fn _ready(&self, #[base] owner:TRef<Control>){
+        owner.add_child(self.label,true);
+    }
+    #[method]
+    fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
+        let label = unsafe{self.label.assume_safe()};
+        let avg = self.avg;
+        let min = self.min;
+        let max = self.max;
+        label.set_size(owner.size(),false);
+        label.set_text(format!("Avg:{avg:?}\nMin:{min:?}\nMax:{max:?}"));
+    }
+    fn calculate_avg(values:&Vec<f64>) -> f64{
+        let mut avg_accum = 0.0;
+        for value in values{
+            avg_accum += value;
+        }
+        avg_accum/(values.len() as f64)
+    }
+    fn calculate_min(values:&Vec<f64>) -> f64{
+       values.iter().fold(f64::MAX,|acc,curr| f64::min(acc,*curr))
+    }
+    fn calculate_max(values:&Vec<f64>) -> f64{
+       values.iter().fold(f64::MIN,|acc,curr| f64::max(acc,*curr))
+    }
+    fn set_avg(&mut self,values:&Vec<f64>){
+        self.avg = Self::calculate_avg(values);
+    }
+    fn set_min(&mut self,values:&Vec<f64>){
+        self.min = Self::calculate_min(values);
+    }
+    fn set_max(&mut self,values:&Vec<f64>){
+        self.max = Self::calculate_max(values);
+    }
+}
 
 #[derive(NativeClass)]
 #[inherit(Control)]
@@ -190,7 +247,8 @@ impl BarGraphColumn{
 pub struct BarGraph{
     tag_to_data: Arc<Mutex<HashMap<String,DataValue>>>,
     columns: HashMap<String,(Instance<BarGraphColumn>,Ref<Label>)>,
-    labels_x: [Ref<Label>;3],
+    labels_y: [Ref<Label>;3],
+    aggregate_stats:Instance<AggregateStats>,
     hover_stats: Instance<HoverStats>,
     current_max: Arc<AtomicU32>,
     current_min: Arc<AtomicU32>,
@@ -199,7 +257,6 @@ pub struct BarGraph{
     graph_actions_rx: Receiver<GraphActions>,
     runtime:Runtime,
     resize_timer : Ref<Timer>,
-    
 } 
 #[methods]
 impl BarGraph{
@@ -209,7 +266,8 @@ impl BarGraph{
         BarGraph{
             tag_to_data: todo!(),
             columns: todo!(),
-            labels_x : todo!(),
+            labels_y : todo!(),
+            aggregate_stats:todo!(),
             hover_stats: todo!(),
             current_max: todo!(),
             current_min: todo!(),
@@ -259,7 +317,8 @@ impl BarGraph{
             BarGraph{
                 tag_to_data: c_data,
                 columns: columns,
-                labels_x: [Label::new().into_shared(),Label::new().into_shared(),Label::new().into_shared()],
+                labels_y: [Label::new().into_shared(),Label::new().into_shared(),Label::new().into_shared()],
+                aggregate_stats:AggregateStats::make_instance().into_shared(),
                 hover_stats: HoverStats::make().into_shared(),
                 current_max: c_max,
                 current_min: c_min,
@@ -275,7 +334,7 @@ impl BarGraph{
     fn _ready(&mut self,#[base] owner:TRef<Control>){
         let resize_timer = unsafe{self.resize_timer.assume_safe()};
         let (max_label,center_label,min_label) = unsafe{ 
-            (self.labels_x[0].assume_safe(),self.labels_x[1].assume_safe(),self.labels_x[2].assume_safe())
+            (self.labels_y[0].assume_safe(),self.labels_y[1].assume_safe(),self.labels_y[2].assume_safe())
         };
         let hover_stats = unsafe{self.hover_stats.assume_safe()};
         resize_timer.set_wait_time(3.0);
@@ -369,9 +428,9 @@ impl BarGraph{
            });
            idx+=1.0;
        }
-       let max_label_x = unsafe{self.labels_x[0].assume_safe()};
-       let center_label_x = unsafe{self.labels_x[1].assume_safe()};
-       let min_label_x = unsafe{self.labels_x[2].assume_safe()};
+       let max_label_x = unsafe{self.labels_y[0].assume_safe()};
+       let center_label_x = unsafe{self.labels_y[1].assume_safe()};
+       let min_label_x = unsafe{self.labels_y[2].assume_safe()};
        let midpoint = (current_max - current_min)/2.0;
        max_label_x.set_text(format!("{current_max:?}"));
        center_label_x.set_text(format!("{midpoint:?}"));
