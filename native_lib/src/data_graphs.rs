@@ -28,9 +28,9 @@ type DataValue = f32;
 #[inherit(Control)]
 pub struct AggregateStats{
     label: Ref<Label>,
-    avg:f64,
-    min:f64,
-    max:f64,
+    avg:f32,
+    min:f32,
+    max:f32,
 }
 impl Instanced<Control> for AggregateStats{
     fn make() -> Self{
@@ -57,26 +57,36 @@ impl AggregateStats{
         label.set_size(owner.size(),false);
         label.set_text(format!("Avg:{avg:?}\nMin:{min:?}\nMax:{max:?}"));
     }
-    fn calculate_avg(values:&Vec<f64>) -> f64{
+    fn calculate_avg(values:Vec<&f32>) -> f32{
         let mut avg_accum = 0.0;
+        let num = values.len() as f32;
         for value in values{
             avg_accum += value;
         }
-        avg_accum/(values.len() as f64)
+        avg_accum/num
     }
-    fn calculate_min(values:&Vec<f64>) -> f64{
-       values.iter().fold(f64::MAX,|acc,curr| f64::min(acc,*curr))
+    fn calculate_min(values:Vec<&f32>) -> f32{
+       values.iter().fold(f32::MAX,|acc,curr| f32::min(acc,**curr))
     }
-    fn calculate_max(values:&Vec<f64>) -> f64{
-       values.iter().fold(f64::MIN,|acc,curr| f64::max(acc,*curr))
+    fn calculate_max(values:Vec<&f32>) -> f32{
+       values.iter().fold(f32::MIN,|acc,curr| f32::max(acc,**curr))
     }
-    fn set_avg(&mut self,values:&Vec<f64>){
+    fn set_avg(&mut self,value:f32){
+        self.avg = value;
+    }
+    fn set_min(&mut self,value:f32){
+        self.min = value;
+    }
+    fn set_max(&mut self,value:f32){
+        self.max = value;
+    }
+    fn set_calc_avg(&mut self,values:Vec<&f32>){
         self.avg = Self::calculate_avg(values);
     }
-    fn set_min(&mut self,values:&Vec<f64>){
+    fn set_calc_min(&mut self,values:Vec<&f32>){
         self.min = Self::calculate_min(values);
     }
-    fn set_max(&mut self,values:&Vec<f64>){
+    fn set_calc_max(&mut self,values:Vec<&f32>){
         self.max = Self::calculate_max(values);
     }
 }
@@ -235,6 +245,7 @@ pub struct BarGraph{
     labels_y: [Ref<Label>;3],
     aggregate_stats:Instance<AggregateStats>,
     hover_stats: Instance<HoverStats>,
+    current_avg: Arc<AtomicU32>,
     current_max: Arc<AtomicU32>,
     current_min: Arc<AtomicU32>,
     actions_tx: Sender<DataActions>,
@@ -252,8 +263,10 @@ impl Instanced<Control> for BarGraph{
         let c_data = tag_to_data.clone();
         let max_at = Arc::new(AtomicU32::new(0));
         let min_at = Arc::new(AtomicU32::new(0));
+        let avg_at = Arc::new(AtomicU32::new(0));
         let c_max = max_at.clone();
         let c_min = min_at.clone();
+        let c_avg = avg_at.clone();
         let columns = HashMap::new();
         let rt = Runtime::new().unwrap();
         rt.spawn(async move{
@@ -268,11 +281,18 @@ impl Instanced<Control> for BarGraph{
                        tag_to_data.insert(tag.clone(),value);
                        let current_max = f32::from_bits(max_at.load(Ordering::Relaxed));
                        let current_min = f32::from_bits(min_at.load(Ordering::Relaxed));
+                       let current_avg = f32::from_bits(avg_at.load(Ordering::Relaxed));
                        if current_max < value{
                            max_at.store(value.to_bits(),Ordering::Relaxed);
                        }
                        if current_min > value{
                            min_at.store(value.to_bits(),Ordering::Relaxed);
+                       }
+                       if tag_to_data.contains_key(&tag){
+                           let current_val = tag_to_data.get(&tag).unwrap();
+                           let num = tag_to_data.len() as f32;
+                           let calc_avg = ((current_avg * num) - current_val + value)/num;
+                           avg_at.store(calc_avg.to_bits(),Ordering::Relaxed);
                        }
                     }
                 }
@@ -284,6 +304,7 @@ impl Instanced<Control> for BarGraph{
             labels_y: [Label::new().into_shared(),Label::new().into_shared(),Label::new().into_shared()],
             aggregate_stats:AggregateStats::make_instance().into_shared(),
             hover_stats: HoverStats::make_instance().into_shared(),
+            current_avg: c_avg,
             current_max: c_max,
             current_min: c_min,
             actions_tx: tx,
@@ -303,21 +324,20 @@ impl BarGraph{
             (self.labels_y[0].assume_safe(),self.labels_y[1].assume_safe(),self.labels_y[2].assume_safe())
         };
         let hover_stats = unsafe{self.hover_stats.assume_safe()};
+        let aggregate_stats = unsafe{self.aggregate_stats.assume_safe()};
         resize_timer.set_wait_time(3.0);
         resize_timer.connect("timeout",owner,"resize_graph",VariantArray::new_shared(),0);
         owner.add_child(resize_timer,true);
         resize_timer.start(-1.0);
-
         owner.add_child(max_label,true);
         owner.add_child(center_label,true);
         owner.add_child(min_label,true);
-
         hover_stats.map(|obj,canvas| {
             owner.add_child(canvas,true);
         });
-
+        aggregate_stats.map(|_,control| owner.add_child(control,true));
+        aggregate_stats.map(|_,control| control.set_visible(false));
     }
-
     #[method]
     fn resize_graph(&self, #[base] owner:TRef<Control>){
        let tag_to_data = self.tag_to_data.lock().unwrap();
@@ -330,7 +350,6 @@ impl BarGraph{
        self.current_max.store(calculated_max.to_bits(),Ordering::Relaxed);
        self.current_min.store(calculated_min.to_bits(),Ordering::Relaxed);
     }
-    
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
         if !owner.is_visible(){
@@ -413,10 +432,31 @@ impl BarGraph{
     pub fn add_data(&mut self,tag:String,data:DataValue){
         self.actions_tx.send(DataActions::UpdateColumn(tag,data));
     }
+    pub fn display_aggregate_stats(&self){
+        let aggregate_stats = unsafe{self.aggregate_stats.assume_safe()};
+        let current_avg = f32::from_bits(self.current_avg.load(Ordering::Relaxed));
+        let current_min = f32::from_bits(self.current_min.load(Ordering::Relaxed));
+        let current_max = f32::from_bits(self.current_max.load(Ordering::Relaxed));
+        aggregate_stats.map_mut(|obj,_| obj.set_avg(current_avg));
+        aggregate_stats.map_mut(|obj,_| obj.set_min(current_min));
+        aggregate_stats.map_mut(|obj,_| obj.set_max(current_max));
+    }
+    pub fn update_aggregate_stats(&self){
+        let aggregate_stats = unsafe{self.aggregate_stats.assume_safe()};
+        let tag_to_data = self.tag_to_data.lock().unwrap();
+        let data = tag_to_data.values().into_iter().collect::<Vec<&f32>>();
+        aggregate_stats.map_mut(|obj,_| obj.set_calc_avg(data));
+    }
+    pub fn show_aggregate_stats(&self){
+        let aggregate_stats = unsafe{self.aggregate_stats.assume_safe()};
+        let tag_to_data = self.tag_to_data.lock().unwrap();
+        let data = tag_to_data.values().into_iter().collect::<Vec<&f32>>();
+        aggregate_stats.map_mut(|obj,_| obj.set_calc_avg(data));
+        aggregate_stats.map(|_,control| control.set_visible(true));
+    }
     pub fn queue_clear(&mut self){
         self.graph_actions_tx.send(GraphActions::ClearGraph);
     }
-
     fn clear_graph(&mut self , owner:TRef<Control>){
         self.tag_to_data.lock().unwrap().clear();
         let hover_stats = unsafe{self.hover_stats.assume_safe()};
