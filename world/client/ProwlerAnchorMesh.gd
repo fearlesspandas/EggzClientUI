@@ -8,7 +8,7 @@ func _ready():
 
 func update_mesh_from_position(location:Vector3):
 	if (self.global_transform.origin - location).length() > ClientSettings.CAMERA_RENDER_DISTANCE :
-		TerrainSignalsClient.add_to_navigation_mesh(uuid,self.global_transform.origin, Color.red)
+		TerrainSignalsClient.add_to_navigation_mesh(uuid,self.global_transform.origin, Color.red,10)
 		loaded = false
 	else:
 		TerrainSignalsClient.remove_from_navigation_mesh(uuid)

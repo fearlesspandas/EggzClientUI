@@ -7,6 +7,7 @@ onready var username:Username = Username.new()
 onready var health:HealthDisplay = HealthDisplay.new()
 onready var physics_native_socket = null #load("res://native_lib/ClientPhysicsSocket.gdns").new()
 onready var physics_native_shared_socket = SharedRuntimeEnv.physics_native_shared_socket
+#onready var belt_orbital = load("res://native_lib/BeltOrbital.gdns").new()
 
 
 var isSubbed = false
@@ -28,6 +29,7 @@ func _ready():
 	assert(socket != null)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
+	#body.add_child(belt_orbital)
 	#body.add_child(physics_native_socket)
 
 

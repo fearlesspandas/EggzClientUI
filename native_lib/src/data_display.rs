@@ -15,6 +15,7 @@ pub enum DataType{
     requests_sent,
     responses_received,
     request_response_delta,
+    fps,
 }
 impl GetAll for DataType{
     fn get_all() -> Vec<Self> where Self:Sized{
@@ -25,6 +26,7 @@ impl GetAll for DataType{
         v.push(DataType::requests_sent);
         v.push(DataType::responses_received);
         v.push(DataType::request_response_delta);
+        v.push(DataType::fps);
         v
     }
 }
@@ -48,6 +50,9 @@ impl fmt::Display for DataType{
             }
             DataType::request_response_delta => {
                 write!(f,"request_response_delta")
+            }
+            DataType::fps => {
+                write!(f,"fps")
             }
         }
     }

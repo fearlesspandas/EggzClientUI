@@ -22,7 +22,6 @@ impl OrbitNodeType{
                 let material = SpatialMaterial::new().into_shared();
                 let material = unsafe{material.assume_safe()};
                 meshi.set_material(material);
-                //material.set_albedo(Color{r:227.0,g:18.0,b:220.0,a:1.0});
                 material.set_albedo(Color{r:227.0,g:0.0,b:225.0,a:1.0});
                 meshi.set_radius(0.5);
                 meshi.set_height(1.0);
@@ -82,7 +81,6 @@ impl OrbitNode{
             Err(_) => {}
         }
         self.orbit(owner,delta);
-
     }
     #[method]
     fn orbit(&mut self,#[base] owner:TRef<MeshInstance>,delta:f64){
@@ -99,7 +97,6 @@ impl OrbitNode{
         });
     }
 }
-
 #[derive(NativeClass)]
 #[inherit(Spatial)]
 pub struct BeltOrbital{

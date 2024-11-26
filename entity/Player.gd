@@ -12,7 +12,6 @@ onready var pointer:PlayerPathPointer = PlayerPathPointer.new()
 onready var input_timer:Timer = Timer.new()
 onready var position_data_timer : Timer = Timer.new()
 onready var navigator_mesh:NavigatorMesh = NavigatorMesh.new()
-onready var belt_orbital = load("res://native_lib/BeltOrbital.gdns").new()
 
 var is_active = false
 var terminal_active = false
@@ -25,7 +24,6 @@ func _ready():
 	#input_timer.wait_time = 0.1
 	#input_timer.connect("timeout",self,"muh_process")
 	body.add_child(navigator_mesh)
-	body.add_child(belt_orbital)
 	ClientTerminalGlobalSignals.connect("set_active",self,"set_terminal_active")
 	
 func set_destination_mode(mode):

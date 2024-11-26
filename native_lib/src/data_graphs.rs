@@ -347,7 +347,10 @@ impl BarGraph{
        let mut loc:Vector2 = Vector2{x:0.0,y:0.0};
        let mut column_size = Vector2{x:column_width,y:0.0};
        let mut label_size = Vector2{x:column_width, y: 10.0};
-       for (tag,value) in &*tag_to_data{
+       let mut sorted_keys = tag_to_data.keys().into_iter().collect::<Vec<&String>>();
+       sorted_keys.sort();
+       for (tag) in sorted_keys{
+           let value = tag_to_data.get(tag).unwrap();
            let col = columns.get(tag);
            col.map(|column|{
                let (column,label) = column;
