@@ -88,21 +88,18 @@ pub struct HoverStats{
     tag:String,
     stats_label: Ref<Label>
 }
-#[methods]
-impl HoverStats{
-    fn new(base:&Control) -> Self{
-        todo!()
-    }
-    fn make() -> Instance<HoverStats,Unique>{
-        Instance::emplace(
-            HoverStats{
-                value: 0.0,
-                tag:"".to_string(), 
-                stats_label: Label::new().into_shared(),
-            }
-        )
+impl Instanced<Control> for HoverStats{
+    fn make() -> Self{
+        HoverStats{
+            value: 0.0,
+            tag:"".to_string(), 
+            stats_label: Label::new().into_shared(),
+        }
     }
 
+}
+#[methods]
+impl HoverStats{
     #[method]
     fn _ready(&self, #[base] owner: TRef<Control>){
         let label = unsafe{self.stats_label.assume_safe()};
@@ -112,7 +109,6 @@ impl HoverStats{
         //owner.set_layer(2);
         owner.set_visible(false);
     }
-
     #[method]
     fn _process(&self,#[base] owner:TRef<Control>,delta:f64 ){
         let label = unsafe{self.stats_label.assume_safe()};
@@ -133,7 +129,6 @@ impl HoverStats{
             });
         });
     }
-
     #[method]
     fn display_stats(&mut self,#[base] owner:TRef<Control>,tag:String,value:f64,bar_position:Vector2){
         self.tag = tag;
@@ -148,7 +143,6 @@ impl HoverStats{
     fn set_value(&mut self,val:f64){
         self.value = val;
     }
-
 }
 
 
@@ -160,6 +154,16 @@ pub struct BarGraphColumn{
     value: f64,
     bar:Ref<ColorRect>,
     hovering: bool,
+}
+impl Instanced<Control> for BarGraphColumn{
+    fn make() -> Self{
+        BarGraphColumn{
+            tag: "".to_string(),
+            value : 0.0,
+            bar: ColorRect::new().into_shared(),
+            hovering: false,
+        }
+    }
 }
 #[methods]
 impl BarGraphColumn{
@@ -174,25 +178,6 @@ impl BarGraphColumn{
             .signal("unhovered")
             .done();
     }
-    fn new(base: &Control) -> Self{
-        BarGraphColumn{
-            tag: "".to_string(),
-            value : 0.0,
-            bar: ColorRect::new().into_shared(),
-            hovering: false,
-        }
-    }
-    fn make() -> Instance<BarGraphColumn,Unique>{
-        Instance::emplace(
-            BarGraphColumn{
-                tag: "".to_string(),
-                value : 0.0,
-                bar: ColorRect::new().into_shared(),
-                hovering: false,
-            }
-        )
-    }
-
     fn set_tag(&mut self, tag:String){
         self.tag = tag;
     }
@@ -258,6 +243,7 @@ pub struct BarGraph{
     runtime:Runtime,
     resize_timer : Ref<Timer>,
 } 
+
 #[methods]
 impl BarGraph{
     pub fn new(base: &Control) -> Self{
@@ -319,7 +305,7 @@ impl BarGraph{
                 columns: columns,
                 labels_y: [Label::new().into_shared(),Label::new().into_shared(),Label::new().into_shared()],
                 aggregate_stats:AggregateStats::make_instance().into_shared(),
-                hover_stats: HoverStats::make().into_shared(),
+                hover_stats: HoverStats::make_instance().into_shared(),
                 current_max: c_max,
                 current_min: c_min,
                 actions_tx: tx,
@@ -375,7 +361,7 @@ impl BarGraph{
                let mut columns = &mut self.columns;
                let hover_stats = unsafe{self.hover_stats.assume_safe()};
                let color_rect: Ref<ColorRect> = ColorRect::new().into_shared();
-               let bar = BarGraphColumn::make().into_shared();
+               let bar = BarGraphColumn::make_instance().into_shared();
                let tag_label : Ref<Label> = Label::new().into_shared();
                columns.insert(tag.clone(),(bar.clone(),tag_label));
                let tag_label = unsafe{tag_label.assume_safe()};
