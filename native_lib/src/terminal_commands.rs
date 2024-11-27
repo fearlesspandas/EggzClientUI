@@ -20,6 +20,8 @@ pub enum Command{
     ClearData,
     EntitiesAddMesh,
     EntitiesRemoveMesh,
+    SaveSnapshot(String),
+    //ToggleAggregateStats,
 }
 #[derive(Deserialize,Serialize,Debug)]
 pub enum CommandType{
@@ -30,6 +32,8 @@ pub enum CommandType{
     clear_data,
     entities_add_mesh,
     entities_remove_mesh,
+    save_snapshot,
+    //toggle_aggregate_stats,
 }
 impl CommandType{
     fn default(args:Vec<&str>) -> Vec<String>{Vec::new()}
@@ -71,6 +75,7 @@ impl GetAll for CommandType{
         v.push( CommandType::clear_data);
         v.push( CommandType::entities_add_mesh);
         v.push( CommandType::entities_remove_mesh);
+        v.push( CommandType::save_snapshot);
         v
     }
 }
@@ -82,6 +87,7 @@ impl Autocomplete for CommandType{
             CommandType::start_data_stream => StartDataStreamArgs::autocomplete_args,
             CommandType::stop_data_stream => StartDataStreamArgs::autocomplete_args,
             CommandType::clear_data => ClearDataArgs::autocomplete_args,
+            CommandType::save_snapshot => SaveSnapshotArgs::autocomplete_args,
             CommandType::entities_add_mesh => CommandType::default,
             CommandType::entities_remove_mesh => CommandType::default,
         }
@@ -108,6 +114,9 @@ impl ArgsConstructor<Command,&Value,&'static str> for CommandType{
             CommandType::clear_data => 
                 ClearDataArgs::new(args)
                 .map(|parsed| Command::ClearData),
+            CommandType::save_snapshot => 
+                SaveSnapshotArgs::new(args)
+                .map(|parsed| Command::SaveSnapshot(parsed.name)),
             CommandType::entities_add_mesh => Ok(Command::EntitiesAddMesh),
             CommandType::entities_remove_mesh => Ok(Command::EntitiesRemoveMesh),
         }
@@ -137,6 +146,9 @@ impl fmt::Display for CommandType{
             CommandType::entities_remove_mesh => {
                 write!(f,"entities_remove_mesh")
             }
+            CommandType::save_snapshot => {
+                write!(f,"save_snapshot")
+            }
         }
     }
 }
@@ -151,6 +163,7 @@ impl FromStr for CommandType {
             "clear_data" => Ok(CommandType::clear_data),
             "entities_add_mesh" => Ok(CommandType::entities_add_mesh),
             "entities_remove_mesh" => Ok(CommandType::entities_remove_mesh),
+            "save_snapshot" => Ok(CommandType::save_snapshot),
             _ => Err(format!("No result found for command type {input:?}"))
         } 
     }
@@ -159,7 +172,7 @@ impl FromStr for CommandType {
 ///INPUT COMMANDS//////////////
 #[derive(Deserialize,Serialize)]
 pub struct InputCommand{
-    pub typ:CommandType,
+    pub typ: CommandType,
     pub args: Value
 }
 impl ArgsConstructor<Command,(),&'static str> for InputCommand{
@@ -297,6 +310,46 @@ impl FromArgs<Value> for ClearDataArgs{
     fn autocomplete_args(args:Vec<&str>) -> Vec<String> {Vec::new()}
     fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
         Ok(ClearDataArgs)
+    }
+}
+#[derive(Deserialize,Serialize)]
+pub struct SaveSnapshotArgs{
+    pub name:String 
+}
+impl FromArgs<Value> for SaveSnapshotArgs{
+    fn autocomplete_args(args:Vec<&str>) -> Vec<String>{
+        match args.len(){
+            0 => {
+                DataType::get_all()
+                    .into_iter()
+                    .map(|data_type| data_type.to_string())
+                    .collect()
+            }
+            1 => {
+                let pattern = &args[0];
+                DataType::get_all()
+                    .into_iter()
+                    .map(|data_type| data_type.to_string())
+                    .filter(|data_type| data_type.contains(pattern))
+                    .collect()
+            }
+            _ => {Vec::new()}
+        }
+    }
+    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
+        match args{
+            Value::Array(values) => {
+                if values.len() < 1{
+                    return Err("too few arguments for SocketModeAllArgs")
+                }
+                let mut fmt_args = serde_json::Map::new();
+                let data_type = &values[0];
+                fmt_args.insert("name".to_string(),data_type.clone());
+                serde_json::from_value::<SaveSnapshotArgs>(Value::Object(fmt_args))
+                    .map_err(|e| {let err = e.to_string();godot_print!("{}",err);"could not map SaveSnapshotArgs "})
+            }
+            _ => {Err("unexpected value type for SaveSnapshotArgs; expected Value::Array")}
+        }
     }
 }
 ////////////////////////////////

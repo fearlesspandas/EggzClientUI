@@ -4,7 +4,7 @@ use serde_json::{Result as JResult, Value};
 use serde::{Deserialize,Serialize};
 use tokio::sync::mpsc;
 use std::{fmt,str::FromStr};
-use crate::terminal_commands::{Command,CommandType,InputCommand,SocketModeArgs,SocketModeAllArgs,StartDataStreamArgs,ArgsConstructor};
+use crate::terminal_commands::{Command,CommandType,InputCommand,SocketModeArgs,SocketModeAllArgs,StartDataStreamArgs,ArgsConstructor,SaveSnapshotArgs};
 use crate::terminal_actions::{ActionType,Action};
 use crate::socket_mode::SocketMode;
 use crate::traits::{FromArgs,GetAll,Autocomplete,CreateSignal,Instanced};
@@ -222,6 +222,10 @@ impl ClientTerminal{
                 Ok(Command::ClearData) => {
                     let bar_graph = unsafe{self.graph_display.assume_safe()};
                     bar_graph.map_mut(|obj,_| obj.queue_clear());
+                }
+                Ok(Command::SaveSnapshot(name)) => {
+                    let bar_graph = unsafe{self.graph_display.assume_safe()};
+                    bar_graph.map(|obj,_|obj.snapshot(name));
                 }
                 Ok(Command::StartDataStream(data_type)) => {
                     let data_type_str = &data_type.to_string();

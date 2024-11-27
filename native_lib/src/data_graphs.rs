@@ -6,6 +6,7 @@ use std::cmp::max;
 use std::sync::{Arc,Mutex,atomic::{AtomicU32,AtomicU64,Ordering}};
 use serde::{Deserialize,Serialize};
 use crate::traits::{GetAll,Instanced};
+use crate::data_snapshots::{DataSnapshots,BarGraphSnapshot};
 use tokio::{
     runtime::Runtime,
     io::{AsyncBufRead, AsyncBufReadExt, AsyncWriteExt, BufReader,BufWriter,ReadHalf,WriteHalf},
@@ -24,6 +25,33 @@ enum GraphActions{
 }
 type DataValue = f32;
 
+fn position_within_parent(owner:TRef<Control>){
+    owner.get_parent().map(|parent|{
+        let parent = unsafe{parent.assume_safe()};
+        parent.cast::<Control>().map(|control|{
+            let parent_size = control.size();
+            let parent_position = control.global_position();
+            let current_position = owner.global_position();
+            let current_size = owner.size();
+            let max_x = parent_position.x + parent_size.x - current_size.x;
+            let label_position_x = (max_x * (current_position.x > max_x ) as i32 as f32) + (current_position.x * (current_position.x <= max_x ) as i32 as f32);
+            let label_position_y = parent_position.y - current_size.y;
+            owner.set_global_position(Vector2{x:label_position_x,y:label_position_y},false);
+        });
+    });
+}
+fn size_control(owner:Ref<Control>,size:Vector2){
+    let owner = unsafe{owner.assume_safe()};
+    owner.set_size(size,false);
+}
+fn position_in_parent(owner:TRef<Control>,at:Vector2){
+    owner.get_parent().map(|parent|{
+        let parent = unsafe{parent.assume_safe()};
+        parent.cast::<Control>().map(|control|{
+            let parent_size = control.size();
+        });
+    });
+}
 #[derive(NativeClass)]
 #[inherit(Control)]
 pub struct AggregateStats{
@@ -125,19 +153,7 @@ impl HoverStats{
         let value = self.value;
         let tag = &self.tag;
         label.set_text(format!("{tag:?} \n value: {value:?}"));
-        owner.get_parent().map(|parent|{
-            let parent = unsafe{parent.assume_safe()};
-            parent.cast::<Control>().map(|control|{
-                let parent_size = control.size();
-                let parent_position = control.global_position();
-                let current_position = owner.global_position();
-                let current_size = owner.size();
-                let max_x = parent_position.x + parent_size.x - current_size.x;
-                let label_position_x = (max_x * (current_position.x > max_x ) as i32 as f32) + (current_position.x * (current_position.x <= max_x ) as i32 as f32);
-                let label_position_y = parent_position.y - current_size.y;
-                owner.set_global_position(Vector2{x:label_position_x,y:label_position_y},false);
-            });
-        });
+        position_within_parent(owner);
     }
     #[method]
     fn display_stats(&mut self,#[base] owner:TRef<Control>,tag:String,value:f64,bar_position:Vector2){
@@ -253,6 +269,7 @@ pub struct BarGraph{
     graph_actions_rx: Receiver<GraphActions>,
     runtime:Runtime,
     resize_timer : Ref<Timer>,
+    snapshot_api: Instance<DataSnapshots>,
 } 
 impl Instanced<Control> for BarGraph{
     fn make() -> Self{
@@ -262,7 +279,7 @@ impl Instanced<Control> for BarGraph{
         let tag_to_data = Arc::new(Mutex::new(HashMap::new()));
         let c_data = tag_to_data.clone();
         let max_at = Arc::new(AtomicU32::new(0));
-        let min_at = Arc::new(AtomicU32::new(0));
+        let min_at = Arc::new(AtomicU32::new(f32::to_bits(f32::MAX)));
         let avg_at = Arc::new(AtomicU32::new(0));
         let c_max = max_at.clone();
         let c_min = min_at.clone();
@@ -278,21 +295,27 @@ impl Instanced<Control> for BarGraph{
                        if !tag_to_data.contains_key(&tag){
                            gtx.send(GraphActions::CreateColumn(tag.clone()));
                        }
+                       if tag_to_data.contains_key(&tag){
+                           let current_avg = f32::from_bits(avg_at.load(Ordering::Relaxed));
+                           let current_val = tag_to_data.get(&tag).unwrap();
+                           let num = tag_to_data.len() as f32;
+                           let calc_avg = ((current_avg * num) - current_val + value)/num;
+                           avg_at.store(calc_avg.to_bits(),Ordering::Relaxed);
+                       }
+                       else{
+                           let current_avg = f32::from_bits(avg_at.load(Ordering::Relaxed));
+                           let num = tag_to_data.len() as f32;
+                           let calc_avg = ((current_avg * num) + value)/(num + 1.0);
+                           avg_at.store(calc_avg.to_bits(),Ordering::Relaxed);
+                       }
                        tag_to_data.insert(tag.clone(),value);
                        let current_max = f32::from_bits(max_at.load(Ordering::Relaxed));
                        let current_min = f32::from_bits(min_at.load(Ordering::Relaxed));
-                       let current_avg = f32::from_bits(avg_at.load(Ordering::Relaxed));
                        if current_max < value{
                            max_at.store(value.to_bits(),Ordering::Relaxed);
                        }
                        if current_min > value{
                            min_at.store(value.to_bits(),Ordering::Relaxed);
-                       }
-                       if tag_to_data.contains_key(&tag){
-                           let current_val = tag_to_data.get(&tag).unwrap();
-                           let num = tag_to_data.len() as f32;
-                           let calc_avg = ((current_avg * num) - current_val + value)/num;
-                           avg_at.store(calc_avg.to_bits(),Ordering::Relaxed);
                        }
                     }
                 }
@@ -312,6 +335,7 @@ impl Instanced<Control> for BarGraph{
             graph_actions_rx: grx,
             runtime:rt,
             resize_timer : Timer::new().into_shared(),
+            snapshot_api : DataSnapshots::make_instance().into_shared(),
         }
     }
 }
@@ -336,19 +360,18 @@ impl BarGraph{
             owner.add_child(canvas,true);
         });
         aggregate_stats.map(|_,control| owner.add_child(control,true));
-        aggregate_stats.map(|_,control| control.set_visible(false));
+        //aggregate_stats.map(|_,control| control.set_visible(false));
     }
     #[method]
     fn resize_graph(&self, #[base] owner:TRef<Control>){
        let tag_to_data = self.tag_to_data.lock().unwrap();
        let mut calculated_max:&f32  = &0.0;
        let mut calculated_min:&f32  = &0.0;
-       for v in tag_to_data.values(){
-          if v > &calculated_max{calculated_max = v;} 
-          if v < &calculated_min {calculated_min = v;}
-       }
-       self.current_max.store(calculated_max.to_bits(),Ordering::Relaxed);
-       self.current_min.store(calculated_min.to_bits(),Ordering::Relaxed);
+       let values = tag_to_data.values().into_iter().map(|x|*x).collect::<Vec<f32>>();
+       let calc_max = values.iter().fold(f32::MIN,|acc,curr| f32::max(acc,*curr));
+       let calc_min = values.iter().fold(f32::MAX,|acc,curr| f32::min(acc,*curr));
+       self.current_max.store(calc_max.to_bits(),Ordering::Relaxed);
+       self.current_min.store(calc_min.to_bits(),Ordering::Relaxed);
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
@@ -427,13 +450,16 @@ impl BarGraph{
        max_label_x.set_size(label_x_size,false);
        min_label_x.set_size(label_x_size,false);
        center_label_x.set_size(label_x_size,false);
+       self.update_aggregate_stats();
+       let agg_stats = unsafe{self.aggregate_stats.assume_safe()};
+       agg_stats.map(|_,control| control.set_size(owner_size/4.0,false));
+       agg_stats.map(|_,control| control.set_global_position(owner.global_position() - Vector2{x:0.0,y:control.size().y},false));
     }
-
-    pub fn add_data(&mut self,tag:String,data:DataValue){
-        self.actions_tx.send(DataActions::UpdateColumn(tag,data));
-    }
-    pub fn display_aggregate_stats(&self){
+    fn update_aggregate_stats(&self){
         let aggregate_stats = unsafe{self.aggregate_stats.assume_safe()};
+        if aggregate_stats.map(|_,control|!control.is_visible()).unwrap_or(false){
+            return
+        }
         let current_avg = f32::from_bits(self.current_avg.load(Ordering::Relaxed));
         let current_min = f32::from_bits(self.current_min.load(Ordering::Relaxed));
         let current_max = f32::from_bits(self.current_max.load(Ordering::Relaxed));
@@ -441,7 +467,22 @@ impl BarGraph{
         aggregate_stats.map_mut(|obj,_| obj.set_min(current_min));
         aggregate_stats.map_mut(|obj,_| obj.set_max(current_max));
     }
-    pub fn update_aggregate_stats(&self){
+    pub fn snapshot(&self, name:String){
+        let snapshots = unsafe{self.snapshot_api.assume_safe()};
+        let tag_to_data = self.tag_to_data.lock().unwrap();
+        let full_name = format!("user://{name:?}.dat").to_string().replace("\"","");
+        //full_name.push_str(&name);
+        let data_obj = BarGraphSnapshot{name:full_name,data:(*tag_to_data).clone()};
+        snapshots.map(|obj,_|obj.save_snapshot(data_obj));
+    }
+    pub fn toggle_agg_stats(&self){
+        let aggregate_stats = unsafe{self.aggregate_stats.assume_safe()};
+        aggregate_stats.map(|_,control| control.set_visible(!control.is_visible()));
+    }
+    pub fn add_data(&mut self,tag:String,data:DataValue){
+        self.actions_tx.send(DataActions::UpdateColumn(tag,data));
+    }
+    pub fn calc_update_aggregate_stats(&self){
         let aggregate_stats = unsafe{self.aggregate_stats.assume_safe()};
         let tag_to_data = self.tag_to_data.lock().unwrap();
         let data = tag_to_data.values().into_iter().collect::<Vec<&f32>>();
@@ -475,6 +516,9 @@ impl BarGraph{
             }
         });
         self.columns.clear();
+        self.current_avg.store(f32::to_bits(0.0),Ordering::Relaxed);
+        self.current_min.store(f32::to_bits(f32::MAX),Ordering::Relaxed);
+        self.current_max.store(f32::to_bits(f32::MIN),Ordering::Relaxed);
     }
 }
 
