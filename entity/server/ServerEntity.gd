@@ -6,6 +6,7 @@ onready var timer:Timer = Timer.new()
 onready var health_add_timer: Timer = Timer.new()
 onready var spawn
 onready var physics_native_socket = null
+onready var physics_native_shared_socket = SharedRuntimeEnv.physics_native_shared_socket
 
 var socket:ClientWebSocket
 var physics_socket:RustSocket
@@ -24,6 +25,7 @@ var lv:Vector3
 
 var debug_mesh = null
 
+var socket_mode = ServerTerminalGlobalSignals.SocketMode.Native
 func _ready():
 	destination.is_empty = true
 	spawn = body.global_transform.origin
@@ -35,7 +37,32 @@ func _ready():
 	init_sockets()
 	ServerTerminalGlobalSignals.connect("entities_add_mesh",self,"add_mesh")
 	ServerTerminalGlobalSignals.connect("entities_remove_mesh",self,"remove_mesh")
+	ServerTerminalGlobalSignals.connect("set_entity_socket_mode",self,"set_socket_mode_if_entity")
+	ServerTerminalGlobalSignals.connect("set_all_entity_socket_mode",self,"set_socket_mode")
+	ServerTerminalGlobalSignals.connect("request_data",self,"send_requested_data")
 	
+func send_requested_data(data_type):
+	match data_type:
+		ServerTerminalGlobalSignals.StreamDataType.socket_mode:
+			ServerTerminalGlobalSignals.add_input_data(self.id + "_server_socket_mode" ,str(socket_mode))
+		ServerTerminalGlobalSignals.StreamDataType.linear_velocity:
+			ServerTerminalGlobalSignals.add_graph_data(self.id + "_server_lv" ,movement.dir.length())
+		ServerTerminalGlobalSignals.StreamDataType.global_position:
+			ServerTerminalGlobalSignals.add_graph_data(self.id + "_server_position" ,body.global_transform.origin.length())
+		ServerTerminalGlobalSignals.StreamDataType.requests_sent:
+			ServerTerminalGlobalSignals.add_graph_data(self.id + "_server_req_sent" ,float(physics_native_shared_socket.num_sent(id)))
+		ServerTerminalGlobalSignals.StreamDataType.responses_received:
+			ServerTerminalGlobalSignals.add_graph_data(self.id + "_server_resp_recv" ,float(physics_native_shared_socket.num_received(id)))
+		ServerTerminalGlobalSignals.StreamDataType.request_response_delta:
+			ServerTerminalGlobalSignals.add_graph_data(self.id + "_server_resp_delta" ,float(physics_native_shared_socket.num_sent(id) - physics_native_shared_socket.num_received(id)))
+
+func set_socket_mode_if_entity(id,mode):
+	if id == self.id or id == "SERVER":
+		self.socket_mode = mode
+
+func set_socket_mode(mode):
+	self.socket_mode = mode
+
 func init_sockets():
 	socket = ServerNetwork.get(client_id)
 	assert(socket != null)
@@ -77,11 +104,18 @@ func apply_direction(vec):
 			#print("direction ", Vector3(x,y,z))
 			proc = 0
 			#physics_socket.set_dir_physics(id,dir)
-			physics_native_socket.send_direction(id,dir.x,dir.y,dir.z)
+			physics_native_shared_socket.send_direction(id,dir.x,dir.y,dir.z)
 		proc += 1
 		if (not destinations_active) or gravity_active:
 			movement.entity_set_direction(dir)
 
+#DEFAULT_PHYSICS##################
+func default_physics_process(delta,mod = 2):
+	match socket_mode:
+		ServerTerminalGlobalSignals.SocketMode.Native:
+			default_physics_process_native(delta)
+		ServerTerminalGlobalSignals.SocketMode.GodotClient:
+			default_physics_process_godot(delta)
 var proc:int = 0
 var dir:Vector3 = Vector3()
 func default_handle_message(msg,_delta_accum):
@@ -154,9 +188,19 @@ func get_lv() -> Vector3:
 	else:
 		return Vector3.ZERO
 		
-func default_physics_process2(delta):
-	physics_native_socket.get_direction(id)
-	apply_direction(physics_native_socket.cached_direction())
+#DEFAULT_PHYSICS_NATIVE###########
+#default physics process running native multithreaded sockets
+#Every client entity has a native socket process
+#Scales better but is technically less performant than 
+# the standard godot socket handling.
+#This is used mainly to guarentee that lots of entities
+# do not block other cpu actions.
+#When this does happen using the single threaded socket
+# handling network traffic becomes a frame bottleneck 
+# (probably due to message routing but not currently certain)
+func default_physics_process_native(delta):
+	physics_native_shared_socket.request_direction(id)
+	apply_direction(physics_native_shared_socket.get_direction(id))
 	update_lv_internal(body,delta)
 	movement.entity_set_max_speed(DataCache.cached(id,'speed'))
 	movement.entity_move_by_direction(delta,body)
@@ -165,42 +209,51 @@ func default_physics_process2(delta):
 		var t = queued_teleports.pop_front()
 		var dir = (t - body.global_transform.origin)
 		body.translate(dir * int(should_tele))
+	if !destinations_active or destination.is_empty:
+		physics_socket.set_location_physics(id,body.global_transform.origin)
+		return
+
+	if !gravity_active:
+		match destination.type:
+			'Empty':
+				queued_teleports.pop_front()
+				pass
+			'{WAYPOINT:{}}':
+				movement.entity_move(
+					delta ,
+					destination.location,
+					body
+				)
+			'{TELEPORT:{}}':
+				movement.entity_move(
+					delta,
+					destination.location,
+					body
+				)
+			"{GRAVITY_BIND:{}}":
+				movement.entity_move_by_gravity(id,delta,destination.location,body)
+			_:
+				print_debug("no handler found for destination with type ", destination.type)
+
 	match destination.type:
 		'Empty':
 			queued_teleports.pop_front()
 			pass
-		'{WAYPOINT:{}}':
-			movement.entity_move_by_gravity(
-				id,delta * int(gravity_active) * int(destinations_active) * int(!destination.is_empty),
-				destination.location,
-				body
-			)
-			movement.entity_move(
-				delta * int(!gravity_active)* int(destinations_active)* int(!destination.is_empty),
-				destination.location,
-				body
-			)
-		'{TELEPORT:{}}':
-			movement.entity_move_by_gravity(
-				id,delta * int(gravity_active) * int(destinations_active) * int(!destination.is_empty),
-				destination.location,
-				body
-			)
-			movement.entity_move(
-				delta * int(!gravity_active)* int(destinations_active)* int(!destination.is_empty),
-				destination.location,
-				body
-			)
-		"{GRAVITY_BIND:{}}":
-			movement.entity_move_by_gravity(id,delta,destination.location,body)
 		_:
-			print_debug("no handler found for destination with type ", destination.type)
-	#physics_socket.set_location_physics(id,body.global_transform.origin)
-	physics_native_socket.send_location(id,body.global_transform.origin.x,body.global_transform.origin.y,body.global_transform.origin.z)
+			movement.entity_move_by_gravity(
+				id,
+				delta,
+				destination.location,
+				body
+			)
+	physics_native_shared_socket.send_location(id,body.global_transform.origin.x,body.global_transform.origin.y,body.global_transform.origin.z)
 
-
-#default physics process for all server entities
-func default_physics_process(delta):
+######################################
+#DEFAULT_PHYSICS_GODOT################
+#default physics process running non-native single threaded sockets
+#returning data is handled by default_handle_message
+#basic location polling
+func default_physics_process_godot(delta):
 	physics_socket.get_dir_physics(id)
 	update_lv_internal(body,delta)
 	movement.entity_set_max_speed(DataCache.cached(id,'speed'))

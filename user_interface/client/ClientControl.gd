@@ -95,7 +95,8 @@ func load_scene(id,secret):
 	self.add_child(client_terminal)
 	client_terminal.visible = false
 	ClientTerminalGlobalSignals.register_terminal(client_terminal)
-	ServerTerminalGlobalSignals.connect_terminal(client_terminal)
+	ServerTerminalGlobalSignals.register_terminal(client_terminal)
+	#ServerTerminalGlobalSignals.connect_terminal(client_terminal)
 	#self.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	#viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	#OS.window_fullscreen = true

@@ -1,9 +1,11 @@
 extends Node
 
 var _terminal
+var terminals = []
 func register_terminal(terminal):
 	connect_terminal(terminal)
 	_terminal = terminal
+	terminals.push_back(terminal)
 
 func connect_terminal(terminal):
 	terminal.connect("set_entity_socket_mode",self,"set_entity_socket_mode")
@@ -17,7 +19,6 @@ func connect_terminal(terminal):
 ####SocketModes#######
 enum SocketMode{
 	Native,
-	NativeProcess,
 	GodotClient,
 	
 }
@@ -61,6 +62,10 @@ func entities_remove_mesh():
 
 func add_input_data(tag,data):
 	_terminal.add_incoming_data(tag,data)
+	for terminal in terminals:
+		terminal.add_incoming_data(tag,data)
 
 func add_graph_data(tag,data):
 	_terminal.add_graph_data(tag,data)
+	for terminal in terminals:
+		terminal.add_graph_data(tag,data)
