@@ -35,6 +35,7 @@ func _ready():
 	timer.connect("timeout",self,"check_destinations")
 	timer.start(rand_range(0,2))
 	init_sockets()
+	physics_native_shared_socket.add_entity_to_queue(id)
 	ServerTerminalGlobalSignals.connect("entities_add_mesh",self,"add_mesh")
 	ServerTerminalGlobalSignals.connect("entities_remove_mesh",self,"remove_mesh")
 	ServerTerminalGlobalSignals.connect("set_entity_socket_mode",self,"set_socket_mode_if_entity")
