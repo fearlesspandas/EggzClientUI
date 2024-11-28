@@ -134,7 +134,6 @@ func default_handle_message(msg,_delta_accum):
 						#print("direction ", Vector3(x,y,z))
 						proc = 0
 						physics_socket.set_dir_physics(id,dir)
-						#physics_native_socket.send_direction(id,dir.x,dir.y,dir.z)
 					proc += 1
 					if (not destinations_active) or gravity_active:
 						movement.entity_set_direction(dir)
