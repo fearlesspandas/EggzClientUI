@@ -279,7 +279,7 @@ impl Instanced<Control> for BarGraph{
         let tag_to_data = Arc::new(Mutex::new(HashMap::new()));
         let c_data = tag_to_data.clone();
         let max_at = Arc::new(AtomicU32::new(0));
-        let min_at = Arc::new(AtomicU32::new(f32::to_bits(f32::MAX)));
+        let min_at = Arc::new(AtomicU32::new(0));
         let avg_at = Arc::new(AtomicU32::new(0));
         let c_max = max_at.clone();
         let c_min = min_at.clone();
@@ -368,8 +368,8 @@ impl BarGraph{
        let mut calculated_max:&f32  = &0.0;
        let mut calculated_min:&f32  = &0.0;
        let values = tag_to_data.values().into_iter().map(|x|*x).collect::<Vec<f32>>();
-       let calc_max = values.iter().fold(f32::MIN,|acc,curr| f32::max(acc,*curr));
-       let calc_min = values.iter().fold(f32::MAX,|acc,curr| f32::min(acc,*curr));
+       let calc_max = values.iter().fold(0.0,|acc,curr| f32::max(acc,*curr));
+       let calc_min = values.iter().fold(0.0,|acc,curr| f32::min(acc,*curr));
        self.current_max.store(calc_max.to_bits(),Ordering::Relaxed);
        self.current_min.store(calc_min.to_bits(),Ordering::Relaxed);
     }
@@ -467,13 +467,19 @@ impl BarGraph{
         aggregate_stats.map_mut(|obj,_| obj.set_min(current_min));
         aggregate_stats.map_mut(|obj,_| obj.set_max(current_max));
     }
-    pub fn snapshot(&self, name:String){
+    pub fn snapshot(&self, name:String) -> Result<(),&'static str>{
         let snapshots = unsafe{self.snapshot_api.assume_safe()};
         let tag_to_data = self.tag_to_data.lock().unwrap();
-        let full_name = format!("user://{name:?}.dat").to_string().replace("\"","");
-        //full_name.push_str(&name);
-        let data_obj = BarGraphSnapshot{name:full_name,data:(*tag_to_data).clone()};
-        snapshots.map(|obj,_|obj.save_snapshot(data_obj));
+        let data_obj = BarGraphSnapshot{
+            path:"user://snapshots".to_string().replace("\"",""),
+            name:name.replace("\"",""),
+            data:(*tag_to_data).clone()
+        };
+        DataSnapshots::save_snapshot(data_obj)
+        //snapshots.map(|obj,_|obj.save_snapshot(data_obj)).unwrap()
+    }
+    pub fn load(&self,name:String) -> Result<BarGraphSnapshot,&'static str>{
+        DataSnapshots::load(format!("user://snapshots/{name:?}"))
     }
     pub fn toggle_agg_stats(&self){
         let aggregate_stats = unsafe{self.aggregate_stats.assume_safe()};
@@ -517,8 +523,8 @@ impl BarGraph{
         });
         self.columns.clear();
         self.current_avg.store(f32::to_bits(0.0),Ordering::Relaxed);
-        self.current_min.store(f32::to_bits(f32::MAX),Ordering::Relaxed);
-        self.current_max.store(f32::to_bits(f32::MIN),Ordering::Relaxed);
+        self.current_min.store(f32::to_bits(0.0),Ordering::Relaxed);
+        self.current_max.store(f32::to_bits(0.0),Ordering::Relaxed);
     }
 }
 

@@ -2,6 +2,7 @@ use crate::traits::{CreateSignal,GetAll,Autocomplete,FromArgs};
 use crate::socket_mode::SocketMode;
 use crate::client_terminal::ClientTerminal;
 use crate::data_display::DataType;
+use crate::data_snapshots::DataSnapshots;
 use tokio::sync::mpsc;
 use std::{fmt,str::FromStr};
 use serde_json::{Result as JResult, Value};
@@ -21,6 +22,7 @@ pub enum Command{
     EntitiesAddMesh,
     EntitiesRemoveMesh,
     SaveSnapshot(String),
+    LoadSnapshot(String),
     //ToggleAggregateStats,
 }
 #[derive(Deserialize,Serialize,Debug)]
@@ -33,6 +35,7 @@ pub enum CommandType{
     entities_add_mesh,
     entities_remove_mesh,
     save_snapshot,
+    load_snapshot,
     //toggle_aggregate_stats,
 }
 impl CommandType{
@@ -76,6 +79,7 @@ impl GetAll for CommandType{
         v.push( CommandType::entities_add_mesh);
         v.push( CommandType::entities_remove_mesh);
         v.push( CommandType::save_snapshot);
+        v.push( CommandType::load_snapshot);
         v
     }
 }
@@ -88,6 +92,7 @@ impl Autocomplete for CommandType{
             CommandType::stop_data_stream => StartDataStreamArgs::autocomplete_args,
             CommandType::clear_data => ClearDataArgs::autocomplete_args,
             CommandType::save_snapshot => SaveSnapshotArgs::autocomplete_args,
+            CommandType::load_snapshot => LoadSnapshotArgs::autocomplete_args,
             CommandType::entities_add_mesh => CommandType::default,
             CommandType::entities_remove_mesh => CommandType::default,
         }
@@ -117,6 +122,9 @@ impl ArgsConstructor<Command,&Value,&'static str> for CommandType{
             CommandType::save_snapshot => 
                 SaveSnapshotArgs::new(args)
                 .map(|parsed| Command::SaveSnapshot(parsed.name)),
+            CommandType::load_snapshot => 
+                LoadSnapshotArgs::new(args)
+                .map(|parsed| Command::LoadSnapshot(parsed.name)),
             CommandType::entities_add_mesh => Ok(Command::EntitiesAddMesh),
             CommandType::entities_remove_mesh => Ok(Command::EntitiesRemoveMesh),
         }
@@ -149,6 +157,9 @@ impl fmt::Display for CommandType{
             CommandType::save_snapshot => {
                 write!(f,"save_snapshot")
             }
+            CommandType::load_snapshot => {
+                write!(f,"load_snapshot")
+            }
         }
     }
 }
@@ -164,6 +175,7 @@ impl FromStr for CommandType {
             "entities_add_mesh" => Ok(CommandType::entities_add_mesh),
             "entities_remove_mesh" => Ok(CommandType::entities_remove_mesh),
             "save_snapshot" => Ok(CommandType::save_snapshot),
+            "load_snapshot" => Ok(CommandType::load_snapshot),
             _ => Err(format!("No result found for command type {input:?}"))
         } 
     }
@@ -326,12 +338,9 @@ impl FromArgs<Value> for SaveSnapshotArgs{
                     .collect()
             }
             1 => {
-                let pattern = &args[0];
-                DataType::get_all()
-                    .into_iter()
-                    .map(|data_type| data_type.to_string())
-                    .filter(|data_type| data_type.contains(pattern))
-                    .collect()
+                let mut v = Vec::new();
+                v.push("name:String".to_string());
+                v
             }
             _ => {Vec::new()}
         }
@@ -340,7 +349,7 @@ impl FromArgs<Value> for SaveSnapshotArgs{
         match args{
             Value::Array(values) => {
                 if values.len() < 1{
-                    return Err("too few arguments for SocketModeAllArgs")
+                    return Err("too few arguments for SaveSnapshotArgs")
                 }
                 let mut fmt_args = serde_json::Map::new();
                 let data_type = &values[0];
@@ -349,6 +358,44 @@ impl FromArgs<Value> for SaveSnapshotArgs{
                     .map_err(|e| {let err = e.to_string();godot_print!("{}",err);"could not map SaveSnapshotArgs "})
             }
             _ => {Err("unexpected value type for SaveSnapshotArgs; expected Value::Array")}
+        }
+    }
+}
+#[derive(Deserialize,Serialize)]
+pub struct LoadSnapshotArgs{
+    pub name:String 
+}
+impl FromArgs<Value> for LoadSnapshotArgs{
+    fn autocomplete_args(args:Vec<&str>) -> Vec<String>{
+        match args.len(){
+            0 => {
+                DataType::get_all()
+                    .into_iter()
+                    .map(|data_type| data_type.to_string())
+                    .collect()
+            }
+            1 => {
+                DataSnapshots::get_available_snapshots("user://snapshots".to_string())
+                    .into_iter()
+                    .filter(|name| name.contains(&args[0]))
+                    .collect::<Vec<String>>()
+            }
+            _ => {Vec::new()}
+        }
+    }
+    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
+        match args{
+            Value::Array(values) => {
+                if values.len() < 1{
+                    return Err("too few arguments for LoadSnapshotArgs")
+                }
+                let mut fmt_args = serde_json::Map::new();
+                let data_type = &values[0];
+                fmt_args.insert("name".to_string(),data_type.clone());
+                serde_json::from_value::<LoadSnapshotArgs>(Value::Object(fmt_args))
+                    .map_err(|e| {let err = e.to_string();godot_print!("{}",err);"could not map LoadSnapshotArgs "})
+            }
+            _ => {Err("unexpected value type for LoadSnapshotArgs; expected Value::Array")}
         }
     }
 }

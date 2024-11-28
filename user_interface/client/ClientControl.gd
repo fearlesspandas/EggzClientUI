@@ -98,6 +98,7 @@ func load_scene(id,secret):
 	ServerTerminalGlobalSignals.connect_terminal(client_terminal)
 	#self.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	#viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	#OS.window_fullscreen = true
 	
 func player_character_spawned(player:Player):
 	assert(player != null)
@@ -111,6 +112,11 @@ func set_active(active: bool):
 	ClientReferences.set_viewport(self.viewport)
 	ClientReferences.set_command_menu(self.command_menu)
 	emit_signal("is_active",active)
+
+func _input(event):
+	if event.is_action_pressed("toggle_fullscreen"): 
+		OS.window_fullscreen = !OS.window_fullscreen
+
 	
 func _process(delta):
 	if (self.rect_size - OS.get_window_safe_area().size).length() > 0:

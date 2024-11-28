@@ -224,8 +224,21 @@ impl ClientTerminal{
                     bar_graph.map_mut(|obj,_| obj.queue_clear());
                 }
                 Ok(Command::SaveSnapshot(name)) => {
+                    let name_c = name.clone();
                     let bar_graph = unsafe{self.graph_display.assume_safe()};
-                    bar_graph.map(|obj,_|obj.snapshot(name));
+                    let res = bar_graph.map(|obj,_|obj.snapshot(name)).unwrap();
+                    res.map(|_| self.output_append(format!("Successfully saved snapshot {name_c:?}").into()))
+                        .map_err(|err| self.output_append(err.into()));
+                }
+                Ok(Command::LoadSnapshot(name)) => {
+                    let bar_graph = unsafe{self.graph_display.assume_safe()};
+                    let res = bar_graph.map(|obj,_|obj.load(name)).unwrap();
+                    res.map(|snapshot|{
+                        for (tag,data) in snapshot.data{
+                            bar_graph.map_mut(|obj,_|obj.add_data(tag,data));
+                        }
+                    })
+                        .map_err(|err| self.output_append(err.into()));
                 }
                 Ok(Command::StartDataStream(data_type)) => {
                     let data_type_str = &data_type.to_string();

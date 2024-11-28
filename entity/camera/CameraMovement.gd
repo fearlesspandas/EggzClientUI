@@ -61,7 +61,7 @@ func follow_dest():
 	if dest != null:
 		camera_root.look_at(dest.location,Vector3.UP)
 func _ready():
-	OS.window_fullscreen = false
+	#OS.window_fullscreen = true
 	pass # Replace with function body.
 
 func set_active(active:bool):
