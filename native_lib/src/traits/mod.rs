@@ -3,6 +3,9 @@ use gdnative::api::*;
 use serde_json::{Result as JResult, Value};
 use serde::{Deserialize,Serialize};
 use tokio::sync::mpsc;
+use tokio::{
+    runtime::Runtime,
+};
 use std::{fmt,str::FromStr};
 
 //useful for making sure we can retrieve all values of an enum
@@ -34,6 +37,18 @@ pub trait Instanced<T>{
         <Self as gdnative::prelude::NativeClass>::Base: Instanciable
     {
         Instance::emplace(Self::make())
+    }
+}
+pub trait RuntimeInstanced<T>{
+    fn make(runtime:&Runtime) -> Self where Self:Sized;
+    fn new(base:&T) -> Self where Self:Sized{
+        Self::make(&Runtime::new().unwrap())
+    }
+    fn make_instance(runtime:&Runtime) -> Instance<Self,Unique> 
+        where Self:Sized,Self:NativeClass, 
+        <Self as gdnative::prelude::NativeClass>::Base: Instanciable
+    {
+        Instance::emplace(Self::make(runtime))
     }
 }
 

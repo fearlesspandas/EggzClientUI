@@ -50,6 +50,10 @@ func send_requested_data(data_type):
 			ClientTerminalGlobalSignals.add_graph_data(self.id + "_resp_recv" ,float(physics_native_shared_socket.num_received(id)))
 		ClientTerminalGlobalSignals.StreamDataType.request_response_delta:
 			ClientTerminalGlobalSignals.add_graph_data(self.id + "_resp_delta" ,float(physics_native_shared_socket.num_sent(id) - physics_native_shared_socket.num_received(id)))
+		ClientTerminalGlobalSignals.StreamDataType.bytes_received:
+			ClientTerminalGlobalSignals.add_graph_data(self.id + "_bytes_received_mb" ,float(physics_native_shared_socket.num_bytes_received(id))/1000000.0)
+		_:
+			pass
 
 	
 func set_socket_mode_if_entity(id,mode):
@@ -90,10 +94,12 @@ func default_physics_process(delta,mod = 2):
 		ClientTerminalGlobalSignals.SocketMode.GodotClient:
 			default_physics_process2(delta,mod)
 		ClientTerminalGlobalSignals.SocketMode.NativeLocOnly:
-			#default_physics_process_native_locate_only(delta,mod)
-			default_physics_process_shared_locate_only(delta,mod)
+			default_physics_process_shared_locate_delta_only(delta,mod)
+			#default_physics_process_shared_locate_only(delta,mod)
 		ClientTerminalGlobalSignals.SocketMode.NativeDirOnly:
 			default_physics_process_native_direction_only(delta,mod)
+
+
 ##################################	
 #DEFAULT_PHYSICS_NATIVE###########
 #default physics process running native multithreaded sockets
@@ -190,6 +196,28 @@ func default_physics_process_shared_locate_only(delta,mod = 2):
 	loc.z = l[2]
 	self.global_transform.origin = body.global_transform.origin
 	movement.entity_move(delta,loc,body)
+
+func default_physics_process_shared_locate_delta_only(delta,mod = 2):
+	var curr_loc = body.global_transform.origin
+	if mod <= 2:
+		physics_native_shared_socket.request_location_delta(id,curr_loc.x,curr_loc.y,curr_loc.z)
+	else:
+		if proc%mod == 0:
+			proc = 0
+			physics_native_shared_socket.request_location_delta(id,curr_loc.x,curr_loc.y,curr_loc.z)
+		if proc%mod == ceil(mod/2):
+			physics_native_shared_socket.request_location_delta(id,curr_loc.x,curr_loc.y,curr_loc.z)
+		proc +=1
+	var l = physics_native_shared_socket.get_location(id)
+	if l == null:
+		return
+	loc.x = l[0]
+	loc.y = l[1]
+	loc.z = l[2]
+	self.global_transform.origin = body.global_transform.origin
+	movement.entity_move(delta,loc,body)
+
+
 
 
 

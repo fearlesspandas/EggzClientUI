@@ -39,6 +39,8 @@ enum StreamDataType{
 	responses_received,
 	request_response_delta,
 	fps,
+	bytes_received,
+	bytes_received_all,
 }
 signal start_data_stream(data_type)
 func start_data_stream(data_type):
