@@ -10,7 +10,7 @@ func _ready():
 func send_requested_data(data_type):
 	match data_type:
 		ClientTerminalGlobalSignals.StreamDataType.bytes_received_all:
-			ClientTerminalGlobalSignals.add_graph_data("bytes_received_total_mb" ,float(physics_native_shared_socket.num_all_bytes_received())/1000000.0)
+			ClientTerminalGlobalSignals.add_graph_data("bytes_received_total_mb_" + str(OS.get_ticks_msec()) ,float(physics_native_shared_socket.num_all_bytes_received())/1000000.0)
 		_:
 			pass
 

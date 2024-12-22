@@ -94,8 +94,8 @@ func default_physics_process(delta,mod = 2):
 		ClientTerminalGlobalSignals.SocketMode.GodotClient:
 			default_physics_process2(delta,mod)
 		ClientTerminalGlobalSignals.SocketMode.NativeLocOnly:
-			default_physics_process_shared_locate_delta_only(delta,mod)
-			#default_physics_process_shared_locate_only(delta,mod)
+			#default_physics_process_shared_locate_delta_only(delta,mod)
+			default_physics_process_shared_locate_only(delta,mod)
 		ClientTerminalGlobalSignals.SocketMode.NativeDirOnly:
 			default_physics_process_native_direction_only(delta,mod)
 
@@ -208,6 +208,9 @@ func default_physics_process_shared_locate_delta_only(delta,mod = 2):
 		if proc%mod == ceil(mod/2):
 			physics_native_shared_socket.request_location_delta(id,curr_loc.x,curr_loc.y,curr_loc.z)
 		proc +=1
+	if proc % 30 == 0:
+		physics_native_shared_socket.request_location(id)
+
 	var l = physics_native_shared_socket.get_location(id)
 	if l == null:
 		return
