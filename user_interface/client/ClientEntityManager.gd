@@ -122,6 +122,7 @@ func spawn_npc_character_entity_client(id:String,location:Vector3) -> ClientPlay
 	var res:NonPlayerControlledEntity = AssetMapper.matchAsset(AssetMapper.npc_model).instance()
 	client_entities[id] = res
 	res.init_with_id(id,client_id)
+	res.is_npc = true
 	spawn.add_child(res)
 	res.global_transform.origin = location
 	emit_signal("entity_created",res,spawn,false)
@@ -131,6 +132,7 @@ func spawn_prowler_entity(id:String,location:Vector3) -> ClientPlayerEntity:
 	var res:ProwlerEntity = AssetMapper.matchAsset(AssetMapper.prowler_client_entity).instance()
 	client_entities[id] = res
 	res.init_with_id(id,client_id)
+	res.is_npc = true
 	spawn.add_child(res)
 	res.global_transform.origin = location
 	emit_signal("entity_created",res,spawn,false)
@@ -140,6 +142,7 @@ func spawn_axis_spider(id:String,location:Vector3) -> ClientPlayerEntity:
 	var res:AxisSpiderClient = AssetMapper.matchAsset(AssetMapper.axis_spider_client).instance()
 	client_entities[id] = res
 	res.init_with_id(id,client_id)
+	res.is_npc = true
 	spawn.add_child(res)
 	res.global_transform.origin = location
 	emit_signal("entity_created",res,spawn,false)

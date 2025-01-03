@@ -37,10 +37,14 @@ func ability_client(ability_id:int,location:Vector3,args:Dictionary):
 
 
 #spawns an active ability at location
-func ability_server(ability_id:int,location:Vector3, args:Dictionary):
+func ability_server(ability_id:int,location:Vector3, args:Dictionary,is_npc:bool = false):
 	match ability_id:
 		Abilities.smack:
-			var sc = NPCSmackServer.new()
+			var sc
+			if is_npc:
+				sc = NPCSmackServer.new()
+			else:
+				sc = SmackServer.new()
 			server_spawn.add_child(sc)
 			sc.global_transform.origin = location
 		Abilities.globular_teleport:

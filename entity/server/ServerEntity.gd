@@ -41,6 +41,7 @@ func _ready():
 	ServerTerminalGlobalSignals.connect("set_entity_socket_mode",self,"set_socket_mode_if_entity")
 	ServerTerminalGlobalSignals.connect("set_all_entity_socket_mode",self,"set_socket_mode")
 	ServerTerminalGlobalSignals.connect("request_data",self,"send_requested_data")
+	ServerTerminalGlobalSignals.connect("set_health",self,"terminal_set_health")
 	
 func send_requested_data(data_type):
 	match data_type:
@@ -63,6 +64,10 @@ func set_socket_mode_if_entity(id,mode):
 
 func set_socket_mode(mode):
 	self.socket_mode = mode
+
+func terminal_set_health(id,health):
+	if id == self.id:
+		socket.remove_health(self.id,health)
 
 func init_sockets():
 	socket = ServerNetwork.get(client_id)
@@ -204,7 +209,7 @@ func default_physics_process_native(delta):
 	update_lv_internal(body,delta)
 	movement.entity_set_max_speed(DataCache.cached(id,'speed'))
 	movement.entity_move_by_direction(delta,body)
-	var should_tele:bool = body is KinematicBody and destinations_active
+	var should_tele:bool = body is KinematicBody #####and destinations_active
 	if !queued_teleports.empty():
 		var t = queued_teleports.pop_front()
 		var dir = (t - body.global_transform.origin)
@@ -258,7 +263,7 @@ func default_physics_process_godot(delta):
 	update_lv_internal(body,delta)
 	movement.entity_set_max_speed(DataCache.cached(id,'speed'))
 	movement.entity_move_by_direction(delta,body)
-	var should_tele:bool = body is KinematicBody and destinations_active
+	var should_tele:bool = body is KinematicBody ###and destinations_active
 	if !queued_teleports.empty():
 		var t = queued_teleports.pop_front()
 		var dir = (t - body.global_transform.origin)

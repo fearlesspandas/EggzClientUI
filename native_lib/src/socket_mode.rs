@@ -9,6 +9,7 @@ pub enum SocketMode{
     GodotClient,
     NativeLocOnly,
     NativeDirOnly,
+    NativeLocOnlyDelta,
 }
 impl GetAll for SocketMode{
     fn get_all() -> Vec<Self> where Self:Sized{
@@ -18,6 +19,7 @@ impl GetAll for SocketMode{
         v.push(SocketMode::GodotClient);
         v.push(SocketMode::NativeLocOnly);
         v.push(SocketMode::NativeDirOnly);
+        v.push(SocketMode::NativeLocOnlyDelta);
         v
     }
 }
@@ -29,6 +31,7 @@ impl fmt::Display for SocketMode{
             SocketMode::GodotClient =>   {write!(f,"GodotClient")}
             SocketMode::NativeLocOnly => {write!(f,"NativeLocOnly")}
             SocketMode::NativeDirOnly => {write!(f,"NativeDirOnly")}
+            SocketMode::NativeLocOnlyDelta => {write!(f,"NativeLocOnlyDelta")}
         }
     }
 }

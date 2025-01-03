@@ -230,7 +230,7 @@ func handle_json(json) -> bool:
 			var entity = server_entities[entity_id]
 			if entity == null:
 				assert(false,"entity with id is null")
-			AbilityManager.ability_server(int(ability_id),entity.body.global_transform.origin,args)	
+			AbilityManager.ability_server(int(ability_id),entity.body.global_transform.origin,args,entity.is_npc)	
 			return false
 		{'ProgressUpdate':{'id':var id,'args':var args}}:
 			ProgressHandlerServer.handle_message(id,args)

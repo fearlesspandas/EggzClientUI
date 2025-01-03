@@ -279,6 +279,13 @@ impl ClientTerminal{
                     );
                     self.output_append("signaled set all entity socket mode".into());
                 }
+                Ok(Command::SetHealth(id,value)) => {
+                    owner.emit_signal(
+                        CommandType::set_health.to_string(),
+                        &[Variant::new(id),Variant::new(value)]
+                    );
+                    self.output_append("signaled set health".into());
+                }
                 Err(_) => {}
             }
 

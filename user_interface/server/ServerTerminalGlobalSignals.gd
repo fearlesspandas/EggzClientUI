@@ -15,6 +15,7 @@ func connect_terminal(terminal):
 	terminal.connect("request_data",self,"request_data")
 	terminal.connect("entities_add_mesh",self,"entities_add_mesh")
 	terminal.connect("entities_remove_mesh",self,"entities_remove_mesh")
+	terminal.connect("set_health",self,"set_health")
 
 ####SocketModes#######
 enum SocketMode{
@@ -59,6 +60,11 @@ func entities_add_mesh():
 signal entities_remove_mesh
 func entities_remove_mesh():
 	emit_signal("entities_remove_mesh")
+
+signal set_health
+func set_health(id,value):
+	print("Set health signal received", id , value)
+	emit_signal("set_health",id,value)
 
 func add_input_data(tag,data):
 	_terminal.add_incoming_data(tag,data)

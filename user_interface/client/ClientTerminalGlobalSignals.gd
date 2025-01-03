@@ -16,6 +16,7 @@ enum SocketMode{
 	GodotClient,
 	NativeLocOnly,
 	NativeDirOnly,	
+	NativeLocOnlyDelta,
 }
 signal set_entity_socket_mode(id,mode)
 func set_entity_socket_mode(id,mode):

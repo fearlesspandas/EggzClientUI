@@ -23,6 +23,7 @@ pub enum Command{
     EntitiesRemoveMesh,
     SaveSnapshot(String),
     LoadSnapshot(String),
+    SetHealth(String,f32),
     //ToggleAggregateStats,
 }
 #[derive(Deserialize,Serialize,Debug)]
@@ -36,6 +37,7 @@ pub enum CommandType{
     entities_remove_mesh,
     save_snapshot,
     load_snapshot,
+    set_health,
     //toggle_aggregate_stats,
 }
 impl CommandType{
@@ -61,6 +63,11 @@ impl CreateSignal<ClientTerminal> for CommandType{
             .with_param("type",VariantType::GodotString)
             .done();
         builder
+            .signal(&CommandType::set_health.to_string())
+            .with_param("id",VariantType::GodotString)
+            .with_param("value",VariantType::F64)
+            .done();
+        builder
             .signal(&CommandType::entities_add_mesh.to_string())
             .done();
         builder
@@ -80,6 +87,7 @@ impl GetAll for CommandType{
         v.push( CommandType::entities_remove_mesh);
         v.push( CommandType::save_snapshot);
         v.push( CommandType::load_snapshot);
+        v.push( CommandType::set_health);
         v
     }
 }
@@ -93,6 +101,7 @@ impl Autocomplete for CommandType{
             CommandType::clear_data => ClearDataArgs::autocomplete_args,
             CommandType::save_snapshot => SaveSnapshotArgs::autocomplete_args,
             CommandType::load_snapshot => LoadSnapshotArgs::autocomplete_args,
+            CommandType::set_health => SetHealthArgs::autocomplete_args,
             CommandType::entities_add_mesh => CommandType::default,
             CommandType::entities_remove_mesh => CommandType::default,
         }
@@ -125,6 +134,9 @@ impl ArgsConstructor<Command,&Value,&'static str> for CommandType{
             CommandType::load_snapshot => 
                 LoadSnapshotArgs::new(args)
                 .map(|parsed| Command::LoadSnapshot(parsed.name)),
+            CommandType::set_health => 
+                SetHealthArgs::new(args)
+                .map(|parsed| Command::SetHealth(parsed.id,parsed.value)),
             CommandType::entities_add_mesh => Ok(Command::EntitiesAddMesh),
             CommandType::entities_remove_mesh => Ok(Command::EntitiesRemoveMesh),
         }
@@ -144,6 +156,9 @@ impl fmt::Display for CommandType{
             }
             CommandType::stop_data_stream => {
                 write!(f,"stop_data_stream")
+            }
+            CommandType::set_health => {
+                write!(f,"set_health")
             }
             CommandType::clear_data => {
                 write!(f,"clear_data")
@@ -313,6 +328,45 @@ impl FromArgs<Value> for StartDataStreamArgs{
                     .map_err(|e| "could not map StartDataStreamArgs")
             }
             _ => {Err("unexpected value type for StartDataStreamArgs; expected Value::Array")}
+        }
+    }
+}
+#[derive(Deserialize,Serialize)]
+pub struct SetHealthArgs{
+    pub id:String,
+    pub value:f32
+}
+impl FromArgs<Value> for SetHealthArgs{
+    fn autocomplete_args(args:Vec<&str>) -> Vec<String>{
+        match args.len(){
+            0|1 => {
+                let mut v = Vec::new();
+                v.push("id:String".to_string());
+                v
+            }
+            2 => {
+                let mut v = Vec::new();
+                v.push("value:f32".to_string());
+                v
+            }
+            _ => {Vec::new()}
+        }
+    }
+    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
+        match args{
+            Value::Array(values) => {
+                if values.len() < 2{
+                    return Err("too few arguments for SetHealthArgs")
+                }
+                let mut fmt_args = serde_json::Map::new();
+                let id = &values[0];
+                let value = &values[1];
+                fmt_args.insert("id".to_string(),id.clone());
+                fmt_args.insert("value".to_string(),value.clone().as_str().unwrap().parse::<f32>().unwrap().into());
+                serde_json::from_value::<SetHealthArgs>(Value::Object(fmt_args))
+                    .map_err(|e| {godot_print!("{}",format!("Error constructing set_health args; {e:?}"));"could not map SetHealthArgs"})
+            }
+            _ => {Err("unexpected value type for SetHealthArgs; expected Value::Array")}
         }
     }
 }
