@@ -35,6 +35,7 @@ func destination_hovered(uuid):
 signal destination_unhovered(uuid)
 func destination_unhovered(uuid):
 	emit_signal("destination_unhovered",uuid)
+
 #INVENTORY SIGNALS
 #emits the item_added signal
 signal item_added(client_id,item)
@@ -55,6 +56,11 @@ func player_position(location):
 signal location_received(id)
 func location_received(id):
 	emit_signal("location_received",id)
+
+#ENTITY SIGNALS
+signal monk_garden_received(id,location)
+func monk_garden_received(id:String,location:Vector3):
+	emit_signal("monk_garden_received",id,location)
 
 #INPUT SIGNALS
 #emits activate_ability signal

@@ -27,16 +27,18 @@ var assets = {
 	21 : "res://entity/client/tutorial/AxisSpiderClient.tscn",
 	22 : "res://entity/server/tutorial/AxisSpiderServer.tscn",
 	23 : "res://user_interface/client/overheads/ChicagoFont.tscn",
+	#24 skip (client/server specific)
 }
 
 #client specific assets
 var client_assets = {
-	16:"res://world/client/ProwlerAnchorMesh.tscn"
+	16:"res://world/client/ProwlerAnchorMesh.tscn",
+	24 : "res://world/client/MonkGardenMesh.tscn",
 }
-
 #server specific assets
 var server_assets = {
 	16:"res://world/ProwlerAnchorServer.tscn",
+	24 : "res://world/MonkGardenServer.tscn",
 }
 var asset_resources = {}
 var client_asset_resources = {}

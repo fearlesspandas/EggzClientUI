@@ -30,6 +30,7 @@ func _ready():
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
 	#body.add_child(belt_orbital)
+
 	physics_native_shared_socket.add_entity_to_queue(id)
 	ClientTerminalGlobalSignals.connect("set_entity_socket_mode",self,"set_socket_mode_if_entity")
 	ClientTerminalGlobalSignals.connect("set_all_entity_socket_mode",self,"set_socket_mode")

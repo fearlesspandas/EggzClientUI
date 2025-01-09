@@ -27,5 +27,5 @@ func replenish_health():
 	else:
 		health_replenish_timer.stop()
 
-func init_with_id(uuid:String):
+func init_with_id(uuid:String,client_id:String):
 	self.uuid = uuid

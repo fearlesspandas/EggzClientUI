@@ -18,5 +18,5 @@ func update_mesh_from_position(location:Vector3):
 		TerrainSignalsClient.remove_from_navigation_mesh(uuid)
 	self.visible = loaded
 
-func init_with_id(id):
+func init_with_id(id,client_id:String):
 	uuid = id

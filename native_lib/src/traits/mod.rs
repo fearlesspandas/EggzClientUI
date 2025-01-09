@@ -39,6 +39,21 @@ pub trait Instanced<T>{
         Instance::emplace(Self::make())
     }
 }
+pub trait Defaulted{
+    fn default() -> Self;
+}
+pub trait InstancedDefault<T,A:Defaulted>{
+    fn make(args:&A) -> Self where Self:Sized;
+    fn new(base:&T) -> Self where Self:Sized{
+        Self::make(&Defaulted::default())
+    }
+    fn make_instance(args:&A) -> Instance<Self,Unique> 
+        where Self:Sized,Self:NativeClass, 
+        <Self as gdnative::prelude::NativeClass>::Base: Instanciable
+    {
+        Instance::emplace(Self::make(args))
+    }
+}
 pub trait RuntimeInstanced<T>{
     fn make(runtime:&Runtime) -> Self where Self:Sized;
     fn new(base:&T) -> Self where Self:Sized{

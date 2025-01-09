@@ -103,10 +103,6 @@ func spawn_client_world(parent:Node,location:Vector3):
 	spawn = spawn_terrain("0",location,parent,resource,false)
 	AbilityManager.client_spawn = spawn
 
-func emit_character():
-	print_debug("EMITTING SIGNAL")
-	emit_signal("spawned_player_character")
-
 func create_character_entity_client(id:String, location:Vector3 = Vector3(0,10,0),parent = spawn) -> Player:
 	#print_debug("spawning client character")
 	if parent != null:
@@ -190,6 +186,8 @@ func handle_entity(entity):
 			if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
 				var npc = spawn_axis_spider(id,Vector3(x,y,z))
 				npc.set_health(health)
+		{"MonkGardenModel":{"id":var id, "location":[var x, var y, var z]}}:
+			GlobalSignalsClient.monk_garden_received(id,Vector3(x,y,z))
 		_:
 			print_debug("no handler found for entity ", entity)
 

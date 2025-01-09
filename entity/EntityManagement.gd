@@ -37,7 +37,7 @@ func spawn_terrain(id:String,location:Vector3,parent:Node,resource:Resource,crea
 		var res = resource.instance()
 		terrain[id] = res
 		if res.has_method("init_with_id"):
-			res.init_with_id(id)
+			res.init_with_id(id,client_id)
 		parent.add_child(res)
 		res.global_transform.origin = location
 		emit_signal("terrain_created",res,parent,create_as_server_entity)

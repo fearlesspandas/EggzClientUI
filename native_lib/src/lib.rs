@@ -9,6 +9,7 @@ pub mod data_graphs;
 pub mod client_entity;
 pub mod entity_flight_tail;
 pub mod data_snapshots;
+pub mod shop_menu;
 mod client_terminal;
 
 
@@ -22,5 +23,7 @@ fn init(handle:InitHandle){
     handle.add_class::<entity_flight_tail::BeltOrbital>();
     handle.add_class::<entity_flight_tail::OrbitNode>();
     handle.add_class::<data_snapshots::DataSnapshots>();
+    handle.add_class::<shop_menu::ShopItem>();
+    handle.add_class::<shop_menu::ShopMenu>();
 }
 godot_init!(init);
