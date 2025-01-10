@@ -25,6 +25,8 @@ pub struct ShopItem{
     item_type:ItemType,
     bg_rect:Ref<ColorRect>,
     menu_tx:Sender<Command>,
+    color:Color,
+    hovering:bool,
 }
 impl InstancedDefault<Control,Sender<Command>> for ShopItem{
     fn make(args:&Sender<Command>) -> Self{
@@ -32,23 +34,44 @@ impl InstancedDefault<Control,Sender<Command>> for ShopItem{
             item_type:ItemType::Empty,
             bg_rect: ColorRect::new().into_shared(),
             menu_tx:args.clone(),
+            color:Color{r:0.0,g:255.0,b:255.0,a:1.0},
+            hovering:false,
         }
     }
 }
 #[methods]
 impl ShopItem{
     #[method]
-    fn ready(&self,#[base] owner:TRef<Control>){
+    fn _ready(&self,#[base] owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_frame_color(Color{r:0.0,g:255.0,b:255.0,a:1.0});
         owner.add_child(bg_rect,true);
+        bg_rect.connect("mouse_entered",owner,"hover",VariantArray::new_shared(),0);
+        bg_rect.connect("mouse_exited",owner,"unhover",VariantArray::new_shared(),0);
     }
     #[method]
-    fn process(&self,#[base] owner:TRef<Control>,delta:f64){
+    fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_size(owner.size(),false);
+        //if self.hovering{
+        //    bg_rect.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
+        //}else{
+        //    bg_rect.set_frame_color(Color{r:0.0,g:255.0,b:255.0,a:1.0});
+        //}
     }
-
+    #[method]
+    fn hover(&mut self,#[base] owner:TRef<Control>){
+        let bg_rect = unsafe{self.bg_rect.assume_safe()};
+        bg_rect.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
+        self.hovering = true;
+        
+    }
+    #[method]
+    fn unhover(&mut self,#[base] owner:TRef<Control>){
+        let bg_rect = unsafe{self.bg_rect.assume_safe()};
+        bg_rect.set_frame_color(Color{r:0.0,g:255.0,b:255.0,a:1.0});
+        self.hovering = false;
+    }
 }
 #[derive(NativeClass)]
 #[inherit(Control)]
@@ -72,16 +95,19 @@ impl Instanced<Control> for ShopMenu{
 #[methods]
 impl ShopMenu{
     #[method]
-    fn ready(&self,#[base] owner:TRef<Control>){
+    fn _ready(&self,#[base] owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
-        bg_rect.set_frame_color(Color{r:0.0,g:255.0,b:255.0,a:1.0});
+        bg_rect.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
         owner.add_child(bg_rect,true);
+        owner.set_visible(false);
+        self.tx.send(Command::AddItem(ItemType::Empty));
+        self.tx.send(Command::AddItem(ItemType::Empty));
     }
     fn add_item(&mut self,item_type:ItemType) {
         self.tx.send(Command::AddItem(item_type));
     }
     #[method]
-    fn process(&mut self,#[base] owner:TRef<Control>,delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
         match self.rx.try_recv(){
             Ok(Command::AddItem(typ)) => {
                 let item = ShopItem::make_instance(&self.tx).into_shared();
@@ -93,6 +119,12 @@ impl ShopMenu{
             Err(_) => {}
         } 
         //sizing and positioning
+        let vp = owner.get_viewport().unwrap();
+        let vp  = unsafe{vp.assume_safe()};
+
+        let size = vp.get_visible_rect().size;
+
+        owner.set_size(size/2.0,false);
         //background
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_size(owner.size(),false);
@@ -109,6 +141,16 @@ impl ShopMenu{
                 control.set_position(position,false);
                 idx += 1.0;
             });
+        }
+    }
+
+    #[method]
+    fn _input(&self,#[base] owner:TRef<Control>, event:Ref<InputEvent>){
+        if let Ok(event) = event.try_cast::<InputEventKey>(){
+            let event = unsafe{event.assume_safe()};
+            if event.is_action_released("shop_menu_toggle",false){
+                owner.set_visible(!owner.is_visible());
+            }
         }
     }
 }

@@ -13,6 +13,7 @@ onready var input_timer:Timer = Timer.new()
 onready var position_data_timer : Timer = Timer.new()
 onready var navigator_mesh:NavigatorMesh = NavigatorMesh.new()
 
+
 var is_active = false
 var terminal_active = false
 
