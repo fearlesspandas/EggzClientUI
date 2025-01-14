@@ -12,18 +12,125 @@ impl <T> Defaulted for Sender<T>{
         tx
     }
 }
+trait ToName{
+    fn to_name(&self) -> String;
+}
+trait ToDescription{
+    fn to_description(&self) -> String;
+}
 enum ItemType{
     Empty,
-    
+}
+impl ToName for ItemType{
+    fn to_name(&self) -> String{
+        match self{
+            ItemType::Empty => "Empty".to_string()
+        }
+    }
+}
+impl ToDescription for ItemType{
+    fn to_description(&self) -> String{
+        match self{
+            ItemType::Empty => "Placeholder item slot".to_string()
+        }
+    }
 }
 enum Command{
     AddItem(ItemType),
 }
 #[derive(NativeClass)]
 #[inherit(Control)]
+pub struct MenuButton{
+    bg_rect:Ref<ColorRect>,
+    display_rect:Ref<ColorRect>,
+    label:Ref<Label>,
+    bg_color:Color,
+    display_color:Color,
+}
+impl InstancedDefault<Control,Sender<Command>> for MenuButton{
+    fn make(args:&Sender<Command>) -> Self{
+        MenuButton{
+            bg_rect:ColorRect::new().into_shared(),
+            display_rect:ColorRect::new().into_shared(),
+            label:Label::new().into_shared(),
+            bg_color:Color{r:75.0,g:200.0,b:200.0,a:1.0},
+            display_color:Color{r:0.0,g:0.0,b:0.0,a:1.0},
+        }
+    }
+}
+#[methods]
+impl MenuButton{
+    #[method]
+    fn _ready(&self,#[base] owner:TRef<Control>) {
+        let bg_rect = unsafe{self.bg_rect.assume_safe()};
+        let display_rect = unsafe{self.display_rect.assume_safe()};
+        let label = unsafe{self.label.assume_safe()};
+        bg_rect.set_frame_color(self.bg_color);
+        display_rect.set_frame_color(self.display_color);
+        owner.add_child(bg_rect,true);
+        owner.add_child(display_rect,true);
+        owner.add_child(label,true);
+        owner.connect("mouse_entered",owner,"hover",VariantArray::new_shared(),0);
+        owner.connect("mouse_exited",owner,"unhover",VariantArray::new_shared(),0);
+        bg_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
+        display_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
+    }
+    #[method]
+    fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
+        let bg_rect = unsafe{self.bg_rect.assume_safe()};
+        let display_rect = unsafe{self.display_rect.assume_safe()};
+        let label = unsafe{self.label.assume_safe()};
+        //sizing and positioning
+        let bg_offset = Vector2{x:10.0,y:10.0};
+        //bg_rect
+        bg_rect.set_size(owner.size(),false);
+        bg_rect.set_position(Vector2{x:bg_offset.x/-2.0,y:0.0},false);
+        //display_rect
+        display_rect.set_size(bg_rect.size() - bg_offset,false);
+        display_rect.set_position(bg_rect.position() + bg_offset/2.0,false);
+        //label
+        label.set_size(bg_rect.size()/2.0,false);
+        let label_position = bg_rect.size()/2.0 - (label.size()/2.0) ;
+        label.set_position(label_position,false);
+    }
+    #[method]
+    fn hover(&mut self,#[base] owner:TRef<Control>){
+        let bg_rect = unsafe{self.bg_rect.assume_safe()};
+        bg_rect.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
+    }
+    #[method]
+    fn unhover(&mut self,#[base] owner:TRef<Control>){
+        let bg_rect = unsafe{self.bg_rect.assume_safe()};
+        bg_rect.set_frame_color(self.bg_color);
+    }
+    #[method]
+    fn set_label_text(&self,text:String){
+        let label = unsafe{self.label.assume_safe()};
+        label.set_text(text);
+    }
+    #[method]
+    fn set_bg_color(&mut self,color:Color){
+        let bg_rect = unsafe{self.bg_rect.assume_safe()};
+        bg_rect.set_frame_color(color);
+        self.bg_color = color;
+    }
+    #[method]
+    fn set_display_color(&mut self,color:Color){
+        let display_rect = unsafe{self.display_rect.assume_safe()};
+        display_rect.set_frame_color(color);
+        self.display_color = color;
+    }
+}
+#[derive(NativeClass)]
+#[inherit(Control)]
 pub struct ShopItem{
     item_type:ItemType,
     bg_rect:Ref<ColorRect>,
+    display_rect:Ref<ColorRect>,
+    name:Ref<Label>,
+    description:Ref<Label>,
+    buy_button:Instance<MenuButton>,
+    sell_button:Instance<MenuButton>,
     menu_tx:Sender<Command>,
     color:Color,
     hovering:bool,
@@ -33,6 +140,11 @@ impl InstancedDefault<Control,Sender<Command>> for ShopItem{
         ShopItem{
             item_type:ItemType::Empty,
             bg_rect: ColorRect::new().into_shared(),
+            display_rect: ColorRect::new().into_shared(),
+            name:Label::new().into_shared(),
+            description:Label::new().into_shared(),
+            buy_button:MenuButton::make_instance(args).into_shared(),
+            sell_button:MenuButton::make_instance(args).into_shared(),
             menu_tx:args.clone(),
             color:Color{r:0.0,g:255.0,b:255.0,a:1.0},
             hovering:false,
@@ -44,27 +156,76 @@ impl ShopItem{
     #[method]
     fn _ready(&self,#[base] owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
+        let display_rect = unsafe{self.display_rect.assume_safe()};
+        let name = unsafe{self.name.assume_safe()};
+        let description = unsafe{self.description.assume_safe()};
+        let buy_button = unsafe{self.buy_button.assume_safe()};
+        let sell_button = unsafe{self.sell_button.assume_safe()};
+        //initialize
         bg_rect.set_frame_color(Color{r:0.0,g:255.0,b:255.0,a:1.0});
+        display_rect.set_frame_color(Color{r:0.0,g:0.0,b:0.0,a:1.0});
+        name.set_text(self.item_type.to_name());
+        description.set_text(self.item_type.to_description());
+        buy_button.map_mut(|obj,control| {
+            obj.set_bg_color(Color{r:75.0,g:0.0,b:100.0,a:1.0});
+            obj.set_label_text("Buy".to_string());
+        });
+        sell_button.map_mut(|obj,control| {
+            obj.set_bg_color(Color{r:75.0,g:0.0,b:100.0,a:1.0});
+            obj.set_label_text("Sell".to_string());
+        });
+        //add children
         owner.add_child(bg_rect,true);
-        bg_rect.connect("mouse_entered",owner,"hover",VariantArray::new_shared(),0);
-        bg_rect.connect("mouse_exited",owner,"unhover",VariantArray::new_shared(),0);
+        owner.add_child(display_rect,true);
+        owner.add_child(name,true);
+        owner.add_child(description,true);
+        owner.add_child(buy_button,true);
+        owner.add_child(sell_button,true);
+        //connect signals
+        owner.connect("mouse_entered",owner,"hover",VariantArray::new_shared(),0);
+        owner.connect("mouse_exited",owner,"unhover",VariantArray::new_shared(),0);
+        bg_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
+        display_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
     }
     #[method]
     fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
+        let display_rect = unsafe{self.display_rect.assume_safe()};
+        let name = unsafe{self.name.assume_safe()};
+        let description = unsafe{self.description.assume_safe()};
+        let buy_button = unsafe{self.buy_button.assume_safe()};
+        let sell_button = unsafe{self.sell_button.assume_safe()};
+        //bg_rect
         bg_rect.set_size(owner.size(),false);
-        //if self.hovering{
-        //    bg_rect.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
-        //}else{
-        //    bg_rect.set_frame_color(Color{r:0.0,g:255.0,b:255.0,a:1.0});
-        //}
+        let bg_offset = Vector2{x:10.0,y:10.0};
+        //display_rect
+        display_rect.set_size(bg_rect.size() - bg_offset,false);
+        display_rect.set_position(bg_offset/2.0,false);
+        //name label
+        name.set_size(display_rect.size()/2.0,false);
+        name.set_position(display_rect.position(),false);
+        //description label
+        description.set_size(display_rect.size()/2.0,false);
+        description.set_position(display_rect.position() + Vector2{x:0.0,y:name.size().y},false);
+        //buy button
+        let button_size = owner.size()/2.0;
+        buy_button.map(|_,control| {
+            let position = Vector2{x:button_size.x,y:bg_offset.y/2.0};
+            control.set_size(button_size,false);
+            control.set_position(position,false);
+        });
+        //sell button
+        sell_button.map(|_,control| {
+            let position = owner.size() - button_size - Vector2{x:0.0,y:bg_offset.y/2.0} ;
+            control.set_size(button_size,false);
+            control.set_position(position,false);
+        });
     }
     #[method]
     fn hover(&mut self,#[base] owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
         self.hovering = true;
-        
     }
     #[method]
     fn unhover(&mut self,#[base] owner:TRef<Control>){
@@ -121,10 +282,8 @@ impl ShopMenu{
         //sizing and positioning
         let vp = owner.get_viewport().unwrap();
         let vp  = unsafe{vp.assume_safe()};
-
         let size = vp.get_visible_rect().size;
-
-        owner.set_size(size/2.0,false);
+        owner.set_size(size/2.0,true);
         //background
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_size(owner.size(),false);

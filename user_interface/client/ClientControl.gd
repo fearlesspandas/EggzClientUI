@@ -17,6 +17,7 @@ onready var destination_type_indicator:DestinationTypeIndicator = DestinationTyp
 onready var command_menu : CommandMenu = CommandMenu.new()
 onready var inventory_menu : InventoryMenu = InventoryMenu.new()
 onready var client_terminal = load("res://native_lib/ClientTerminal.gdns").new()
+onready var shop_menu = load("res://native_lib/ShopMenu.gdns").new()
 
 var profile_id:String
 var connection_ind_size = 30
@@ -98,6 +99,7 @@ func load_scene(id,secret):
 	ClientTerminalGlobalSignals.register_terminal(client_terminal)
 	ServerTerminalGlobalSignals.register_terminal(client_terminal)
 
+	self.add_child(shop_menu)
 
 	#ServerTerminalGlobalSignals.connect_terminal(client_terminal)
 	#self.mouse_filter = Control.MOUSE_FILTER_IGNORE

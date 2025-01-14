@@ -24,6 +24,7 @@ fn init(handle:InitHandle){
     handle.add_class::<entity_flight_tail::OrbitNode>();
     handle.add_class::<data_snapshots::DataSnapshots>();
     handle.add_class::<shop_menu::ShopItem>();
+    handle.add_class::<shop_menu::MenuButton>();
     handle.add_class::<shop_menu::ShopMenu>();
 }
 godot_init!(init);
