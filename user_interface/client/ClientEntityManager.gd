@@ -186,8 +186,8 @@ func handle_entity(entity):
 			if !client_entities.has(id) and client_id != id and !ServerNetwork.sockets.has(id):
 				var npc = spawn_axis_spider(id,Vector3(x,y,z))
 				npc.set_health(health)
-		{"MonkGardenModel":{"id":var id, "location":[var x, var y, var z]}}:
-			GlobalSignalsClient.monk_garden_received(id,Vector3(x,y,z))
+		{"MonkGardenModel":{"id":var id, "location":[var x, var y, var z],"items":var items}}:
+			GlobalSignalsClient.monk_garden_received(id,Vector3(x,y,z),items)
 		_:
 			print_debug("no handler found for entity ", entity)
 
@@ -274,6 +274,9 @@ func handle_json(json) -> bool:
 			spawn.add_child(fizzle)	
 			return false
 		{'Inventory': {'id':var id,'items':var items}}:
+			GlobalSignalsClient.inventory(id,items)	
+			return false
+		{'Shop': {'id':var id,'items':var items}}:
 			GlobalSignalsClient.inventory(id,items)	
 			return false
 		{'ItemAdded':{'id':var id, 'item':var item}}:

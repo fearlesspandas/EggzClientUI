@@ -643,6 +643,7 @@ ServerTerminalGlobalSignals="*res://user_interface/server/ServerTerminalGlobalSi
 SharedRuntimeEnv="*res://network/SharedRuntimeEnv.gd"
 FpsStats="*res://user_interface/client/FPSStats.gd"
 ShopMenuEnv="*res://user_interface/client/ShopMenuEnv.gd"
+InventoryDataCache="*res://user_interface/client/InventoryDataCache.gd"
 
 [display]
 

@@ -16,6 +16,8 @@ onready var collision_object = find_node("CollisionObject")
 onready var area = find_node("UseableArea")
 
 var player_active = false
+var initialized = false
+var items = []
 
 
 func _ready():
@@ -27,9 +29,11 @@ func _ready():
 	set_colliders()
 	set_signal_handlers()
 
-func initialize(id,location):
+func initialize(id,location,items):
 	if id == self.id:
-		print_debug("MonkGarden Received")
+		print_debug("MonkGarden Received ",id," with items ", items)
+		initialized = true
+		self.items = items
 
 func set_colliders():
 	collision_object.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
@@ -38,8 +42,7 @@ func set_colliders():
 	collision_object.set_collision_mask_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,true)
 	area.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
 	area.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
-	area.set_collision_layer_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,true)
-	area.set_collision_mask_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,true)
+	area.set_collision_mask_bit(EntityConstants.CLIENT_SHOPS_COLLISION_LAYER,true)
 
 func set_signal_handlers():
 	area.connect("body_entered",self,"entered")
@@ -48,10 +51,15 @@ func set_signal_handlers():
 func entered(body):
 	player_active = true
 	print_debug("body entered",str(body))
+	print_debug("monk items ", self.items)
+	assert(initialized)
+	for item in self.items:
+		ShopMenuEnv.add_to_inventory(int(item))
 
 func exited(body):
 	player_active = false
 	print_debug("body exited", str(body))
+	ShopMenuEnv.clear_inventory()
 
 func _physics_process(delta):
 	if player_active:

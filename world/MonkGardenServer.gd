@@ -16,8 +16,6 @@ func _ready():
 	self.add_child(setup_timer)
 	setup_timer.start()
 	
-	
-	
 func init_with_id(id,client_id):
 	self.id = id
 	self.client_id = client_id

@@ -63,9 +63,9 @@ func location_received(id):
 	emit_signal("location_received",id)
 
 #ENTITY SIGNALS
-signal monk_garden_received(id,location)
-func monk_garden_received(id:String,location:Vector3):
-	emit_signal("monk_garden_received",id,location)
+signal monk_garden_received(id,location,items)
+func monk_garden_received(id:String,location:Vector3,items):
+	emit_signal("monk_garden_received",id,location,items)
 
 #INPUT SIGNALS
 #emits activate_ability signal

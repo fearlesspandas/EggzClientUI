@@ -103,6 +103,8 @@ func load_scene(id,secret):
 	shop_menu.set_client_id(profile.id)
 	shop_menu.connect("buy",ShopMenuEnv,"buy_ability")
 	shop_menu.connect("sell",ShopMenuEnv,"sell_ability")
+	ShopMenuEnv.connect("clear_inventory",shop_menu,"clear")
+	ShopMenuEnv.connect("add_to_inventory",shop_menu,"add_item")
 
 	#ServerTerminalGlobalSignals.connect_terminal(client_terminal)
 	#self.mouse_filter = Control.MOUSE_FILTER_IGNORE

@@ -23,12 +23,14 @@ trait ToDescription{
 enum ItemType{
     Empty,
     Smack,
+    GlobTeleport,
 }
 impl ToName for ItemType{
     fn to_name(&self) -> String{
         match self{
             ItemType::Empty => "Empty".to_string(),
             ItemType::Smack => "Smack".to_string(),
+            ItemType::GlobTeleport => "GlobTeleport".to_string(),
         }
     }
 }
@@ -37,6 +39,7 @@ impl ToDescription for ItemType{
         match self{
             ItemType::Empty => "Placeholder item slot".to_string(),
             ItemType::Smack => "small explosion that does 10 damage".to_string(),
+            ItemType::GlobTeleport => "creates polygon that teleports entities to an anchor point".to_string(),
         }
     }
 }
@@ -44,7 +47,18 @@ impl Into<u8> for ItemType{
     fn into(self) -> u8 {
         match self{
             ItemType::Smack => 0,
+            ItemType::GlobTeleport => 1,
             ItemType::Empty => 255,
+        }
+    }
+}
+impl From<u8> for ItemType{
+    fn from(value:u8) -> Self{
+        match value{
+            0 => ItemType::Smack,
+            1 => ItemType::GlobTeleport,
+            255 => ItemType::Empty,
+            _ => todo!(),
         }
     }
 }
@@ -52,6 +66,7 @@ enum Command{
     AddItem(ItemType),
     BuyItem(ItemType),
     SellItem(ItemType),
+    ClearShop,
 }
 #[derive(NativeClass)]
 #[inherit(Control)]
@@ -331,15 +346,46 @@ impl ShopMenu{
         Signals::register(builder);
     }
     #[method]
-    fn _ready(&self,#[base] owner:TRef<Control>){
+    fn _ready(&mut self,#[base] owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
         owner.add_child(bg_rect,true);
         owner.set_visible(false);
-        self.tx.send(Command::AddItem(ItemType::Smack));
-        self.tx.send(Command::AddItem(ItemType::Empty));
+        //self.tx.send(Command::AddItem(ItemType::Smack));
+        //self.tx.send(Command::AddItem(ItemType::Empty));
+        //self.add_item(0);
+        //self.add_item(1);
+        //self.clear();
+
+        //self.add_item(255);
     }
-    fn add_item(&mut self,item_type:ItemType) {
+    #[method]
+    fn clear_from_id(&self,id:String){
+        self.client_id.clone().map(|c_id| {
+            if c_id == id{
+                self.tx.send(Command::ClearShop);
+            }
+        });
+    }
+    #[method]
+    fn clear(&self){
+        godot_print!("Clearing shop");
+        self.tx.send(Command::ClearShop);
+    }
+    #[method]
+    fn add_item_from_id(&mut self,id:String,item_type:u8){
+        self.client_id.clone().map(|c_id| {
+            if c_id == id {
+                self.tx.send(Command::AddItem(ItemType::from(item_type)));
+            }
+        });
+    }
+    #[method]
+    fn add_item(&mut self,item_type:u8){
+        godot_print!("item added");
+        self.tx.send(Command::AddItem(ItemType::from(item_type)));
+    }
+    fn add_item_type(&mut self,item_type:ItemType){
         self.tx.send(Command::AddItem(item_type));
     }
     #[method]
@@ -365,6 +411,15 @@ impl ShopMenu{
                     owner.emit_signal(Signals::sell.to_string(),&[Variant::new(id),Variant::new(typ_label.clone())])
                 );
                 godot_print!("{}",format!("Selling Item {typ_label:?}"));
+            }
+            Ok(Command::ClearShop) => {
+                for item in &self.items{
+                    owner.remove_child(item);
+                    let item = unsafe{item.assume_safe()};
+                    item.map(|_, control| control.queue_free());
+                    
+                }
+                self.items.clear();
             }
             Err(_) => {}
         } 
