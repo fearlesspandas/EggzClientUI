@@ -280,6 +280,10 @@ func handle_json(json) -> bool:
 			print_debug("Item added for ", id)
 			GlobalSignalsClient.item_added(id,item)
 			return false
+		{'ItemRemoved':{'id':var id, 'item':var item}}:
+			print_debug("Item removed for ", id)
+			GlobalSignalsClient.item_removed(id,item)
+			return false
 		{'ProgressUpdate':{'id':var id,'args':var args}}:
 			ProgressHandlerClient.handle_message(id,args)
 			return false

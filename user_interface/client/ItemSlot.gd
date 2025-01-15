@@ -65,8 +65,10 @@ func map_items(item_id:int) -> String:
 			return "smash"
 		1:
 			return "glob tele"
+		255:
+			return ""
 		_:
-			return "unknown item"
+			return "unknown"
 
 func activated():
 	is_active = false

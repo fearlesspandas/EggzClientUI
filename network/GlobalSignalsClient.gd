@@ -42,6 +42,11 @@ signal item_added(client_id,item)
 func item_added(client_id,item):
 	emit_signal("item_added",client_id,item)
 
+#emits item_removed signal
+signal item_removed(client_id,item)
+func item_removed(client_id,item):
+	emit_signal("item_removed",client_id,item)
+
 #emits the inventory signal (full inventory contents)
 signal inventory(client_id,contents)
 func inventory(client_id,contents):

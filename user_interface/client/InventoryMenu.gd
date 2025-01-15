@@ -17,6 +17,7 @@ func _ready():
 	socket = ServerNetwork.get(client_id)
 	assert(socket != null)
 	GlobalSignalsClient.connect("item_added",self,"add_item")
+	GlobalSignalsClient.connect("item_removed",self,"remove_item")
 	GlobalSignalsClient.connect("inventory",self,"refresh_contents")
 	bg_rect.color = Color.gray
 	self.add_child(bg_rect)
@@ -58,11 +59,17 @@ func size_and_position():
 	
 
 func refresh_contents(id,contents):
-	for i in range(0,contents.size()):
-		items[i].fill(int(contents[i]))
+	for i in range(0,items.size()):
+		if i < contents.size():
+			items[i].fill(int(contents[i]))
+		else:
+			items[i].fill(255)
 			
 
 func add_item(id,item):
+	socket.get_inventory(client_id)
+
+func remove_item(id,item):
 	socket.get_inventory(client_id)
 
 func _process(delta):

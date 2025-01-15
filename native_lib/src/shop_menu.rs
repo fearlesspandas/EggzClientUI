@@ -337,7 +337,7 @@ impl ShopMenu{
         owner.add_child(bg_rect,true);
         owner.set_visible(false);
         self.tx.send(Command::AddItem(ItemType::Smack));
-        self.tx.send(Command::AddItem(ItemType::Smack));
+        self.tx.send(Command::AddItem(ItemType::Empty));
     }
     fn add_item(&mut self,item_type:ItemType) {
         self.tx.send(Command::AddItem(item_type));
