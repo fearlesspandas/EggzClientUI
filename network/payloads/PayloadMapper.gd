@@ -187,6 +187,12 @@ func ability(from:String,ability_id:int,args:Dictionary = {'NoArgs':{}} ):
 func add_item(id:String,item:int):
 	return {'ADD_ITEM':{'id':id,'item':item}}
 
+func buy_item(id:String,item:int):
+	return {'BUY_ITEM':{'id':id,'item':item}}
+
+func sell_item(id:String,item:int):
+	return {'SELL_ITEM':{'id':id,'item':item}}
+
 func get_inventory(id:String):
 	return {'GET_INVENTORY':{'id':id}}
 	

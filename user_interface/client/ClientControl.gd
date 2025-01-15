@@ -100,6 +100,9 @@ func load_scene(id,secret):
 	ServerTerminalGlobalSignals.register_terminal(client_terminal)
 
 	self.add_child(shop_menu)
+	shop_menu.set_client_id(profile.id)
+	shop_menu.connect("buy",ShopMenuEnv,"buy_ability")
+	shop_menu.connect("sell",ShopMenuEnv,"sell_ability")
 
 	#ServerTerminalGlobalSignals.connect_terminal(client_terminal)
 	#self.mouse_filter = Control.MOUSE_FILTER_IGNORE

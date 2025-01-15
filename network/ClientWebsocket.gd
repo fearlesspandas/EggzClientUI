@@ -241,6 +241,12 @@ func ability(from:String,ability_id:int,args = {'NoArgs':{}}):
 func add_item(id:String,item:int):
 	send_payload(PayloadMapper.add_item(id,item))
 
+func buy_item(id:String,item:int):
+	send_payload(PayloadMapper.buy_item(id,item))
+
+func sell_item(id:String,item:int):
+	send_payload(PayloadMapper.sell_item(id,item))
+
 func get_inventory(id:String):
 	send_payload(PayloadMapper.get_inventory(id))
 

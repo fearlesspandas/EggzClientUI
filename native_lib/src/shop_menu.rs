@@ -1,6 +1,6 @@
 use gdnative::prelude::*;
 use gdnative::api::*;
-use crate::traits::{Instanced,InstancedDefault,Defaulted};
+use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
@@ -12,54 +12,75 @@ impl <T> Defaulted for Sender<T>{
         tx
     }
 }
+
 trait ToName{
     fn to_name(&self) -> String;
 }
 trait ToDescription{
     fn to_description(&self) -> String;
 }
+#[derive(Clone)]
 enum ItemType{
     Empty,
+    Smack,
 }
 impl ToName for ItemType{
     fn to_name(&self) -> String{
         match self{
-            ItemType::Empty => "Empty".to_string()
+            ItemType::Empty => "Empty".to_string(),
+            ItemType::Smack => "Smack".to_string(),
         }
     }
 }
 impl ToDescription for ItemType{
     fn to_description(&self) -> String{
         match self{
-            ItemType::Empty => "Placeholder item slot".to_string()
+            ItemType::Empty => "Placeholder item slot".to_string(),
+            ItemType::Smack => "small explosion that does 10 damage".to_string(),
+        }
+    }
+}
+impl Into<u8> for ItemType{
+    fn into(self) -> u8 {
+        match self{
+            ItemType::Smack => 0,
+            ItemType::Empty => 255,
         }
     }
 }
 enum Command{
     AddItem(ItemType),
+    BuyItem(ItemType),
+    SellItem(ItemType),
 }
 #[derive(NativeClass)]
 #[inherit(Control)]
+#[register_with(Self::register_signals)]
 pub struct MenuButton{
     bg_rect:Ref<ColorRect>,
     display_rect:Ref<ColorRect>,
     label:Ref<Label>,
     bg_color:Color,
     display_color:Color,
+    hovering:bool,
 }
-impl InstancedDefault<Control,Sender<Command>> for MenuButton{
-    fn make(args:&Sender<Command>) -> Self{
+impl Instanced<Control> for MenuButton{
+    fn make() -> Self{
         MenuButton{
             bg_rect:ColorRect::new().into_shared(),
             display_rect:ColorRect::new().into_shared(),
             label:Label::new().into_shared(),
             bg_color:Color{r:75.0,g:200.0,b:200.0,a:1.0},
             display_color:Color{r:0.0,g:0.0,b:0.0,a:1.0},
+            hovering:false,
         }
     }
 }
 #[methods]
 impl MenuButton{
+    fn register_signals(builder:&ClassBuilder<Self>){
+        builder.signal("clicked").done();
+    }
     #[method]
     fn _ready(&self,#[base] owner:TRef<Control>) {
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
@@ -94,14 +115,25 @@ impl MenuButton{
         label.set_position(label_position,false);
     }
     #[method]
+    fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
+        if let Ok(event) = event.try_cast::<InputEventMouseButton>(){
+            let event = unsafe{event.assume_safe()};
+            if event.is_action_released("left_click",true) && self.hovering{
+                owner.emit_signal("clicked",&[]);
+            }
+        }
+    }
+    #[method]
     fn hover(&mut self,#[base] owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
+        self.hovering = true;
     }
     #[method]
     fn unhover(&mut self,#[base] owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_frame_color(self.bg_color);
+        self.hovering = false;
     }
     #[method]
     fn set_label_text(&self,text:String){
@@ -143,8 +175,8 @@ impl InstancedDefault<Control,Sender<Command>> for ShopItem{
             display_rect: ColorRect::new().into_shared(),
             name:Label::new().into_shared(),
             description:Label::new().into_shared(),
-            buy_button:MenuButton::make_instance(args).into_shared(),
-            sell_button:MenuButton::make_instance(args).into_shared(),
+            buy_button:MenuButton::make_instance().into_shared(),
+            sell_button:MenuButton::make_instance().into_shared(),
             menu_tx:args.clone(),
             color:Color{r:0.0,g:255.0,b:255.0,a:1.0},
             hovering:false,
@@ -170,10 +202,12 @@ impl ShopItem{
             obj.set_bg_color(Color{r:75.0,g:0.0,b:100.0,a:1.0});
             obj.set_label_text("Buy".to_string());
         });
+        buy_button.map(|_,control| control.connect("clicked",owner,"buy_item",VariantArray::new_shared(),0));
         sell_button.map_mut(|obj,control| {
             obj.set_bg_color(Color{r:75.0,g:0.0,b:100.0,a:1.0});
             obj.set_label_text("Sell".to_string());
         });
+        sell_button.map(|_,control| control.connect("clicked",owner,"sell_item",VariantArray::new_shared(),0));
         //add children
         owner.add_child(bg_rect,true);
         owner.add_child(display_rect,true);
@@ -222,6 +256,17 @@ impl ShopItem{
         });
     }
     #[method]
+    fn buy_item(&self){
+        let item_type = self.item_type.clone();
+        self.menu_tx.send(Command::BuyItem(item_type));
+    }
+    #[method]
+    fn sell_item(&self){
+        let item_type = self.item_type.clone();
+        self.menu_tx.send(Command::SellItem(item_type));
+    }
+
+    #[method]
     fn hover(&mut self,#[base] owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
@@ -236,7 +281,9 @@ impl ShopItem{
 }
 #[derive(NativeClass)]
 #[inherit(Control)]
+#[register_with(Self::register_signals)]
 pub struct ShopMenu{
+    client_id:Option<String>,
     bg_rect:Ref<ColorRect>,
     items:Vec<Instance<ShopItem>>,
     tx:Sender<Command>,
@@ -246,6 +293,7 @@ impl Instanced<Control> for ShopMenu{
     fn make() -> Self{
         let (tx,rx) = mpsc::unbounded_channel::<Command>();
         ShopMenu{
+            client_id:None,
             bg_rect: ColorRect::new().into_shared(),
             items: Vec::new(),
             tx:tx,
@@ -253,16 +301,43 @@ impl Instanced<Control> for ShopMenu{
         }
     }
 }
+enum Signals{
+    buy,
+    sell
+}
+impl ToString for Signals{
+    fn to_string(&self) -> String{
+        match self{
+            Signals::buy => "buy".to_string(),
+            Signals::sell => "sell".to_string(),
+        }
+    }
+}
+impl CreateSignal<ShopMenu> for Signals{
+    fn register(builder:&ClassBuilder<ShopMenu>) {
+        builder.signal(&Signals::buy.to_string())
+            .with_param("client_id",VariantType::GodotString)
+            .with_param("item_type",VariantType::I64)
+            .done();
+        builder.signal(&Signals::sell.to_string())
+            .with_param("client_id",VariantType::GodotString)
+            .with_param("item_type",VariantType::I64)
+            .done();
+    }
+}
 #[methods]
 impl ShopMenu{
+    fn register_signals(builder:&ClassBuilder<Self>){
+        Signals::register(builder);
+    }
     #[method]
     fn _ready(&self,#[base] owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
         owner.add_child(bg_rect,true);
         owner.set_visible(false);
-        self.tx.send(Command::AddItem(ItemType::Empty));
-        self.tx.send(Command::AddItem(ItemType::Empty));
+        self.tx.send(Command::AddItem(ItemType::Smack));
+        self.tx.send(Command::AddItem(ItemType::Smack));
     }
     fn add_item(&mut self,item_type:ItemType) {
         self.tx.send(Command::AddItem(item_type));
@@ -276,6 +351,20 @@ impl ShopMenu{
                 item_obj.map_mut(|obj,_|obj.item_type = typ);
                 owner.add_child(item.clone(),true);
                 self.items.push(item);
+            }
+            Ok(Command::BuyItem(typ)) => {
+                let typ_label:u8 = typ.into();
+                self.client_id.as_ref().map(|id|
+                    owner.emit_signal(Signals::buy.to_string(),&[Variant::new(id),Variant::new(typ_label.clone())])
+                );
+                godot_print!("{}",format!("Buying Item {typ_label:?}"));
+            }
+            Ok(Command::SellItem(typ)) => {
+                let typ_label:u8 = typ.into();
+                self.client_id.as_ref().map(|id|
+                    owner.emit_signal(Signals::sell.to_string(),&[Variant::new(id),Variant::new(typ_label.clone())])
+                );
+                godot_print!("{}",format!("Selling Item {typ_label:?}"));
             }
             Err(_) => {}
         } 
@@ -311,5 +400,10 @@ impl ShopMenu{
                 owner.set_visible(!owner.is_visible());
             }
         }
+    }
+
+    #[method]
+    fn set_client_id(&mut self,new_id:String){
+        self.client_id = Some(new_id)
     }
 }

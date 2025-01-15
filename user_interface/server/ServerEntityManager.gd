@@ -175,7 +175,7 @@ func handle_entity(entity):
 				socket.get_top_level_terrain_in_distance(1024,Vector3(x,y,z))
 				var spawned_character = spawn_character_entity_server(id,Vector3(x,y,z))
 				#temporary - adding basic ability to all players
-				socket.add_item(id,0)	
+				#socket.add_item(id,0)	
 		{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 			if server_entities.has(id):
 				despawn_prowler(id)
