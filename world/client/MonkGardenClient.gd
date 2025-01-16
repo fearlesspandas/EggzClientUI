@@ -14,6 +14,7 @@ onready var leaf3 = find_node("Leaf3")
 onready var leaf4 = find_node("Leaf4")
 onready var collision_object = find_node("CollisionObject")
 onready var area = find_node("UseableArea")
+onready var init_timer:Timer = Timer.new()
 
 var player_active = false
 var initialized = false
@@ -28,6 +29,19 @@ func _ready():
 	GlobalSignalsClient.connect("monk_garden_received",self,"initialize")
 	set_colliders()
 	set_signal_handlers()
+
+	init_timer.wait_time = 1
+	init_timer.connect("connect",self,"request_data")
+	init_timer.one_shot = true
+	self.add_child(init_timer)
+	init_timer.start(rand_range(1,3))
+	#socket.get_blob(id)
+
+
+func request_data():
+	self.init_timer.one_shot = true
+	if !self.initialized:
+		socket.get_blob(id)
 
 func initialize(id,location,items):
 	if id == self.id:
