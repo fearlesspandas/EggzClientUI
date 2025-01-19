@@ -10,6 +10,7 @@ pub mod client_entity;
 pub mod entity_flight_tail;
 pub mod data_snapshots;
 pub mod shop_menu;
+pub mod slizzard;
 mod client_terminal;
 
 
@@ -26,5 +27,7 @@ fn init(handle:InitHandle){
     handle.add_class::<shop_menu::ShopItem>();
     handle.add_class::<shop_menu::MenuButton>();
     handle.add_class::<shop_menu::ShopMenu>();
+    handle.add_class::<slizzard::BodyPiece>();
+    handle.add_class::<slizzard::Slizzard>();
 }
 godot_init!(init);
