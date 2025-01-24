@@ -13,6 +13,7 @@ onready var input_timer:Timer = Timer.new()
 onready var position_data_timer : Timer = Timer.new()
 onready var navigator_mesh:NavigatorMesh = NavigatorMesh.new()
 onready var slizzard = load("res://native_lib/Slizzard.gdns").new()
+onready var field = load("res://native_lib/Field.gdns").new()
 
 
 var is_active = false
@@ -27,6 +28,11 @@ func _ready():
 	#input_timer.connect("timeout",self,"muh_process")
 	body.add_child(navigator_mesh)
 	ClientTerminalGlobalSignals.connect("set_active",self,"set_terminal_active")
+	body.add_child(field)
+	field.add_zone([1,0])
+	field.add_zone([-1,0])
+	field.add_zone([0,1])
+	field.add_zone([0,-1])
 	body.add_child(slizzard)
 	slizzard.add_body_piece()
 	slizzard.add_body_piece()

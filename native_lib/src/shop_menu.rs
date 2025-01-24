@@ -12,7 +12,6 @@ impl <T> Defaulted for Sender<T>{
         tx
     }
 }
-
 trait ToName{
     fn to_name(&self) -> String;
 }
