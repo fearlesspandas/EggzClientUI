@@ -72,6 +72,7 @@ func monk_garden_received(id:String,location:Vector3,items):
 signal activate_ability(client_id,slot_id)
 func activate_ability(client_id,slot_id):
 	emit_signal("activate_ability",client_id,slot_id)
+
 	
 
 #TERRAIN SIGNALS

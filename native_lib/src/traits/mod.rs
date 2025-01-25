@@ -39,6 +39,21 @@ pub trait Instanced<T>{
         Instance::emplace(Self::make())
     }
 }
+pub trait Window<T>{
+    fn as_window(&self) -> Ref<Control>
+        where Self:Sized,Self:NativeClass, 
+        <Self as gdnative::prelude::NativeClass>::Base: Instanciable
+
+    {
+        let control = Control::new().into_shared();
+        let bg_rect = ColorRect::new().into_shared();
+        let main_rect = ColorRect::new().into_shared();
+        let control_obj = unsafe{control.assume_safe()};
+        control_obj.add_child(bg_rect,true);
+        control_obj.add_child(main_rect,true);
+        control
+    } 
+}
 pub trait Defaulted{
     fn default() -> Self;
 }

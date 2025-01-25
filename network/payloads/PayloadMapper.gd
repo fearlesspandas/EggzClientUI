@@ -181,6 +181,9 @@ func fill_empty_chunk(uuid:String,trigger_entity:String):
 func get_cached_terrain(uuid:String):
 	return {'GET_CACHED_TERRAIN':{"id":uuid}}
 
+func add_ability(from:String,ability_id:int,location:Vector2):
+	return {'ADD_ABILITY':{'from':from,'ability_id':ability_id,'location':[int(location.x),int(location.y)]}}
+
 func ability(from:String,ability_id:int,args:Dictionary = {'NoArgs':{}} ):
 	return {'ABILITY':{'from':from,'ability_id':ability_id,'args':args}}
 	

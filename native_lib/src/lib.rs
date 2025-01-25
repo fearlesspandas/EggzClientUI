@@ -32,5 +32,7 @@ fn init(handle:InitHandle){
     handle.add_class::<slizzard::Slizzard>();
     handle.add_class::<field::Field>();
     handle.add_class::<field::FieldZone>();
+    handle.add_class::<field::FieldOp>();
+    handle.add_class::<field::FieldOps>();
 }
 godot_init!(init);

@@ -107,8 +107,6 @@ func load_scene(id,secret):
 	ShopMenuEnv.connect("add_to_inventory",shop_menu,"add_item")
 
 	#ServerTerminalGlobalSignals.connect_terminal(client_terminal)
-	#self.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	#viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	#OS.window_fullscreen = true
 	
 func player_character_spawned(player:Player):
@@ -122,6 +120,11 @@ func set_active(active: bool):
 	print_debug("setting is active for control:",active)
 	ClientReferences.set_viewport(self.viewport)
 	ClientReferences.set_command_menu(self.command_menu)
+	#if active:
+	#	self.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	#	self.get_parent().mouse_filter = Control.MOUSE_FILTER_IGNORE
+	#	viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	#	click_menu.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	emit_signal("is_active",active)
 
 func _input(event):
