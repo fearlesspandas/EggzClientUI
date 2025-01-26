@@ -34,5 +34,7 @@ fn init(handle:InitHandle){
     handle.add_class::<field::FieldZone>();
     handle.add_class::<field::FieldOp>();
     handle.add_class::<field::FieldOps>();
+    handle.add_class::<field::FieldOp3D>();
+    handle.add_class::<field::FieldOps3D>();
 }
 godot_init!(init);
