@@ -12,6 +12,7 @@ pub mod data_snapshots;
 pub mod shop_menu;
 pub mod slizzard;
 pub mod field;
+pub mod field_ability_mesh;
 mod client_terminal;
 
 
@@ -36,5 +37,6 @@ fn init(handle:InitHandle){
     handle.add_class::<field::FieldOps>();
     handle.add_class::<field::FieldOp3D>();
     handle.add_class::<field::FieldOps3D>();
+    handle.add_class::<field_ability_mesh::FieldAbilityMesh>();
 }
 godot_init!(init);

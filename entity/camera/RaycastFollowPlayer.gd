@@ -53,7 +53,9 @@ func _input(event):
 		var space_state = get_world().direct_space_state
 		var intersection = space_state.intersect_ray(ray_origin,ray_target)
 		if not intersection.empty():
-			if hovered_object == null:
+			if hovered_object != null and hovered_object != intersection.collider and hovered_object.has_method("exited"):
+				hovered_object.exited()
+			if hovered_object == null || hovered_object != intersection.collider:
 				hovered_position = intersection.position
 				hovered_object = intersection.collider
 				emit_signal("body_entered",hovered_position)

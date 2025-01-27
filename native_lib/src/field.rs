@@ -2,6 +2,7 @@
 use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
+use crate::field_ability_mesh::{FieldAbilityMesh};
 use tokio::sync::mpsc;
 
 const zone_width:f32 = 20.0;
@@ -51,8 +52,10 @@ impl FieldZone{
             let mut transform = spatial.transform();
             transform.origin = cube_size/2.0;
         });
-        op_menu.map(|_ , control| control.set_visible(false));
+        op_menu.map(|obj , spatial| obj.hide(spatial));
+
         op_menu.map_mut(|obj,control| obj.add_op(control,255));
+        op_menu.map_mut(|obj,control| obj.add_op(control,0));
 
 
         let collision_shape = BoxShape::new().into_shared();
@@ -76,7 +79,7 @@ impl FieldZone{
     fn clicked(&self,#[base] owner:TRef<KinematicBody>,event_position:Vector2,intersect_position:Vector3){
         godot_print!("Field Area Clicked!");
         let op_menu = unsafe{self.op_menu.assume_safe()};
-        op_menu.map(|_,control| control.set_visible(!control.is_visible()));
+        op_menu.map(|obj,spatial| obj.toggle(spatial));
     }
     #[method]
     fn entered(&self,#[base] owner:TRef<KinematicBody>){
@@ -130,8 +133,9 @@ impl Field{
 }
 
 #[derive(Copy,Clone)]
-enum OpType{
+pub enum OpType{
     empty,
+    smack,
 }
 impl Defaulted for OpType{
     fn default() -> Self{
@@ -142,6 +146,7 @@ impl From<u8> for OpType{
     fn from(value:u8) -> Self{
         match value{
             255 => OpType::empty,
+            0 => OpType::smack,
             _ => todo!(),
         }
     }
@@ -153,40 +158,94 @@ impl ToLabel for OpType{
     fn to_label(&self) -> String{
         match self{
             OpType::empty => "Empty".to_string(),
+            OpType::smack => "Smack".to_string(),
         }
     }
 }
 
 #[derive(NativeClass)]
-#[inherit(Spatial)]
+#[inherit(KinematicBody)]
 pub struct FieldOp3D{
-    mesh:Ref<MeshInstance>,
+    mesh:Instance<FieldAbilityMesh>,
+    highlight_left:Ref<MeshInstance>,
+    highlight_right:Ref<MeshInstance>,
     radius:f64,
 }
-impl InstancedDefault<Spatial,OpType> for FieldOp3D{
+impl InstancedDefault<KinematicBody,OpType> for FieldOp3D{
     fn make(args:&OpType) -> Self{
         FieldOp3D{
-            mesh:MeshInstance::new().into_shared(),
-            radius:30.0
+            mesh:FieldAbilityMesh::make_instance(args).into_shared(),
+            highlight_left:MeshInstance::new().into_shared(),
+            highlight_right:MeshInstance::new().into_shared(),
+            radius:5.0,
         }
     }
 }
 #[methods]
 impl FieldOp3D{
     #[method]
-    fn _ready(&self,#[base] owner:TRef<Spatial>){
+    fn _ready(&self,#[base] owner:TRef<KinematicBody>){
         let mesh = unsafe{self.mesh.assume_safe()};
-        let point_mesh = PointMesh::new().into_shared();
-        let point_mesh = unsafe{point_mesh.assume_safe()};
-        let material = SpatialMaterial::new();
-        material.set_albedo(Color{r:100.0,g:150.0,b:0.0,a:1.0});
-        material.set_flags_use_point_size(true);
-        material.set_point_size(2.0 * self.radius);
-        point_mesh.set_material(material);
-        mesh.set_mesh(point_mesh);
-        owner.add_child(mesh,true);
+        mesh.map(|_,spatial| owner.add_child(spatial,true));
 
+        let highlight_left = unsafe{self.highlight_left.assume_safe()};
+        let highlight_right = unsafe{self.highlight_right.assume_safe()};
+
+        let highlight_left_mesh = CubeMesh::new().into_shared();
+        let highlight_left_mesh = unsafe{highlight_left_mesh.assume_safe()};
+        let highlight_right_mesh = CubeMesh::new().into_shared();
+        let highlight_right_mesh = unsafe{highlight_right_mesh.assume_safe()};
+        
+        highlight_left_mesh.set_size(Vector3{x:5.0,y:(self.radius + 1.0) as f32,z:(self.radius + 1.0) as f32});
+        highlight_right_mesh.set_size(Vector3{x:5.0,y:(self.radius + 1.0) as f32,z:(self.radius + 1.0) as f32});
+
+        let highlight_material = SpatialMaterial::new().into_shared() ;
+        let highlight_material = unsafe{highlight_material.assume_safe()};
+
+        highlight_material.set_albedo(Color{r:255.0,g:255.0,b:255.0,a:1.0});
+
+        highlight_left_mesh.set_material(highlight_material);
+        highlight_right_mesh.set_material(highlight_material);
+
+        highlight_left.set_mesh(highlight_left_mesh);
+        highlight_right.set_mesh(highlight_right_mesh);
+
+        let mut left_transform = highlight_left.transform();
+        let mut right_transform = highlight_right.transform();
+        left_transform.origin = Vector3{x:-12.5,y:0.0,z:0.0};
+        right_transform.origin = Vector3{x:12.5,y:0.0,z:0.0};
+        highlight_left.set_transform(left_transform);
+        highlight_right.set_transform(right_transform);
+        highlight_left.set_visible(false);
+        highlight_right.set_visible(false);
+
+        let collision_shape = BoxShape::new().into_shared();
+        let collision_shape = unsafe{collision_shape.assume_safe()};
+        let collision_object = CollisionShape::new().into_shared();
+        let collision_object = unsafe{collision_object.assume_safe()};
+        collision_shape.set_extents(Vector3{x:12.5,y:(self.radius/2.0) as f32,z:(self.radius/2.0) as f32});
+        collision_object.set_shape(collision_shape);
+
+        owner.add_child(mesh,true);
+        owner.add_child(collision_object,true);
+        owner.add_child(highlight_left,true);
+        owner.add_child(highlight_right,true);
     }
+    #[method]
+    fn entered(&self,#[base] owner:TRef<KinematicBody>){
+        let highlight_left = unsafe{self.highlight_left.assume_safe()};
+        let highlight_right = unsafe{self.highlight_right.assume_safe()};
+        highlight_left.set_visible(true);
+        highlight_right.set_visible(true);
+    }
+    #[method]
+    fn exited(&self,#[base] owner:TRef<KinematicBody>){
+        let highlight_left = unsafe{self.highlight_left.assume_safe()};
+        let highlight_right = unsafe{self.highlight_right.assume_safe()};
+        highlight_left.set_visible(false);
+        highlight_right.set_visible(false);
+    }
+    
 }
 #[derive(NativeClass)]
 #[inherit(Spatial)]
@@ -220,6 +279,40 @@ impl FieldOps3D{
             spatial.set_transform(transform);
         });
     }
+    #[method]
+    fn show(&self, #[base] owner:TRef<Spatial>){
+        for op in &self.operations{
+            let op = unsafe{op.assume_safe()};
+            op.map(|_,body| {
+                body.set_collision_layer_bit(0,true);
+                body.set_collision_mask_bit(0,true);
+            });
+        }
+        owner.set_visible(true);
+    }
+    #[method]
+    fn hide(&self, #[base] owner:TRef<Spatial>){
+        for op in &self.operations{
+            let op = unsafe{op.assume_safe()};
+            op.map(|_,body| {
+                body.set_collision_layer_bit(0,false);
+                body.set_collision_mask_bit(0,false);
+            });
+        }
+        owner.set_visible(false);
+    }
+    #[method]
+    fn toggle(&self, #[base] owner:TRef<Spatial>){
+        owner.set_visible(!owner.is_visible());
+        for op in &self.operations{
+            let op = unsafe{op.assume_safe()};
+            op.map(|_,body| {
+                body.set_collision_layer_bit(0,owner.is_visible());
+                body.set_collision_mask_bit(0,owner.is_visible());
+            });
+        }
+    }
+
     
 }
 
