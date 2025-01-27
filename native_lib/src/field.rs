@@ -5,8 +5,16 @@ use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_ability_mesh::{FieldAbilityMesh};
 use tokio::sync::mpsc;
 
+type Sender<T> = mpsc::UnboundedSender<T>;
+type Receiver<T> = mpsc::UnboundedReceiver<T>;
+
 const zone_width:f32 = 20.0;
 const zone_height:f32 = 1.0;
+
+pub enum FieldZoneCommand{
+    Selected(OpType),
+
+}
 #[derive(Copy,Clone)]
 pub struct Location{
     x:i64,
@@ -23,13 +31,23 @@ pub struct FieldZone{
     location:Location,
     mesh:Ref<MeshInstance>,
     op_menu:Instance<FieldOps3D>,
+    zone_tx:Sender<FieldZoneCommand>,
+    zone_rx:Receiver<FieldZoneCommand>,
+    field_tx:Option<Sender<FieldCommand>>,
 }
 impl InstancedDefault<KinematicBody,Location> for FieldZone{
     fn make(args:&Location) -> Self{
+        let (tx,rx) = mpsc::unbounded_channel::<FieldZoneCommand>();
+        let op_menu = FieldOps3D::make_instance().into_shared();
+        let op_menu_obj = unsafe{op_menu.assume_safe()};
+        op_menu_obj.map_mut(|obj,_| obj.set_tx(tx.clone()));
         FieldZone{
             location:*args,
             mesh:MeshInstance::new().into_shared(),
-            op_menu:FieldOps3D::make_instance().into_shared(),
+            op_menu:op_menu,
+            zone_tx: tx,
+            zone_rx: rx,
+            field_tx:None,
         }
     }
 }
@@ -53,6 +71,9 @@ impl FieldZone{
             transform.origin = cube_size/2.0;
         });
 
+        //technically unneeded
+        op_menu.map_mut(|obj,_| obj.set_tx(self.zone_tx.clone()));
+            
         op_menu.map_mut(|obj,control| obj.add_op(control,255));
         op_menu.map_mut(|obj,control| obj.add_op(control,0));
         op_menu.map_mut(|obj,control| obj.add_op(control,1));
@@ -77,8 +98,20 @@ impl FieldZone{
         
     }
     #[method]
+    fn _process(&mut self,#[base] owner:TRef<KinematicBody>,delta:f64){
+        match self.zone_rx.try_recv() {
+            Ok(FieldZoneCommand::Selected(typ)) => {
+                self.field_tx
+                    .as_ref()
+                    .expect("field_tx not set for zone")
+                    .send(FieldCommand::AddAbility(self.location,typ));
+            }
+            Err(_) => {}
+        }
+    }
+    #[method]
     fn clicked(&self,#[base] owner:TRef<KinematicBody>,event_position:Vector2,intersect_position:Vector3){
-        godot_print!("Field Area Clicked!");
+        //godot_print!("Field Area Clicked!");
         let op_menu = unsafe{self.op_menu.assume_safe()};
         op_menu.map(|obj,spatial| obj.toggle(spatial));
     }
@@ -86,36 +119,79 @@ impl FieldZone{
     fn entered(&self,#[base] owner:TRef<KinematicBody>){
         let mesh = unsafe{self.mesh.assume_safe()};
         mesh.set_visible(true);
-        godot_print!("Body Entered!");
+        //godot_print!("Body Entered!");
     }
     #[method]
     fn exited(&self,#[base] owner:TRef<KinematicBody>){
         let mesh = unsafe{self.mesh.assume_safe()};
         mesh.set_visible(false);
-        godot_print!("Body Exited!");
+        //godot_print!("Body Exited!");
+    }
+    fn set_tx(&mut self,tx:Sender<FieldCommand>){
+        self.field_tx = Some(tx);
     }
 }
+pub enum FieldCommand{
+    AddAbility(Location,OpType)
+}
+impl ToString for FieldCommand{
+    fn to_string(&self) -> String{
+        match self{
+            FieldCommand::AddAbility(_,_) => "add_ability".to_string(),
+        }
+    }
+}
+impl CreateSignal<Field> for FieldCommand{
+    fn register(builder:&ClassBuilder<Field>){
+        builder
+            .signal(&FieldCommand::AddAbility(Location::default(),OpType::empty).to_string())
+            .with_param("location",VariantType::VariantArray)
+            .with_param("type",VariantType::I64)
+            .done()
+    }
+
+}
+
 #[derive(NativeClass)]
 #[inherit(Spatial)]
+#[register_with(Self::register_signals)]
 pub struct Field{
     zones:Vec<Instance<FieldZone>>,
+    tx:Sender<FieldCommand>,
+    rx:Receiver<FieldCommand>
 }
 impl Instanced<Spatial> for Field{
     fn make() -> Self{
+        let (tx,rx) = mpsc::unbounded_channel::<FieldCommand>();
         Field{
             zones:Vec::new(),
+            tx:tx,
+            rx:rx,
         }
     }
 }
 #[methods]
 impl Field{
+    fn register_signals(builder:&ClassBuilder<Self>){
+        FieldCommand::register(builder);
+    }
     #[method]
     fn _ready(&self, #[base] owner:TRef<Spatial>){
     }
-
     #[method]
-    fn _process(&self,#[base] owner:TRef<Spatial>,delta:f64){
-
+    fn _process(&mut self,#[base] owner:TRef<Spatial>,delta:f64){
+        match self.rx.try_recv(){
+            Ok(cmd) => {
+                match cmd{
+                    FieldCommand::AddAbility(location,typ) => {
+                        godot_print!("Ability Selected!");
+                        //todoin
+                        //owner.emit_signal(cmd.to_string(),&[Variant::new()]);
+                    }
+                }
+            }
+            Err(_) => {}
+        }
     }
     #[method]
     fn add_zone(&self,#[base] owner:TRef<Spatial>,location:(i64,i64)){
@@ -123,6 +199,7 @@ impl Field{
         let location = Location{x:x,y:y};
         let zone = FieldZone::make_instance(&location).into_shared();
         let zone = unsafe{zone.assume_safe()};
+        zone.map_mut(|obj,_| obj.set_tx(self.tx.clone()));
         owner.add_child(zone.clone(),true);
         zone.map(|obj,spatial| {
             let mut transform = spatial.transform();
@@ -130,7 +207,6 @@ impl Field{
             spatial.set_transform(transform);
         });
     }
-
 }
 
 #[derive(Copy,Clone)]
@@ -170,18 +246,23 @@ impl ToLabel for OpType{
 #[derive(NativeClass)]
 #[inherit(KinematicBody)]
 pub struct FieldOp3D{
+    typ:OpType,
     mesh:Instance<FieldAbilityMesh>,
     highlight_left:Ref<MeshInstance>,
     highlight_right:Ref<MeshInstance>,
     radius:f64,
+    field_tx:Option<Sender<FieldZoneCommand>>,
+
 }
 impl InstancedDefault<KinematicBody,OpType> for FieldOp3D{
     fn make(args:&OpType) -> Self{
         FieldOp3D{
+            typ:*args,
             mesh:FieldAbilityMesh::make_instance(args).into_shared(),
             highlight_left:MeshInstance::new().into_shared(),
             highlight_right:MeshInstance::new().into_shared(),
             radius:5.0,
+            field_tx:None
         }
     }
 }
@@ -236,6 +317,13 @@ impl FieldOp3D{
         owner.add_child(highlight_right,true);
     }
     #[method]
+    fn clicked(&self,#[base] owner:TRef<KinematicBody>,event_position:Vector2,intersect_position:Vector3){
+        self.field_tx
+            .as_ref()
+            .expect("field_tx not set")
+            .send(FieldZoneCommand::Selected(self.typ));
+    }
+    #[method]
     fn entered(&self,#[base] owner:TRef<KinematicBody>){
         let highlight_left = unsafe{self.highlight_left.assume_safe()};
         let highlight_right = unsafe{self.highlight_right.assume_safe()};
@@ -249,17 +337,21 @@ impl FieldOp3D{
         highlight_left.set_visible(false);
         highlight_right.set_visible(false);
     }
-    
+    fn set_tx(&mut self,tx:Sender<FieldZoneCommand>){
+        self.field_tx = Some(tx);
+    }
 }
 #[derive(NativeClass)]
 #[inherit(Spatial)]
 pub struct FieldOps3D{
     operations:Vec<Instance<FieldOp3D>>,
+    field_tx:Option<Sender<FieldZoneCommand>>,
 }
 impl Instanced<Spatial> for FieldOps3D{
     fn make() -> Self{
         FieldOps3D{
             operations:Vec::new(),
+            field_tx:None
         }
     }
 }
@@ -282,6 +374,7 @@ impl FieldOps3D{
             transform.origin = Vector3{x:0.0,y: radius + (num_ops * radius),z:0.0};
             spatial.set_transform(transform);
         });
+        op.map_mut(|obj,_| self.field_tx.as_ref().map(|tx|obj.set_tx(tx.clone())));
     }
     #[method]
     fn show(&self, #[base] owner:TRef<Spatial>){
@@ -316,8 +409,13 @@ impl FieldOps3D{
             });
         }
     }
-
-    
+    fn set_tx(&mut self,tx:Sender<FieldZoneCommand>){
+        self.field_tx = Some(tx.clone());
+        for op in &self.operations{
+            let op = unsafe{op.assume_safe()};
+            op.map_mut(|obj,_|obj.set_tx(tx.clone()));
+        }
+    }
 }
 
 #[derive(NativeClass)]
