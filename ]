@@ -47,44 +47,32 @@ impl ToMesh for OpType{
                 let mesh_obj_1 = unsafe{mesh_1.assume_safe()};
                 let mesh_obj_2 = unsafe{mesh_2.assume_safe()};
                 let mesh_obj_3 = unsafe{mesh_3.assume_safe()};
-
-                let anchor_mesh = SphereMesh::new().into_shared();
-                let anchor_mesh = unsafe{anchor_mesh.assume_safe()};
-                anchor_mesh.set_radius((radius/10.0).into());
-                anchor_mesh.set_height((radius/10.0).into());
-
-                let vertex_mesh = SphereMesh::new().into_shared();
-                let vertex_mesh = unsafe{vertex_mesh.assume_safe()};
-                vertex_mesh.set_radius((radius/10.0).into());
-                vertex_mesh.set_height((radius/10.0).into());
-
-                let anchor_material = SpatialMaterial::new();
-                anchor_material.set_albedo(Color{r:255.0,g:0.0,b:0.0,a:1.0});
-                anchor_mesh.set_material(anchor_material);
-                let vertex_material = SpatialMaterial::new();
-                vertex_material.set_albedo(Color{r:0.0,g:100.0,b:100.0,a:1.0});
-                vertex_mesh.set_material(vertex_material);
-
-                mesh_obj_anchor.set_mesh(anchor_mesh);
-                mesh_obj_0.set_mesh(vertex_mesh);
-                mesh_obj_1.set_mesh(vertex_mesh);
-                mesh_obj_2.set_mesh(vertex_mesh);
-                mesh_obj_3.set_mesh(vertex_mesh);
-                let mut transform = mesh_obj_anchor.transform();
-                transform.origin = Vector3{x:12.5,y:radius/2.0,z:radius/2.0};
+                let sphere_mesh = SphereMesh::new().into_shared();
+                let sphere_mesh = unsafe{sphere_mesh.assume_safe()};
+                sphere_mesh.set_radius(radius.into());
+                sphere_mesh.set_height(radius.into());
+                let box_material = SpatialMaterial::new();
+                box_material.set_albedo(Color{r:100.0,g:100.0,b:0.0,a:1.0});
+                sphere_mesh.set_material(box_material);
+                mesh_obj_anchor.set_mesh(sphere_mesh);
+                mesh_obj_0.set_mesh(sphere_mesh);
+                mesh_obj_1.set_mesh(sphere_mesh);
+                mesh_obj_2.set_mesh(sphere_mesh);
+                mesh_obj_3.set_mesh(sphere_mesh);
+                let mut transform = mesh_anchor.transform();
+                transform.origin = Vector3{x:12.5,y:radius/2.0,z:radius};
                 mesh_obj_0.set_transform(transform);
-                transform.origin = Vector3{x:0.0,y:radius/2.0,z:radius/2.0};
+                transform.origin = Vector3{x:7.0,y:radius,z:radius/2.0};
                 mesh_obj_1.set_transform(transform);
-                transform.origin = Vector3{x:-12.5,y:radius/2.0,z:-1.0 * radius/2.0};
+                transform.origin = Vector3{x:0.0,y:0.0,z:0.0};
                 mesh_obj_2.set_transform(transform);
-                transform.origin = Vector3{x:0.0,y:radius/2.0,z:-1.0 * radius/2.0};
+                transform.origin = Vector3{x:0.0,y:0.0,z:0.0};
                 mesh_obj_3.set_transform(transform);
-
+                
                 mesh_obj_anchor.add_child(mesh_obj_0,true);
                 mesh_obj_anchor.add_child(mesh_obj_1,true);
                 mesh_obj_anchor.add_child(mesh_obj_2,true);
                 mesh_obj_anchor.add_child(mesh_obj_3,true);
-                
                 mesh_anchor
             }
             

@@ -52,10 +52,11 @@ impl FieldZone{
             let mut transform = spatial.transform();
             transform.origin = cube_size/2.0;
         });
-        op_menu.map(|obj , spatial| obj.hide(spatial));
 
         op_menu.map_mut(|obj,control| obj.add_op(control,255));
         op_menu.map_mut(|obj,control| obj.add_op(control,0));
+        op_menu.map_mut(|obj,control| obj.add_op(control,1));
+        op_menu.map(|obj , spatial| obj.hide(spatial));
 
 
         let collision_shape = BoxShape::new().into_shared();
@@ -136,6 +137,7 @@ impl Field{
 pub enum OpType{
     empty,
     smack,
+    globular_teleport
 }
 impl Defaulted for OpType{
     fn default() -> Self{
@@ -147,6 +149,7 @@ impl From<u8> for OpType{
         match value{
             255 => OpType::empty,
             0 => OpType::smack,
+            1 => OpType::globular_teleport,
             _ => todo!(),
         }
     }
@@ -159,6 +162,7 @@ impl ToLabel for OpType{
         match self{
             OpType::empty => "Empty".to_string(),
             OpType::smack => "Smack".to_string(),
+            OpType::globular_teleport => "Globular Teleport".to_string(),
         }
     }
 }
@@ -223,7 +227,7 @@ impl FieldOp3D{
         let collision_shape = unsafe{collision_shape.assume_safe()};
         let collision_object = CollisionShape::new().into_shared();
         let collision_object = unsafe{collision_object.assume_safe()};
-        collision_shape.set_extents(Vector3{x:12.5,y:(self.radius/2.0) as f32,z:(self.radius/2.0) as f32});
+        collision_shape.set_extents(Vector3{x:12.5,y:(self.radius /2.0)as f32,z:(self.radius/2.0) as f32});
         collision_object.set_shape(collision_shape);
 
         owner.add_child(mesh,true);
@@ -275,7 +279,7 @@ impl FieldOps3D{
         op.map(|obj,spatial| {
             let mut transform = spatial.transform();
             let radius = obj.radius as f32;
-            transform.origin = Vector3{x:0.0,y: radius + (num_ops * 2.0*radius),z:0.0};
+            transform.origin = Vector3{x:0.0,y: radius + (num_ops * radius),z:0.0};
             spatial.set_transform(transform);
         });
     }
