@@ -5,18 +5,18 @@ use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field::{OpType};
 use tokio::sync::mpsc;
 
-trait ToMesh{
-    fn to_mesh(&self,radius:f32) -> Ref<MeshInstance>;
+pub trait ToMesh{
+    fn to_mesh(&self,length:f32,radius:f32) -> Ref<MeshInstance>;
 }
 impl ToMesh for OpType{
-    fn to_mesh(&self,radius:f32) -> Ref<MeshInstance> {
+    fn to_mesh(&self,length:f32,radius:f32) -> Ref<MeshInstance> {
         match self{
             OpType::empty => {
                 let mesh = MeshInstance::new().into_shared();
                 let mesh_obj = unsafe{mesh.assume_safe()};
                 let box_mesh = CubeMesh::new().into_shared();
                 let box_mesh = unsafe{box_mesh.assume_safe()};
-                box_mesh.set_size(Vector3{x:25.0,y:radius,z:radius});
+                box_mesh.set_size(Vector3{x:length,y:radius,z:radius});
                 let box_material = SpatialMaterial::new();
                 box_material.set_albedo(Color{r:0.0,g:30.0,b:30.0,a:1.0});
                 box_mesh.set_material(box_material);
@@ -71,11 +71,11 @@ impl ToMesh for OpType{
                 mesh_obj_2.set_mesh(vertex_mesh);
                 mesh_obj_3.set_mesh(vertex_mesh);
                 let mut transform = mesh_obj_anchor.transform();
-                transform.origin = Vector3{x:12.5,y:radius/2.0,z:radius/2.0};
+                transform.origin = Vector3{x:length/2.0,y:radius/2.0,z:radius/2.0};
                 mesh_obj_0.set_transform(transform);
                 transform.origin = Vector3{x:0.0,y:radius/2.0,z:radius/2.0};
                 mesh_obj_1.set_transform(transform);
-                transform.origin = Vector3{x:-12.5,y:radius/2.0,z:-1.0 * radius/2.0};
+                transform.origin = Vector3{x:-1.0 * length/2.0,y:radius/2.0,z:-1.0 * radius/2.0};
                 mesh_obj_2.set_transform(transform);
                 transform.origin = Vector3{x:0.0,y:radius/2.0,z:-1.0 * radius/2.0};
                 mesh_obj_3.set_transform(transform);
@@ -95,11 +95,15 @@ impl ToMesh for OpType{
 #[inherit(Spatial)]
 pub struct FieldAbilityMesh{
     mesh:Ref<MeshInstance>,
+    length:f32,
+    radius:f32,
 }
 impl InstancedDefault<Spatial,OpType> for FieldAbilityMesh{
     fn make(args:&OpType) -> Self{
         FieldAbilityMesh{
-            mesh:args.to_mesh(5.0),
+            mesh:args.to_mesh(25.0,5.0),
+            length:25.0,
+            radius:5.0,
         }
     }
 }

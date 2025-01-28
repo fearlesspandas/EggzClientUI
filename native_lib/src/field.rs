@@ -1,8 +1,9 @@
 
+use std::collections::HashMap;
 use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
-use crate::field_ability_mesh::{FieldAbilityMesh};
+use crate::field_ability_mesh::{FieldAbilityMesh,ToMesh};
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
@@ -15,7 +16,7 @@ pub enum FieldZoneCommand{
     Selected(OpType),
 
 }
-#[derive(Copy,Clone)]
+#[derive(Copy,Clone,Eq,Hash,PartialEq)]
 pub struct Location{
     x:i64,
     y:i64,
@@ -156,7 +157,7 @@ impl CreateSignal<Field> for FieldCommand{
 #[inherit(Spatial)]
 #[register_with(Self::register_signals)]
 pub struct Field{
-    zones:Vec<Instance<FieldZone>>,
+    zones:HashMap<Location,Instance<FieldZone>>,
     tx:Sender<FieldCommand>,
     rx:Receiver<FieldCommand>
 }
@@ -164,7 +165,7 @@ impl Instanced<Spatial> for Field{
     fn make() -> Self{
         let (tx,rx) = mpsc::unbounded_channel::<FieldCommand>();
         Field{
-            zones:Vec::new(),
+            zones:HashMap::new(),
             tx:tx,
             rx:rx,
         }
@@ -186,7 +187,10 @@ impl Field{
                     FieldCommand::AddAbility(location,typ) => {
                         godot_print!("Ability Selected!");
                         //todoin
-                        //owner.emit_signal(cmd.to_string(),&[Variant::new()]);
+                        let mut loc:Vec<i64> = Vec::new();
+                        loc.push(location.x);
+                        loc.push(location.y);
+                        owner.emit_signal(cmd.to_string(),&[Variant::new(loc),Variant::new(Into::<u8>::into(typ))]);
                     }
                 }
             }
@@ -194,10 +198,12 @@ impl Field{
         }
     }
     #[method]
-    fn add_zone(&self,#[base] owner:TRef<Spatial>,location:(i64,i64)){
+    fn add_zone(&mut self,#[base] owner:TRef<Spatial>,location:(i64,i64)){
         let (x,y) = location;
         let location = Location{x:x,y:y};
+        if self.zones.contains_key(&location){return ;}
         let zone = FieldZone::make_instance(&location).into_shared();
+        self.zones.insert(location,zone.clone());
         let zone = unsafe{zone.assume_safe()};
         zone.map_mut(|obj,_| obj.set_tx(self.tx.clone()));
         owner.add_child(zone.clone(),true);
@@ -206,6 +212,21 @@ impl Field{
             transform.origin = Vector3{x:zone_width * (location.x as f32),y:0.0,z:zone_width * (location.y as f32)};
             spatial.set_transform(transform);
         });
+        
+    }
+    #[method]
+    fn add_field_ability(&self,#[base] owner:TRef<Spatial>,ability_id:u8,location:(i64,i64)){
+        let (x,y) = location;
+        let location = Location{x:x,y:y};
+        if !self.zones.contains_key(&location){return ;}
+        let zone = self.zones.get(&location).unwrap();
+        let zone = unsafe{zone.assume_safe()};
+        let typ = OpType::from(ability_id);
+        zone.map(|obj,spatial|{
+            spatial.add_child(typ.to_mesh(25.0,5.0),true);
+        });
+
+
     }
 }
 
@@ -227,6 +248,15 @@ impl From<u8> for OpType{
             0 => OpType::smack,
             1 => OpType::globular_teleport,
             _ => todo!(),
+        }
+    }
+}
+impl Into<u8> for OpType{
+    fn into(self) -> u8 {
+        match self{
+            OpType::empty => 255,
+            OpType::smack => 0,
+            OpType::globular_teleport => 1,
         }
     }
 }

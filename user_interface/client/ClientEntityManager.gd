@@ -259,6 +259,9 @@ func handle_json(json) -> bool:
 			DataCache.add_data(id,'max_speed',max_speed)
 			DataCache.add_data(id,'speed',speed)
 			return false
+		{'AbilityAdded':{'ability_id':var ability_id,'entity_id':var id,'location':[var x , var y]}}:
+			player.field.add_field_ability(int(ability_id),[int(x),int(y)])
+			return false
 		{'DoAbility':{'ability_id':var ability_id,'entity_id':var entity_id, 'args' : var args}}:
 			if !client_entities.has(entity_id):
 				assert(false, "no entity found with id " + entity_id)

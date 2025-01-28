@@ -43,7 +43,13 @@ func _ready():
 	slizzard.add_body_piece()
 	slizzard.add_body_piece()
 	slizzard.translate(Vector3(0,0,10))
+
+	field.connect("add_ability",self,"add_field_ability")
 	
+
+func add_field_ability(location,ability_id):
+	socket.add_ability(self.client_id,ability_id,Vector2(location[0],location[1]))
+
 func set_destination_mode(mode):
 	var mode_text = str(mode).replace("{","").replace("}","").replace(":","")
 	emit_signal("set_destination_mode",mode_text)
