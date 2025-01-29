@@ -45,7 +45,15 @@ func _ready():
 	slizzard.translate(Vector3(0,0,10))
 
 	field.connect("add_ability",self,"add_field_ability")
+	field.connect("do_ability",self,"do_ability")
 	
+
+func do_ability(location,ability_id):
+	match ability_id:
+		0:
+			socket.ability(client_id,0,Vector2(location[0],location[1]))	
+		_:
+			print_debug("AbwiliITES" + ability_id)
 
 func add_field_ability(location,ability_id):
 	socket.add_ability(self.client_id,ability_id,Vector2(location[0],location[1]))
@@ -85,9 +93,9 @@ func _input(event):
 	if is_active and event is InputEventKey and event.is_action_released("control"):
 		var socket = ServerNetwork.get(client_id)
 		socket.clear_destinations(id)
-	if is_active and event is InputEventKey and event.is_action_released("smack"):
-		socket.ability(client_id,0)	
-		GlobalSignalsClient.activate_ability(client_id,0)
+	#if is_active and event is InputEventKey and event.is_action_released("smack"):
+	#	socket.ability(client_id,0)	
+	#	GlobalSignalsClient.activate_ability(client_id,0)
 
 	if is_active and event is InputEventKey and event.is_action_released("globular_teleport_base"):
 		AbilityAPI.globular_teleport().add_base(client_id,body.global_transform.origin)

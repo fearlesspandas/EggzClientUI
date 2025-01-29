@@ -18,7 +18,7 @@ class GlobularTeleport:
 	#(the target teleport point)
 	func add_base(client_id:String,location:Vector3):
 		DataCache.add_data(client_id,field(Fields.globular_teleport_base),location)
-		ServerNetwork.get(client_id).ability(client_id,1,{'Base':{'x':location.x,'y':location.y,'z':location.z}})
+		ServerNetwork.get(client_id).ability(client_id,1,Vector2(0,0),{'Base':{'x':location.x,'y':location.y,'z':location.z}})
 		var p : MeshInstance = MeshInstance.new()
 		p.mesh = PointMesh.new()
 		p.mesh.material = SpatialMaterial.new()
@@ -30,7 +30,7 @@ class GlobularTeleport:
 
 	#adds point to glob prism for globular teleport
 	func add_point(client_id:String,location:Vector3):
-		ServerNetwork.get(client_id).ability(client_id,1,{'Point':{'x':location.x,'y':location.y,'z':location.z}})
+		ServerNetwork.get(client_id).ability(client_id,1,Vector2(0,0),{'Point':{'x':location.x,'y':location.y,'z':location.z}})
 		var current_points = DataCache.cached(client_id,field(Fields.globular_teleport_points)) 	
 		if current_points == null: 
 			current_points = PoolVector3Array()
@@ -57,7 +57,7 @@ class GlobularTeleport:
 
 	#sends data state to server	
 	func do(client_id):
-		ServerNetwork.get(client_id).ability(client_id,1,{'Do':{}})
+		ServerNetwork.get(client_id).ability(client_id,1,Vector2(0,0),{'Do':{}})
 		var base = DataCache.cached(client_id,field(Fields.globular_teleport_base))
 		var points = DataCache.cached(client_id,field(Fields.globular_teleport_points))
 		if base != null and points != null and base is Vector3 and points is PoolVector3Array:

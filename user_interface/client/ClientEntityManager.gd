@@ -262,14 +262,17 @@ func handle_json(json) -> bool:
 		{'AbilityAdded':{'ability_id':var ability_id,'entity_id':var id,'location':[var x , var y]}}:
 			player.field.add_field_ability(int(ability_id),[int(x),int(y)])
 			return false
-		{'DoAbility':{'ability_id':var ability_id,'entity_id':var entity_id, 'args' : var args}}:
+		{'DoAbility':{'ability_id':var ability_id,'entity_id':var entity_id, 'location':[var x , var y],'args' : var args}}:
 			if !client_entities.has(entity_id):
 				assert(false, "no entity found with id " + entity_id)
 			var entity = client_entities[entity_id]
 			if entity == null:
 				assert(false,"entity with id is null")
 			#update abilities to have location/other metadata
-			AbilityManager.ability_client(int(ability_id),entity.body.global_transform.origin,args)	
+			var loc = entity.body.global_transform.origin
+			if entity is Player:
+				loc += entity.field.get_point_from_location(int(x),int(y))
+			AbilityManager.ability_client(int(ability_id),loc,args)	
 			return false
 		{'Fizzle':{'ability_id':var ability_id, 'entity_id':var entity_id,'reason': var reason}}:
 			var fizzle = Fizzle.new()

@@ -184,8 +184,8 @@ func get_cached_terrain(uuid:String):
 func add_ability(from:String,ability_id:int,location:Vector2):
 	return {'ADD_ABILITY':{'from':from,'ability_id':ability_id,'location':[int(location.x),int(location.y)]}}
 
-func ability(from:String,ability_id:int,args:Dictionary = {'NoArgs':{}} ):
-	return {'ABILITY':{'from':from,'ability_id':ability_id,'args':args}}
+func ability(from:String,ability_id:int,location:Vector2,args:Dictionary = {'NoArgs':{}} ):
+	return {'ABILITY':{'from':from,'ability_id':ability_id,'location':[int(location.x),int(location.y)],'args':args}}
 	
 func add_item(id:String,item:int):
 	return {'ADD_ITEM':{'id':id,'item':item}}

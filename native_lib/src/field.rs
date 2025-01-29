@@ -32,6 +32,7 @@ pub struct FieldZone{
     location:Location,
     mesh:Ref<MeshInstance>,
     op_menu:Instance<FieldOps3D>,
+    abilities:HashMap<OpType,Instance<FieldAbilityMesh>>,
     zone_tx:Sender<FieldZoneCommand>,
     zone_rx:Receiver<FieldZoneCommand>,
     field_tx:Option<Sender<FieldCommand>>,
@@ -46,6 +47,7 @@ impl InstancedDefault<KinematicBody,Location> for FieldZone{
             location:*args,
             mesh:MeshInstance::new().into_shared(),
             op_menu:op_menu,
+            abilities:HashMap::new(),
             zone_tx: tx,
             zone_rx: rx,
             field_tx:None,
@@ -113,8 +115,25 @@ impl FieldZone{
     #[method]
     fn clicked(&self,#[base] owner:TRef<KinematicBody>,event_position:Vector2,intersect_position:Vector3){
         //godot_print!("Field Area Clicked!");
+        if self.abilities.len() == 0{
+            let op_menu = unsafe{self.op_menu.assume_safe()};
+            op_menu.map(|obj,spatial| obj.toggle(spatial));
+        }else{
+            let field_tx = self.field_tx.clone().unwrap();
+            for typ in self.abilities.keys(){
+                field_tx.send(FieldCommand::DoAbility(self.location,*typ));
+            }
+        }
+    }
+    #[method]
+    fn place_ability(&mut self,#[base] owner:TRef<KinematicBody>,typ:u8){
+        let typ = OpType::from(typ);
+        if self.abilities.contains_key(&typ){return ;}
+        let mesh = FieldAbilityMesh::make_instance(&typ).into_shared();
+        owner.add_child(mesh.clone(),true);
+        self.abilities.insert(typ,mesh);
         let op_menu = unsafe{self.op_menu.assume_safe()};
-        op_menu.map(|obj,spatial| obj.toggle(spatial));
+        op_menu.map(|obj,spatial| obj.hide(spatial));
     }
     #[method]
     fn entered(&self,#[base] owner:TRef<KinematicBody>){
@@ -133,12 +152,14 @@ impl FieldZone{
     }
 }
 pub enum FieldCommand{
-    AddAbility(Location,OpType)
+    AddAbility(Location,OpType),
+    DoAbility(Location,OpType),
 }
 impl ToString for FieldCommand{
     fn to_string(&self) -> String{
         match self{
             FieldCommand::AddAbility(_,_) => "add_ability".to_string(),
+            FieldCommand::DoAbility(_,_) => "do_ability".to_string(),
         }
     }
 }
@@ -148,9 +169,13 @@ impl CreateSignal<Field> for FieldCommand{
             .signal(&FieldCommand::AddAbility(Location::default(),OpType::empty).to_string())
             .with_param("location",VariantType::VariantArray)
             .with_param("type",VariantType::I64)
-            .done()
+            .done();
+        builder
+            .signal(&FieldCommand::DoAbility(Location::default(),OpType::empty).to_string())
+            .with_param("location",VariantType::VariantArray)
+            .with_param("type",VariantType::I64)
+            .done();
     }
-
 }
 
 #[derive(NativeClass)]
@@ -192,10 +217,22 @@ impl Field{
                         loc.push(location.y);
                         owner.emit_signal(cmd.to_string(),&[Variant::new(loc),Variant::new(Into::<u8>::into(typ))]);
                     }
+                    FieldCommand::DoAbility(location,typ) => {
+                        godot_print!("Ability Selected!");
+                        //todoin
+                        let mut loc:Vec<i64> = Vec::new();
+                        loc.push(location.x);
+                        loc.push(location.y);
+                        owner.emit_signal(cmd.to_string(),&[Variant::new(loc),Variant::new(Into::<u8>::into(typ))]);
+                    }
                 }
             }
             Err(_) => {}
         }
+    }
+    #[method]
+    fn get_point_from_location(&self,x:i64,y:i64) -> Vector3{
+        Vector3{x:zone_width * (x as f32),y:0.0,z:zone_width * (y as f32)}
     }
     #[method]
     fn add_zone(&mut self,#[base] owner:TRef<Spatial>,location:(i64,i64)){
@@ -222,15 +259,15 @@ impl Field{
         let zone = self.zones.get(&location).unwrap();
         let zone = unsafe{zone.assume_safe()};
         let typ = OpType::from(ability_id);
-        zone.map(|obj,spatial|{
-            spatial.add_child(typ.to_mesh(25.0,5.0),true);
+        zone.map_mut(|obj,body|{
+            obj.place_ability(body,ability_id)
         });
 
 
     }
 }
 
-#[derive(Copy,Clone)]
+#[derive(Copy,Clone,Eq,Hash,PartialEq)]
 pub enum OpType{
     empty,
     smack,

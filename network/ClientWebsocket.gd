@@ -238,8 +238,8 @@ func get_cached_terrain(uuid:String):
 func add_ability(from:String,ability_id:int,location:Vector2):
 	send_payload(PayloadMapper.add_ability(from,ability_id,location))
 
-func ability(from:String,ability_id:int,args = {'NoArgs':{}}):
-	send_payload(PayloadMapper.ability(from,ability_id,args))
+func ability(from:String,ability_id:int,location:Vector2,args = {'NoArgs':{}}):
+	send_payload(PayloadMapper.ability(from,ability_id,location,args))
 
 func add_item(id:String,item:int):
 	send_payload(PayloadMapper.add_item(id,item))
