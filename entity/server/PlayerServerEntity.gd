@@ -2,6 +2,7 @@ extends ServerEntity
 class_name PlayerServerEntity
 
 
+onready var field = load("res://native_lib/FieldServer.gdns").new()
 func _ready():
 	self.is_npc = false
 	self.timer.connect("timeout",self,"timer_polling")
@@ -11,6 +12,11 @@ func _ready():
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
 	self.body.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
 	assert(body is KinematicBody)
+	body.add_child(field)
+	field.add_zone([1,0])
+	field.add_zone([-1,0])
+	field.add_zone([0,1])
+	field.add_zone([0,-1])
 
 
 func timer_polling():

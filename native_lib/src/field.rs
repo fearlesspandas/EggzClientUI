@@ -9,17 +9,18 @@ use tokio::sync::mpsc;
 type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
 
-const zone_width:f32 = 20.0;
-const zone_height:f32 = 1.0;
+pub const zone_width:f32 = 20.0;
+pub const zone_height:f32 = 1.0;
 
+const collision_layer:i64 = 20;
 pub enum FieldZoneCommand{
     Selected(OpType),
 
 }
 #[derive(Copy,Clone,Eq,Hash,PartialEq)]
 pub struct Location{
-    x:i64,
-    y:i64,
+    pub x:i64,
+    pub y:i64,
 }
 impl Defaulted for Location{
     fn default() -> Self{
@@ -94,6 +95,10 @@ impl FieldZone{
         mesh.set_visible(false);
         //add children
         owner.add_child(collider,true);
+        owner.set_collision_layer_bit(0,false);
+        owner.set_collision_mask_bit(0,false);
+        owner.set_collision_layer_bit(collision_layer,true);
+        owner.set_collision_mask_bit(collision_layer,true);
         owner.add_child(mesh,true);
         owner.add_child(op_menu,true);
         //add signals
@@ -378,6 +383,9 @@ impl FieldOp3D{
         collision_shape.set_extents(Vector3{x:12.5,y:(self.radius /2.0)as f32,z:(self.radius/2.0) as f32});
         collision_object.set_shape(collision_shape);
 
+        owner.set_collision_layer_bit(0,false);
+        owner.set_collision_mask_bit(0,false);
+
         owner.add_child(mesh,true);
         owner.add_child(collision_object,true);
         owner.add_child(highlight_left,true);
@@ -448,8 +456,8 @@ impl FieldOps3D{
         for op in &self.operations{
             let op = unsafe{op.assume_safe()};
             op.map(|_,body| {
-                body.set_collision_layer_bit(0,true);
-                body.set_collision_mask_bit(0,true);
+                body.set_collision_layer_bit(collision_layer,true);
+                body.set_collision_mask_bit(collision_layer,true);
             });
         }
         owner.set_visible(true);
@@ -459,8 +467,8 @@ impl FieldOps3D{
         for op in &self.operations{
             let op = unsafe{op.assume_safe()};
             op.map(|_,body| {
-                body.set_collision_layer_bit(0,false);
-                body.set_collision_mask_bit(0,false);
+                body.set_collision_layer_bit(collision_layer,false);
+                body.set_collision_mask_bit(collision_layer,false);
             });
         }
         owner.set_visible(false);
@@ -471,8 +479,8 @@ impl FieldOps3D{
         for op in &self.operations{
             let op = unsafe{op.assume_safe()};
             op.map(|_,body| {
-                body.set_collision_layer_bit(0,owner.is_visible());
-                body.set_collision_mask_bit(0,owner.is_visible());
+                body.set_collision_layer_bit(collision_layer,owner.is_visible());
+                body.set_collision_mask_bit(collision_layer,owner.is_visible());
             });
         }
     }

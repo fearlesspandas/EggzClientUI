@@ -18,6 +18,12 @@ func _ready():
 	
 	self.connect("body_entered",self,"body_entered")
 
+	#var mesh = SphereMesh.new()
+	#var mesh_instance = MeshInstance.new()
+	#mesh.radius = 15
+	#mesh_instance.mesh = mesh
+	#self.add_child(mesh_instance)
+
 	#timer
 	despawn_timer.wait_time = 1
 	despawn_timer.connect("timeout",self,"despawn")
