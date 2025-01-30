@@ -152,6 +152,30 @@ impl FieldZone{
         mesh.set_visible(false);
         //godot_print!("Body Exited!");
     }
+    #[method]
+    fn hide(&self,#[base] owner:TRef<KinematicBody>){
+        if self.abilities.len() == 0{
+            let op_menu = unsafe{self.op_menu.assume_safe()};
+            op_menu.map(|obj,spatial| obj.hide(spatial));
+        }        
+        owner.set_visible(false);
+        owner.set_collision_layer_bit(collision_layer,false);
+        owner.set_collision_mask_bit(collision_layer,false);
+    }
+    #[method]
+    fn show(&self,#[base] owner:TRef<KinematicBody>){
+        owner.set_visible(true);
+        owner.set_collision_layer_bit(collision_layer,true);
+        owner.set_collision_mask_bit(collision_layer,true);
+    }
+    #[method]
+    fn toggle(&self,#[base] owner:TRef<KinematicBody>){
+        if owner.is_visible(){
+            self.hide(owner);
+        }else{
+            self.show(owner);
+        }
+    }
     fn set_tx(&mut self,tx:Sender<FieldCommand>){
         self.field_tx = Some(tx);
     }
@@ -236,6 +260,14 @@ impl Field{
         }
     }
     #[method]
+    fn _input(&self,#[base] owner:TRef<Spatial>, event:Ref<InputEvent>){
+        let event = unsafe{event.assume_safe()};
+        if event.is_action_released("toggle_field",true){
+            self.toggle(owner);
+
+        }
+    }
+    #[method]
     fn get_point_from_location(&self,x:i64,y:i64) -> Vector3{
         Vector3{x:zone_width * (x as f32),y:0.0,z:zone_width * (y as f32)}
     }
@@ -269,6 +301,27 @@ impl Field{
         });
 
 
+    }
+    #[method]
+    fn hide(&self,#[base] owner:TRef<Spatial>){
+        for zone in self.zones.values(){
+            let zone = unsafe{zone.assume_safe()};
+            zone.map(|obj,body| obj.hide(body));
+        }
+    }
+    #[method]
+    fn show(&self,#[base] owner:TRef<Spatial>){
+        for zone in self.zones.values(){
+            let zone = unsafe{zone.assume_safe()};
+            zone.map(|obj,body| obj.show(body));
+        }
+    }
+    #[method]
+    fn toggle(&self,#[base] owner:TRef<Spatial>){
+        for zone in self.zones.values(){
+            let zone = unsafe{zone.assume_safe()};
+            zone.map(|obj,body| obj.toggle(body));
+        }
     }
 }
 
