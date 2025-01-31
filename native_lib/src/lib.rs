@@ -14,6 +14,7 @@ pub mod slizzard;
 pub mod field;
 pub mod field_server;
 pub mod field_ability_mesh;
+pub mod field_ability_actions;
 mod client_terminal;
 
 

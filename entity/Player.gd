@@ -33,6 +33,10 @@ func _ready():
 	field.add_zone([-1,0])
 	field.add_zone([0,1])
 	field.add_zone([0,-1])
+	field.add_zone([1,1])
+	field.add_zone([1,-1])
+	field.add_zone([-1,-1])
+	field.add_zone([-1,1])
 	body.add_child(slizzard)
 	slizzard.add_body_piece()
 	slizzard.add_body_piece()
@@ -46,14 +50,28 @@ func _ready():
 
 	field.connect("add_ability",self,"add_field_ability")
 	field.connect("do_ability",self,"do_ability")
+	field.connect("modify_ability",self,"change_ability_state")
+
 	
+
+func change_ability_state(location,op_id):
+	match op_id: 
+		0:
+			AbilityAPI.globular_teleport().add_base(client_id,body.global_transform.origin)
+		1:
+			AbilityAPI.globular_teleport().add_point(client_id,body.global_transform.origin)
+		_:
+			assert(false)
+			
 
 func do_ability(location,ability_id):
 	match ability_id:
 		0:
 			socket.ability(client_id,0,Vector2(location[0],location[1]))	
+		1:
+			AbilityAPI.globular_teleport().do(client_id)
 		_:
-			print_debug("AbwiliITES" + ability_id)
+			print_debug("AbwiliITES" + str(ability_id))
 
 func add_field_ability(location,ability_id):
 	socket.add_ability(self.client_id,ability_id,Vector2(location[0],location[1]))

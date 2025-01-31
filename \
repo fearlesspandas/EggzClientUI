@@ -4,7 +4,7 @@ use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_ability_mesh::{FieldAbilityMesh,ToMesh};
-use crate::field_ability_actions::ToAction;
+use crate::field_ability_action::ToAction
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
@@ -16,7 +16,6 @@ pub const zone_height:f32 = 1.0;
 const collision_layer:i64 = 20;
 pub enum FieldZoneCommand{
     Selected(OpType),
-    Proc(bool),
 
 }
 #[derive(Copy,Clone,Eq,Hash,PartialEq)]
@@ -34,13 +33,11 @@ impl Defaulted for Location{
 pub struct FieldZone{
     location:Location,
     mesh:Ref<MeshInstance>,
-    proc_mesh:Ref<MeshInstance>,
     op_menu:Instance<FieldOps3D>,
-    pub abilities:HashMap<OpType,Instance<FieldAbilityMesh>>,
+    abilities:HashMap<OpType,Instance<FieldAbilityMesh>>,
     zone_tx:Sender<FieldZoneCommand>,
     zone_rx:Receiver<FieldZoneCommand>,
     field_tx:Option<Sender<FieldCommand>>,
-    pub proc:bool,
 }
 impl InstancedDefault<KinematicBody,Location> for FieldZone{
     fn make(args:&Location) -> Self{
@@ -51,13 +48,11 @@ impl InstancedDefault<KinematicBody,Location> for FieldZone{
         FieldZone{
             location:*args,
             mesh:MeshInstance::new().into_shared(),
-            proc_mesh:MeshInstance::new().into_shared(),
             op_menu:op_menu,
             abilities:HashMap::new(),
             zone_tx: tx,
             zone_rx: rx,
             field_tx:None,
-            proc:false,
         }
     }
 }
@@ -67,20 +62,11 @@ impl FieldZone{
     fn _ready(&self,#[base] owner:TRef<KinematicBody>){
         let op_menu = unsafe{self.op_menu.assume_safe()};
         let mesh = unsafe{self.mesh.assume_safe()};
-        let proc_mesh = unsafe{self.proc_mesh.assume_safe()};
         let cube = CubeMesh::new().into_shared();
         let cube = unsafe{cube.assume_safe()};
-        let proc_cube = CubeMesh::new().into_shared();
-        let proc_cube = unsafe{proc_cube.assume_safe()};
         let cube_size = Vector3{x:zone_width,y:zone_height,z:zone_width}; 
         cube.set_size(cube_size);
         mesh.set_mesh(cube);
-        let proc_mesh_material = SpatialMaterial::new().into_shared();
-        let proc_mesh_material = unsafe{proc_mesh_material.assume_safe()};
-        proc_mesh_material.set_albedo(Color{r:0.0,g:255.0,b:0.0,a:1.0});
-        proc_cube.set_size(cube_size + Vector3{x:1.0,y:1.0,z:1.0});
-        proc_cube.set_material(proc_mesh_material);
-        proc_mesh.set_mesh(proc_cube);
         let owner_transform = owner.transform();
 
         //initialize
@@ -108,7 +94,6 @@ impl FieldZone{
         collider.set_shape(collision_shape);
 
         mesh.set_visible(false);
-        proc_mesh.set_visible(false);
         //add children
         owner.add_child(collider,true);
         owner.set_collision_layer_bit(0,false);
@@ -116,7 +101,6 @@ impl FieldZone{
         owner.set_collision_layer_bit(collision_layer,true);
         owner.set_collision_mask_bit(collision_layer,true);
         owner.add_child(mesh,true);
-        owner.add_child(proc_mesh,true);
         owner.add_child(op_menu,true);
         //add signals
         owner.connect("mouse_entered",owner,"clicked",VariantArray::new_shared(),0);
@@ -131,15 +115,6 @@ impl FieldZone{
                     .expect("field_tx not set for zone")
                     .send(FieldCommand::AddAbility(self.location,typ));
             }
-            Ok(FieldZoneCommand::Proc(value)) => {
-                let mesh = unsafe{ self.proc_mesh.assume_safe()};
-                if value{
-                    mesh.set_visible(true);
-                }
-                else{
-                    mesh.set_visible(false);
-                }
-            }
             Err(_) => {}
         }
     }
@@ -152,12 +127,11 @@ impl FieldZone{
         }else{
             let field_tx = self.field_tx.clone().unwrap();
             for typ in self.abilities.keys(){
-
-                field_tx.send(FieldCommand::Trigger(self.location,*typ));
+                typ.to_action(field_tx,self.location,HashMap::new());
+                field_tx.send(FieldCommand::DoAbility(self.location,*typ));
             }
         }
     }
-
     #[method]
     fn place_ability(&mut self,#[base] owner:TRef<KinematicBody>,typ:u8){
         let typ = OpType::from(typ);
@@ -218,28 +192,16 @@ impl FieldZone{
     fn set_tx(&mut self,tx:Sender<FieldCommand>){
         self.field_tx = Some(tx);
     }
-    pub fn proc(&mut self){
-        self.proc = true;
-        self.zone_tx.send(FieldZoneCommand::Proc(true));
-    }
-    pub fn unproc(&mut self){
-        self.proc = false;
-        self.zone_tx.send(FieldZoneCommand::Proc(false));
-    }
 }
 pub enum FieldCommand{
     AddAbility(Location,OpType),
     DoAbility(Location,OpType),
-    ModifyAbility(Location,SubOpType),
-    Trigger(Location,OpType),
 }
 impl ToString for FieldCommand{
     fn to_string(&self) -> String{
         match self{
             FieldCommand::AddAbility(_,_) => "add_ability".to_string(),
             FieldCommand::DoAbility(_,_) => "do_ability".to_string(),
-            FieldCommand::ModifyAbility(_,_) => "modify_ability".to_string(),
-            FieldCommand::Trigger(_,_) => "trigger".to_string(),
         }
     }
 }
@@ -252,11 +214,6 @@ impl CreateSignal<Field> for FieldCommand{
             .done();
         builder
             .signal(&FieldCommand::DoAbility(Location::default(),OpType::empty).to_string())
-            .with_param("location",VariantType::VariantArray)
-            .with_param("type",VariantType::I64)
-            .done();
-        builder
-            .signal(&FieldCommand::ModifyAbility(Location::default(),SubOpType::empty).to_string())
             .with_param("location",VariantType::VariantArray)
             .with_param("type",VariantType::I64)
             .done();
@@ -296,21 +253,15 @@ impl Field{
                 match cmd{
                     FieldCommand::AddAbility(location,typ) => {
                         godot_print!("Ability Selected!");
+                        //todoin
                         let mut loc:Vec<i64> = Vec::new();
                         loc.push(location.x);
                         loc.push(location.y);
                         owner.emit_signal(cmd.to_string(),&[Variant::new(loc),Variant::new(Into::<u8>::into(typ))]);
-                    }
-                    FieldCommand::Trigger(location,typ) => {
-                        typ.to_action(self.tx.clone(),&location,&self.zones);
                     }
                     FieldCommand::DoAbility(location,typ) => {
-                        let mut loc:Vec<i64> = Vec::new();
-                        loc.push(location.x);
-                        loc.push(location.y);
-                        owner.emit_signal(cmd.to_string(),&[Variant::new(loc),Variant::new(Into::<u8>::into(typ))]);
-                    }
-                    FieldCommand::ModifyAbility(location,typ) => {
+                        godot_print!("Ability Selected!");
+                        //todoin
                         let mut loc:Vec<i64> = Vec::new();
                         loc.push(location.x);
                         loc.push(location.y);
@@ -416,28 +367,15 @@ impl Into<u8> for OpType{
         }
     }
 }
-#[derive(Copy,Clone,Eq,Hash,PartialEq)]
-pub enum SubOpType{
-    empty,
-    globular_teleport_anchor,
-    globular_teleport_vertex,
+trait ToLabel{
+    fn to_label(&self) -> String;
 }
-impl From<u8> for SubOpType{
-    fn from(value:u8) -> Self{
-        match value{
-            255 => SubOpType::empty,
-            0 => SubOpType::globular_teleport_anchor,
-            1 => SubOpType::globular_teleport_vertex,
-            _ => todo!(),
-        }
-    }
-}
-impl Into<u8> for SubOpType{
-    fn into(self) -> u8 {
+impl ToLabel for OpType{
+    fn to_label(&self) -> String{
         match self{
-            SubOpType::empty => 255,
-            SubOpType::globular_teleport_anchor => 0,
-            SubOpType::globular_teleport_vertex => 1,
+            OpType::empty => "Empty".to_string(),
+            OpType::smack => "Smack".to_string(),
+            OpType::globular_teleport => "Globular Teleport".to_string(),
         }
     }
 }
@@ -620,18 +558,6 @@ impl FieldOps3D{
     }
 }
 
-trait ToLabel{
-    fn to_label(&self) -> String;
-}
-impl ToLabel for OpType{
-    fn to_label(&self) -> String{
-        match self{
-            OpType::empty => "Empty".to_string(),
-            OpType::smack => "Smack".to_string(),
-            OpType::globular_teleport => "Globular Teleport".to_string(),
-        }
-    }
-}
 #[derive(NativeClass)]
 #[inherit(Control)]
 pub struct FieldOp{

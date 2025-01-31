@@ -17,6 +17,10 @@ func _ready():
 	field.add_zone([-1,0])
 	field.add_zone([0,1])
 	field.add_zone([0,-1])
+	field.add_zone([1,1])
+	field.add_zone([1,-1])
+	field.add_zone([-1,-1])
+	field.add_zone([-1,1])
 
 
 func timer_polling():
