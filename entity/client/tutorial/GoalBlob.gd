@@ -55,7 +55,7 @@ func entered(body):
 
 func despawn():
 	get_parent().remove_child(self)
-	self.queue_free()
+	self.call_deferred("free")
 
 var proc_1:int = 0
 var proc_2:int = 0

@@ -22,7 +22,7 @@ func create_repair_egg(eggId:String,globId:String):
 	return {'CREATE_REPAIR_EGG':{'eggId':eggId,'globId':globId}}
 
 func get_blob(id:String):
-	return {'GET_BLOB':{'id':id}}
+	return {'GET_GLOB':{'id':id}}
 
 func relate_eggs(id1:String,id2:String,globid:String,bidirectional:bool):
 	return {'RELATE_EGGS':{'egg1':id1,'egg2':id2,'globId':globid,'bidirectional':bidirectional}}

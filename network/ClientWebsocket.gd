@@ -100,7 +100,7 @@ func create_repair_egg(eggId:String,globId:String):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.create_repair_egg(eggId,globId)).to_utf8())
 
 func get_blob(id:String):
-	send_payload(JSON.print(PayloadMapper.get_blob(id)))
+	send_payload(PayloadMapper.get_blob(id))
 
 func relate_eggs(id1:String,id2:String,globid:String,bidirectional:bool):
 	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.relate_eggs(id1,id2,globid,bidirectional)).to_utf8())

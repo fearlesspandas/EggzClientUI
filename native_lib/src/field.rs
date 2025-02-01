@@ -19,7 +19,7 @@ pub enum FieldZoneCommand{
     Proc(bool),
 
 }
-#[derive(Copy,Clone,Eq,Hash,PartialEq)]
+#[derive(Copy,Clone,Eq,Hash,PartialEq,Debug)]
 pub struct Location{
     pub x:i64,
     pub y:i64,
@@ -295,7 +295,7 @@ impl Field{
             Ok(cmd) => {
                 match cmd{
                     FieldCommand::AddAbility(location,typ) => {
-                        godot_print!("Ability Selected!");
+                        //godot_print!("{}",format!("Ability Selected! {location:?} {typ:?}"));
                         let mut loc:Vec<i64> = Vec::new();
                         loc.push(location.x);
                         loc.push(location.y);
@@ -304,13 +304,13 @@ impl Field{
                     FieldCommand::Trigger(location,typ) => {
                         typ.to_action(self.tx.clone(),&location,&self.zones);
                     }
-                    FieldCommand::DoAbility(location,typ) => {
+                    FieldCommand::ModifyAbility(location,typ) => {
                         let mut loc:Vec<i64> = Vec::new();
                         loc.push(location.x);
                         loc.push(location.y);
                         owner.emit_signal(cmd.to_string(),&[Variant::new(loc),Variant::new(Into::<u8>::into(typ))]);
                     }
-                    FieldCommand::ModifyAbility(location,typ) => {
+                    FieldCommand::DoAbility(location,typ) => {
                         let mut loc:Vec<i64> = Vec::new();
                         loc.push(location.x);
                         loc.push(location.y);
@@ -341,7 +341,7 @@ impl Field{
         self.zones.insert(location,zone.clone());
         let zone = unsafe{zone.assume_safe()};
         zone.map_mut(|obj,_| obj.set_tx(self.tx.clone()));
-        owner.add_child(zone.clone(),true);
+        owner.add_child(zone.clone(),false);
         zone.map(|obj,spatial| {
             let mut transform = spatial.transform();
             transform.origin = Vector3{x:zone_width * (location.x as f32),y:0.0,z:zone_width * (location.y as f32)};
@@ -386,7 +386,7 @@ impl Field{
     }
 }
 
-#[derive(Copy,Clone,Eq,Hash,PartialEq)]
+#[derive(Copy,Clone,Eq,Hash,PartialEq,Debug)]
 pub enum OpType{
     empty,
     smack,
@@ -507,7 +507,7 @@ impl FieldOp3D{
         let collision_shape = unsafe{collision_shape.assume_safe()};
         let collision_object = CollisionShape::new().into_shared();
         let collision_object = unsafe{collision_object.assume_safe()};
-        collision_shape.set_extents(Vector3{x:12.5,y:(self.radius /2.0)as f32,z:(self.radius/2.0) as f32});
+        collision_shape.set_extents(Vector3{x:25.0,y:(self.radius/2.0)as f32,z:(self.radius/2.0) as f32});
         collision_object.set_shape(collision_shape);
 
         owner.set_collision_layer_bit(0,false);

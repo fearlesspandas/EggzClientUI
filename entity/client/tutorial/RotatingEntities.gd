@@ -21,7 +21,7 @@ func _ready():
 	self.global_transform.origin = center_point
 	self.add_child(center)
 	#initialize tower
-	tower.global_transform.origin = center_point
+	tower.transform.origin = center_point
 	tower.connect("completed",self,"completed")
 	self.add_child(tower)
 	#initialize blob state

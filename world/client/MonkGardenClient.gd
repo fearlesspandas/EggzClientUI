@@ -30,7 +30,7 @@ func _ready():
 	set_colliders()
 	set_signal_handlers()
 
-	init_timer.wait_time = 1
+	init_timer.wait_time = 3
 	init_timer.connect("timeout",self,"request_data")
 	init_timer.one_shot = true
 	self.add_child(init_timer)

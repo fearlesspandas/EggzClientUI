@@ -49,13 +49,13 @@ impl ToAction for OpType{
                     }
                     _ => {
                         tx.send(FieldCommand::ModifyAbility(*location,SubOpType::globular_teleport_vertex));
-                        tx.send(FieldCommand::DoAbility(*location,OpType::globular_teleport));
                         for mzone in matching_zones{
                             let mzone = unsafe{mzone.assume_safe()};
                             mzone.map_mut(|obj,body| obj.remove_ability(body,(*self).into()));
                             mzone.map_mut(|obj,body| obj.unproc());
                         }
                         zone.map_mut(|obj,body| obj.remove_ability(body,(*self).into()));
+                        tx.send(FieldCommand::DoAbility(*location,OpType::globular_teleport));
                     }
                 }
             }
