@@ -2,8 +2,8 @@
 use std::collections::HashMap;
 use gdnative::prelude::*;
 use gdnative::api::*;
-use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
-use crate::field::{OpType,SubOpType,Location,FieldZone,FieldCommand};
+use crate::field::{Location,FieldZone,FieldCommand};
+use crate::field_abilities::{OpType,SubOpType};
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;

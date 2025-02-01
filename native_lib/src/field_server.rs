@@ -4,7 +4,8 @@ use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_ability_mesh::{FieldAbilityMesh,ToMesh};
-use crate::field::{OpType,Location,zone_height,zone_width};
+use crate::field::{Location,zone_height,zone_width};
+use crate::field_abilities::{OpType};
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;

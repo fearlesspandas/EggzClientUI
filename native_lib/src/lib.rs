@@ -13,8 +13,10 @@ pub mod shop_menu;
 pub mod slizzard;
 pub mod field;
 pub mod field_server;
+pub mod field_abilities;
 pub mod field_ability_mesh;
 pub mod field_ability_actions;
+pub mod item_menu;
 mod client_terminal;
 
 

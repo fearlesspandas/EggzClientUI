@@ -2,7 +2,7 @@
 use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
-use crate::field::{OpType};
+use crate::field_abilities::{OpType};
 use tokio::sync::mpsc;
 
 pub trait ToMesh{
