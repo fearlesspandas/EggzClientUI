@@ -123,7 +123,7 @@ func despawn_spider(id:String):
 	if server_entities.has(id):
 		var spider : AxisSpiderServer = server_entities[id]
 		spawn.remove_child(spider)
-		spider.queue_free()
+		spider.call_deferred("free")
 
 #spawns prowler with id at location
 func spawn_prowler_character_entity_server(id:String,location:Vector3) -> ProwlerServerEntity:

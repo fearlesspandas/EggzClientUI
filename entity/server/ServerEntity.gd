@@ -88,7 +88,7 @@ func add_mesh():
 
 func remove_mesh():
 	body.remove_child(debug_mesh)
-	debug_mesh.queue_free()
+	debug_mesh.call_deferred("free")
 
 	
 func check_destinations():

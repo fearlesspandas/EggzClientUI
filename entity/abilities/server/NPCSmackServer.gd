@@ -35,4 +35,4 @@ func body_entered(body):
 
 func despawn():
 	get_parent().remove_child(self)
-	self.queue_free()
+	self.call_deferred("free")
