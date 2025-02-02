@@ -44,5 +44,8 @@ fn init(handle:InitHandle){
     handle.add_class::<field_ability_mesh::FieldAbilityMesh>();
     handle.add_class::<field_server::FieldServer>();
     handle.add_class::<field_server::FieldZoneServer>();
+    handle.add_class::<item_menu::InventoryMenu>();
+    handle.add_class::<item_menu::InventorySlot>();
+    //handle.add_class::<item_menu::ControlBox<item_menu::ItemSlotCommand>>();
 }
 godot_init!(init);

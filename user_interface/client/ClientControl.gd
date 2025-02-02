@@ -18,6 +18,7 @@ onready var command_menu : CommandMenu = CommandMenu.new()
 onready var inventory_menu : InventoryMenu = InventoryMenu.new()
 onready var client_terminal = load("res://native_lib/ClientTerminal.gdns").new()
 onready var shop_menu = load("res://native_lib/ShopMenu.gdns").new()
+onready var inventory_menu_rust = load("res://native_lib/InventoryMenu.gdns").new()
 
 var profile_id:String
 var connection_ind_size = 30
@@ -105,6 +106,8 @@ func load_scene(id,secret):
 	shop_menu.connect("sell",ShopMenuEnv,"sell_ability")
 	ShopMenuEnv.connect("clear_inventory",shop_menu,"clear")
 	ShopMenuEnv.connect("add_to_inventory",shop_menu,"add_item")
+
+	self.add_child(inventory_menu_rust)
 
 	#ServerTerminalGlobalSignals.connect_terminal(client_terminal)
 	#OS.window_fullscreen = true
