@@ -208,11 +208,13 @@ impl <T: From<u8> + Into<u8> + 'static> LabelButton<T>{
 #[inherit(Control)]
 pub struct InventorySlot<T:'static>{
     button:Instance<LabelButton<T>>,
+    typ:OpType,
 }
 impl <T:'static> InstancedDefault<Control,Sender<T>> for InventorySlot<T>{
     fn make(args:&Sender<T>) -> Self{
         InventorySlot{
             button:LabelButton::make_instance(args).into_shared(),
+            typ:OpType::empty,
         }
     }
 }
@@ -230,10 +232,112 @@ impl <T:'static + From<u8> + Into<u8>> InventorySlot<T>{
     }
     #[method]
     fn _process(&self,#[base] owner:TRef<Control>, delta:f64){
+        let control_box = unsafe{self.into_box().assume_safe()};
         let button = unsafe{self.button.assume_safe()};
         button.map(|_,control| control.set_size(owner.size(),false));
+
+    }
+    #[method]
+    fn set_type(&self,#[base] owner:TRef<Control>,typ:u8){
+        let control_box = unsafe{self.into_box().assume_safe()};
+        let button = unsafe{self.button.assume_safe()};
+        let typ = OpType::from(typ);
+        
+        control_box.map_mut(|obj,_| obj.set_main_color(typ.to_color()));
+        button.map(|obj,_| obj.set_text(typ.to_string()));
     }
 }
+trait ToColor{
+    fn to_color(&self) -> Color;
+}
+impl ToColor for OpType{
+    fn to_color(&self) -> Color{
+        match self{
+            OpType::smack => Color{r:255.0,g:255.0,b:0.0,a:1.0},
+            OpType::globular_teleport => Color{r:100.0,g:0.0,b:30.0,a:1.0},
+            OpType::empty => Color{r:0.0,g:0.0,b:0.0,a:1.0},
+
+        }
+    }
+}
+pub enum ItemSlotCommand{
+    Clicked,
+    Hovered,
+    Unhovered,
+}
+impl From<u8> for ItemSlotCommand{
+    fn from(item:u8) -> Self{
+        match item{
+            x if x == Into::<u8>::into(BoxCommand::Clicked) => ItemSlotCommand::Clicked,
+            x if x == Into::<u8>::into(BoxCommand::Hovered) => ItemSlotCommand::Hovered,
+            x if x == Into::<u8>::into(BoxCommand::Unhovered) => ItemSlotCommand::Unhovered,
+            _ => todo!()
+        }
+    }
+}
+impl Into<u8> for ItemSlotCommand{
+    fn into(self) -> u8{
+        match self{
+            ItemSlotCommand::Clicked => BoxCommand::Clicked.into(),
+            ItemSlotCommand::Hovered => BoxCommand::Hovered.into(),
+            ItemSlotCommand::Unhovered => BoxCommand::Unhovered.into(),
+        }
+    }
+}
+#[derive(NativeClass)]
+#[inherit(Control)]
+pub struct ItemSlot{
+    inventory:Instance<InventorySlot<ItemSlotCommand>>,
+    tx:Sender<ItemSlotCommand>,
+    rx:Receiver<ItemSlotCommand>,
+}
+impl Instanced<Control> for ItemSlot{
+    fn make() -> Self{
+        let (tx,rx) = mpsc::unbounded_channel::<ItemSlotCommand>();
+        ItemSlot{
+            inventory:InventorySlot::<ItemSlotCommand>::make_instance(&tx).into_shared(),
+            tx:tx,
+            rx:rx,
+        }
+    }
+}
+impl IntoBox<ItemSlotCommand> for ItemSlot{
+    fn into_box(&self) -> Instance<ControlBox<ItemSlotCommand>> {
+        let inventory = unsafe{self.inventory.assume_safe()};
+        inventory.map(|obj,_| obj.into_box()).unwrap()
+    }
+}
+#[methods]
+impl ItemSlot{
+    #[method]
+    fn _ready(&self,#[base] owner:TRef<Control>){
+    }
+    #[method]
+    fn _process(&mut self, #[base] owner:TRef<Control>, delta:f64){
+        let control_box = unsafe{self.into_box().assume_safe()};
+        match self.rx.try_recv(){
+            Ok(ItemSlotCommand::Clicked) => {
+            }
+            Ok(ItemSlotCommand::Hovered) | Ok(ItemSlotCommand::Unhovered) => { }
+            Err(_) => {}
+        }
+        
+    }
+}
+
+#[derive(NativeClass)]
+#[inherit(Control)]
+pub struct InventoryMenu{
+    
+}
+impl Instanced<Control> for InventoryMenu{
+    fn make() -> Self{
+        InventoryMenu{}
+    }
+}
+
+
+
 
 pub enum InventorySlotCommand{
     Hovered,

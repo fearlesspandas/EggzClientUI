@@ -33,6 +33,18 @@ impl Into<u8> for OpType{
         }
     }
 }
+trait ToLabel{
+    fn to_label(&self) -> String;
+}
+impl ToString for OpType{
+    fn to_string(&self) -> String{
+        match self{
+            OpType::empty => "Empty".to_string(),
+            OpType::smack => "Smack".to_string(),
+            OpType::globular_teleport => "Globular Teleport".to_string(),
+        }
+    }
+}
 #[derive(Copy,Clone,Eq,Hash,PartialEq)]
 pub enum SubOpType{
     empty,
