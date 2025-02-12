@@ -6,14 +6,14 @@ use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_ability_mesh::{FieldAbilityMesh,ToMesh};
 use crate::field_ability_actions::ToAction;
 use crate::field_abilities::{AbilityType};
-use crate::ui_traits::{Windowed,LabelButton,Action};
+use crate::ui_traits::{AnimationWindow,Windowed,LabelButton,Action,Centering};
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
 
 enum InventoryAction{
-    clicked(AbilityType),
+    clicked(AbilityType,i32),
     hover(AbilityType),
     unhover,
     unhandled,
@@ -36,6 +36,7 @@ pub struct InventorySlot{
     label:Ref<Label>,
     tx:Sender<InventoryAction>,
     hovering:bool,
+    id:i32,
 }
 impl InstancedDefault<Control,Sender<InventoryAction>> for InventorySlot{
     fn make(args:&Sender<InventoryAction>) -> Self{
@@ -46,6 +47,7 @@ impl InstancedDefault<Control,Sender<InventoryAction>> for InventorySlot{
             label:Label::new().into_shared(),
             tx:args.clone(),
             hovering:false,
+            id:0,
         }
     }
 }
@@ -56,12 +58,13 @@ impl Windowed<InventoryAction> for InventorySlot{
     const margin_size:f32 = 5.0;
     fn from_command(&self,cmd:Action) -> InventoryAction{
         match cmd{
-            Action::clicked => InventoryAction::clicked(self.typ),
+            Action::clicked => InventoryAction::clicked(self.typ,self.id),
             _ => InventoryAction::unhandled,
         }
     }
     fn hovering(&self) -> bool {self.hovering}
     fn set_hovering(&mut self,value:bool){self.hovering = value}
+    fn centering(&self) -> Centering {Centering::center}
     fn tx(&self) -> &Sender<InventoryAction> {&self.tx}
     fn bg_rect(&self) -> &Ref<ColorRect>{&self.bg_rect}
     fn main_rect(&self) -> &Ref<ColorRect>{&self.main_rect}
@@ -106,6 +109,10 @@ impl InventorySlot{
         godot_print!("Inventory Menu Clicked!");
     }
     #[method]
+    fn set_id(&mut self,id:i32){
+        self.id = id;
+    }
+    #[method]
     fn set_type(&mut self,typ:u8){
         let label = unsafe{self.label.assume_safe()};
         let typ = AbilityType::from(typ);
@@ -124,12 +131,34 @@ impl InventorySlot{
 /////////OPERATIONS//////////////////////////////////
 pub enum OperationType{
     empty,
+    place,
+    remove,
+}
+impl ToString for OperationType{
+    fn to_string(&self) -> String{
+        match self {
+            OperationType::empty => "".to_string(),
+            OperationType::place => "Place".to_string(),
+            OperationType::remove => "Remove".to_string(),
+        }
+    }
 }
 impl From<u8> for OperationType {
     fn from(item:u8) -> OperationType{
         match item{
             255 => OperationType::empty,
+            0 => OperationType::place,
+            1 => OperationType::remove,
             _ => todo!(),
+        }
+    }
+}
+impl Into<u8> for OperationType{
+    fn into(self) -> u8{
+        match self{
+            OperationType::place => 0,
+            OperationType::remove => 1,
+            OperationType::empty => 255,
         }
     }
 }
@@ -143,6 +172,7 @@ pub struct OperationButton {
     label:Ref<Label>,
     tx:Sender<Action>,
     hovering:bool,
+    centering:Centering,
 }
 impl InstancedDefault<Control,Sender<Action>> for OperationButton{
     fn make(args:&Sender<Action>) -> Self{
@@ -153,16 +183,18 @@ impl InstancedDefault<Control,Sender<Action>> for OperationButton{
             label:Label::new().into_shared(),
             tx:args.clone(),
             hovering:false,
+            centering:Centering::center,
         }
     }
 }
 impl Windowed<Action> for OperationButton{
     const bg_highlight_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
-    const bg_color:Color = Color{r:0.0,g:0.0,b:10.0,a:1.0};
+    const bg_color:Color = Color{r:0.0,g:0.0,b:10.0,a:0.3};
     const main_color:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
     const margin_size:f32 = 5.0;
     fn hovering(&self) -> bool {self.hovering}
     fn set_hovering(&mut self,value:bool){self.hovering = value}
+    fn centering(&self) -> Centering {self.centering.clone()}
     fn tx(&self) -> &Sender<Action> {&self.tx}
     fn bg_rect(&self) -> &Ref<ColorRect>{&self.bg_rect}
     fn main_rect(&self) -> &Ref<ColorRect>{&self.main_rect}
@@ -206,8 +238,12 @@ impl OperationButton{
     fn set_type(&mut self,typ:u8){
         let label = unsafe{self.label.assume_safe()};
         let typ = OperationType::from(typ);
-        self.set_text("test".to_string());
+        self.set_text(typ.to_string());
         self.typ = typ;
+    }
+    #[method]
+    fn set_centering(&mut self,centering:Centering) {
+        self.centering = centering;
     }
 }
 ////OPERATIONS MENU///////////////////////
@@ -219,6 +255,7 @@ pub struct InventoryOperations {
     bg_rect:Ref<ColorRect>,
     main_rect:Ref<ColorRect>,
     place_button:Instance<OperationButton>,
+    remove_button:Instance<OperationButton>,
     tx:Sender<InventoryAction>,
     buttons_tx:Sender<Action>,
     buttons_rx:Receiver<Action>,
@@ -232,6 +269,7 @@ impl InstancedDefault<Control,Sender<InventoryAction>> for InventoryOperations{
             bg_rect:ColorRect::new().into_shared(),
             main_rect:ColorRect::new().into_shared(),
             place_button:OperationButton::make_instance(&tx).into_shared(),
+            remove_button:OperationButton::make_instance(&tx).into_shared(),
             tx:args.clone(),
             buttons_tx:tx,
             buttons_rx:rx,
@@ -241,8 +279,8 @@ impl InstancedDefault<Control,Sender<InventoryAction>> for InventoryOperations{
 }
 impl Windowed<InventoryAction> for InventoryOperations{
     const bg_highlight_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
-    const bg_color:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
-    const main_color:Color = Color{r:255.0,g:0.0,b:255.0,a:1.0};
+    const bg_color:Color = Color{r:0.0,g:0.0,b:0.0,a:0.5};
+    const main_color:Color = Color{r:255.0,g:0.0,b:255.0,a:0.5};
     const margin_size:f32 = 5.0;
     fn from_command(&self,cmd:Action) -> InventoryAction{
         match cmd{
@@ -250,10 +288,24 @@ impl Windowed<InventoryAction> for InventoryOperations{
         }
     }
     fn hovering(&self) -> bool {self.hovering}
+    fn centering(&self) -> Centering {Centering::center}
     fn set_hovering(&mut self,value:bool){self.hovering = value}
     fn tx(&self) -> &Sender<InventoryAction> {&self.tx}
     fn bg_rect(&self) -> &Ref<ColorRect>{&self.bg_rect}
     fn main_rect(&self) -> &Ref<ColorRect>{&self.main_rect}
+}
+impl AnimationWindow<InventoryAction> for InventoryOperations{
+    fn animation(start:Vector2,delta:f64) -> Vector2{
+        todo!()
+    }
+    fn shapes(&self) -> Vec<Ref<Control>>{
+        let num_shapes = 10;
+        let mut vec = Vec::new();
+        let rect = Control::new().into_shared();
+        rect.translate(Vector2{x:});
+        vec.push();
+        vec
+    }
 }
 #[methods]
 impl InventoryOperations{
@@ -266,13 +318,24 @@ impl InventoryOperations{
         owner.connect("mouse_entered",owner,"entered",VariantArray::new_shared(),0);
         owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
         owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
-        owner.add_child(self.place_button.clone(),true);
+        let place_button = unsafe{self.place_button.assume_safe()};
+        owner.add_child(place_button.clone(),true);
+        place_button.map_mut(|obj,_| obj.set_type(OperationType::place.into()));
+        place_button.map_mut(|obj,_| obj.set_centering(Centering::top_left));
+        let remove_button = unsafe{self.remove_button.assume_safe()};
+        owner.add_child(remove_button.clone(),true);
+        remove_button.map_mut(|obj,_| obj.set_type(OperationType::remove.into()));
+        remove_button.map_mut(|obj,_| obj.set_centering(Centering::top_right));
     }
     #[method]
     fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
         <Self as Windowed<InventoryAction>>::process(self,owner,delta);
         let place_button = unsafe{self.place_button.assume_safe()};
-        place_button.map(|_,control| control.set_size(owner.size()/4.0,false));
+        let button_size = owner.size()/4.0;
+        place_button.map(|_,control| control.set_size(button_size,false));
+        let remove_button = unsafe{self.remove_button.assume_safe()};
+        remove_button.map(|_,control| control.set_size(button_size,false));
+        remove_button.map(|_,control| control.set_position(Vector2{x:owner.size().x - button_size.x,y:0.0},false));
     }
     #[method]
     fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
@@ -287,8 +350,9 @@ impl InventoryOperations{
         self.unhover();
     }
     #[method]
-    fn clicked(&self) {
+    fn clicked(&self,#[base] owner:TRef<Control>) {
         godot_print!("Operations clicked!");
+        owner.set_visible(false);
     }
     #[method]
     fn set_type(&mut self,typ:u8){
@@ -339,12 +403,21 @@ impl InventoryMenu{
         self.add_slot(owner,AbilityType::empty.into());
         self.add_slot(owner,AbilityType::empty.into());
         owner.add_child(self.operations.clone(),true);
+        let operations = unsafe{self.operations.assume_safe()};
+        operations.map(|_,control| control.set_visible(false));
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
         match self.rx.try_recv(){
-            Ok(InventoryAction::clicked(typ)) => {
-                self.fill_slot(owner,0);
+            Ok(InventoryAction::clicked(typ,id)) => {
+                let operations = unsafe{self.operations.assume_safe()};
+                let slot = &self.slots[id as usize];
+                let slot = unsafe{slot.assume_safe()};
+                
+                slot
+                    .map(|_,control|control.position())
+                    .map(|position| operations.map(|_,op_control| op_control.set_position(position,false)));
+                operations.map(|_,control| control.set_visible(true));
             }
             Ok(_) => {}
             Err(_) => {}
@@ -385,9 +458,11 @@ impl InventoryMenu{
     #[method]
     fn add_slot(&mut self ,#[base] owner:TRef<Control>,typ:u8){
         let slot = InventorySlot::make_instance(&self.tx).into_shared();
+        let id = self.slots.len() as i32;
         self.slots.push(slot.clone());
         let slot = unsafe{slot.assume_safe()};
         slot.map_mut(|obj,_| obj.set_type(typ));
+        slot.map_mut(|obj,_| obj.set_id(id));
         owner.add_child(slot,true);
     }
     #[method]

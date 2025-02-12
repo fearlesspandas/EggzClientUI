@@ -8,6 +8,7 @@ use tokio::sync::mpsc;
 enum Error{
     set_bg_color_error,
     set_main_color_error,
+
 }
 const set_bg_color_error:u8 = 0;
 const set_main_color_error:u8 = 1;
@@ -26,6 +27,35 @@ pub enum Action{
     hover,
     unhover,
 }
+#[derive(Debug,Clone,Copy)]
+pub enum Centering{
+    top_right,
+    top_left,
+    bottom_right,
+    bottom_left,
+    center,
+}
+impl From<u8> for Centering{
+    fn from(item:u8) -> Self{
+        match item{
+            0 => Centering::center,
+            1 => Centering::top_right,
+            2 => Centering::top_left,
+            3 => Centering::bottom_left,
+            4 => Centering::bottom_right,
+            _ => todo!(),
+        }
+    }
+}
+impl FromVariant for Centering{
+    fn from_variant(variant:&Variant) -> Result<Self,FromVariantError>{
+        match variant.get_type(){
+            VariantType::I64 => variant.try_to::<u8>().map(|typ| Centering::from(typ)),
+            VariantType::F64 => variant.try_to::<f64>().map(|typ| Centering::from(typ.round() as i64 as u8)),
+            typ => Err(FromVariantError::InvalidVariantType{variant_type:typ,expected:VariantType::I64}),
+        }
+    }
+}
 pub trait Windowed<T:From<Action>>{
     const bg_highlight_color:Color;
     const bg_color:Color;
@@ -37,6 +67,7 @@ pub trait Windowed<T:From<Action>>{
 
     fn bg_rect(&self) -> &Ref<ColorRect>;
     fn main_rect(&self) -> &Ref<ColorRect>;
+    fn centering(&self) -> Centering;
 
     fn from_command(&self,cmd:Action) -> T{
         T::from(cmd)
@@ -66,10 +97,37 @@ pub trait Windowed<T:From<Action>>{
         let main_rect = unsafe{self.main_rect().assume_safe()};
         let mut size = owner.size();
         bg_rect.set_size(size,false);
-        size.x -= Self::margin_size;
-        size.y -= Self::margin_size;
+        let position = match self.centering(){
+            Centering::center => {
+                size.x -= Self::margin_size;
+                size.y -= Self::margin_size;
+                Vector2{x:Self::margin_size/2.0,y:Self::margin_size/2.0}
+            }
+            Centering::top_left => { 
+                size.x -= Self::margin_size/2.0;
+                size.y -= Self::margin_size/2.0;
+                Vector2{x:Self::margin_size,y:Self::margin_size} 
+            }
+            Centering::top_right => {
+                size.x -= Self::margin_size/2.0;
+                size.y -= Self::margin_size/2.0;
+                Vector2{x:0.0,y:Self::margin_size} 
+            }
+            Centering::bottom_right => {
+                size.x -= Self::margin_size/2.0;
+                size.y -= Self::margin_size/2.0;
+                Vector2{x:0.0,y:0.0} 
+            }
+            Centering::bottom_left => {
+                size.x -= Self::margin_size/2.0;
+                size.y -= Self::margin_size/2.0;
+                Vector2{x:Self::margin_size,y:0.0} 
+            }
+        };
+        size.x -= Self::margin_size/2.0;
+        size.y -= Self::margin_size/2.0;
         main_rect.set_size(size,false);
-        main_rect.set_position(Vector2{x:Self::margin_size/2.0,y:Self::margin_size/2.0},false);
+        main_rect.set_position(position,false);
     }
     fn hover(&mut self){
         let bg_rect = unsafe{self.bg_rect().assume_safe()};
@@ -105,4 +163,27 @@ pub trait LabelButton<T:From<Action>> where Self:Windowed<T>{
         let label = unsafe{self.label().assume_safe()};
         label.set_text(text);
     }
+}
+pub trait AnimationWindow<T:From<Action>> where Self:Windowed<T>{
+    fn animation(start:Vector2,delta:f64) -> Vector2;
+    fn shapes(&self) -> Vec<Ref<Control>>;
+    fn ready(&self,owner:TRef<Control>){
+        <Self as Windowed<T>>::ready(self,owner);
+        for shape in &self.shapes(){
+            owner.add_child(shape,true);
+            owner.move_child(shape,0);
+        }
+    }
+    fn process(&self,owner:TRef<Control>,delta:f64){
+        <Self as Windowed<T>>::process(self,owner,delta);
+        for shape in &self.shapes(){
+            let shape = unsafe{shape.assume_safe()};
+            let mut position = Self::animation(shape.position(),delta);
+            position.x = position.x % (owner.position().x + owner.size().x); 
+            position.y = position.y % (owner.position().y + owner.size().y);
+            shape.set_position(position,false);
+        }
+
+    }
+    
 }
