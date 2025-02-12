@@ -18,7 +18,7 @@ onready var command_menu : CommandMenu = CommandMenu.new()
 onready var inventory_menu : InventoryMenu = InventoryMenu.new()
 onready var client_terminal = load("res://native_lib/ClientTerminal.gdns").new()
 onready var shop_menu = load("res://native_lib/ShopMenu.gdns").new()
-onready var inventory_menu_rust = load("res://native_lib/InventoryMenu.gdns").new()
+onready var inventory_menu_rust = Inventory.new()
 
 var profile_id:String
 var connection_ind_size = 30

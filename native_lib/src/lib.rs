@@ -3,6 +3,7 @@ use gdnative::prelude::*;
 pub mod terminal_commands;
 pub mod socket_mode;
 pub mod traits;
+pub mod ui_traits;
 pub mod terminal_actions;
 pub mod data_display;
 pub mod data_graphs;
@@ -46,6 +47,8 @@ fn init(handle:InitHandle){
     handle.add_class::<field_server::FieldZoneServer>();
     handle.add_class::<item_menu::InventoryMenu>();
     handle.add_class::<item_menu::InventorySlot>();
+    handle.add_class::<item_menu::InventoryOperations>();
+    handle.add_class::<item_menu::OperationButton>();
     //handle.add_class::<item_menu::ControlBox<item_menu::ItemSlotCommand>>();
 }
 godot_init!(init);

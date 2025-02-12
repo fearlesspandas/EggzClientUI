@@ -5,118 +5,42 @@ use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_ability_mesh::{FieldAbilityMesh,ToMesh};
 use crate::field_ability_actions::ToAction;
-use crate::field_abilities::{OpType,SubOpType};
+use crate::field_abilities::{AbilityType};
+use crate::ui_traits::{Windowed,LabelButton,Action};
 use tokio::sync::mpsc;
 
-enum Error{
-    set_bg_color_error,
-    set_main_color_error,
-}
-const set_bg_color_error:u8 = 0;
-const set_main_color_error:u8 = 1;
-impl ToVariant for Error{
-    fn to_variant(&self) -> Variant{
-        match self{
-            Error::set_bg_color_error => Variant::new(set_bg_color_error),
-            Error::set_main_color_error => Variant::new(set_main_color_error),
-        }
-    }
-}
 type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
-pub enum Command{
-    clicked,
-    hover,
-    unhover,
-}
-pub trait Windowed<T:From<Command>>{
-    const bg_highlight_color:Color;
-    const bg_color:Color;
-    const main_color:Color;
-    const margin_size:f32;
-    fn hovering(&self) -> bool;
-    fn set_hovering(&mut self,value:bool);
-    fn tx(&self) -> &Sender<T>;
 
-    fn bg_rect(&self) -> &Ref<ColorRect>;
-    fn main_rect(&self) -> &Ref<ColorRect>;
-    fn ready(&self,owner:TRef<Control>){
-        let bg_rect = unsafe{self.bg_rect().assume_safe()};
-        let main_rect = unsafe{self.main_rect().assume_safe()};
-        bg_rect.set_frame_color(Self::bg_color);
-        main_rect.set_frame_color(Self::main_color);
-        bg_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
-        main_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
-        owner.add_child(bg_rect,true);
-        owner.add_child(main_rect,true);
-    }
-    fn input(&self,owner:TRef<Control>,event:Ref<InputEvent>){
-        if let Ok(event) = event.try_cast::<InputEventMouseButton>(){
-            let event = unsafe{event.assume_safe()};
-            if event.is_action_released("left_click",true) && self.hovering(){
-                owner.emit_signal("clicked",&[]);
-                self.tx().send(T::from(Command::clicked));
-            }
+enum InventoryAction{
+    clicked(AbilityType),
+    hover(AbilityType),
+    unhover,
+    unhandled,
+}
+impl From<Action> for InventoryAction{
+    fn from(item:Action) -> InventoryAction{
+        match item{
+            _ => InventoryAction::unhandled,
         }
     }
-    fn process(&self,owner:TRef<Control>,delta:f64){
-        let bg_rect = unsafe{self.bg_rect().assume_safe()};
-        let main_rect = unsafe{self.main_rect().assume_safe()};
-        let mut size = owner.size();
-        bg_rect.set_size(size,false);
-        size.x -= Self::margin_size;
-        size.y -= Self::margin_size;
-        main_rect.set_size(size,false);
-        main_rect.set_position(Vector2{x:Self::margin_size/2.0,y:Self::margin_size/2.0},false);
-    }
-    fn hover(&mut self){
-        let bg_rect = unsafe{self.bg_rect().assume_safe()};
-        bg_rect.set_frame_color(Self::bg_highlight_color);
-        self.tx().send(T::from(Command::hover));
-        self.set_hovering(true);
-    }
-    fn unhover(&mut self){
-        let bg_rect = unsafe{self.bg_rect().assume_safe()};
-        bg_rect.set_frame_color(Self::bg_color);
-        self.tx().send(T::from(Command::unhover));
-        self.set_hovering(false);
-    }
-
 }
-trait LabelButton<T:From<Command>> where Self:Windowed<T>{
-    fn label(&self) -> &Ref<Label>;
-    fn ready(&self,owner:TRef<Control>){
-        <Self as Windowed<T>>::ready(self,owner);
-        let label = unsafe{self.label().assume_safe()};
-        owner.add_child(self.label(),true);
-        label.set_mouse_filter(control::MouseFilter::IGNORE.into());
-    }
-    fn process(&self,owner:TRef<Control>,delta:f64){
-        <Self as Windowed<T>>::process(self,owner,delta);
-        let label = unsafe{self.label().assume_safe()};
-        let owner_size = owner.size();
-        label.set_size(owner_size/2.0,true);
-        let label_position = owner_size/2.0 - (label.size()/2.0) ;
-        label.set_position(label_position,true);
-    }
-    fn set_text(&self,text:String){
-        let label = unsafe{self.label().assume_safe()};
-        label.set_text(text);
-    }
-}
+////INVENTORY SLOTS///////////////
 #[derive(NativeClass)]
 #[inherit(Control)]
 #[register_with(Self::register_signals)]
 pub struct InventorySlot{
+    typ:AbilityType,
     bg_rect:Ref<ColorRect>,
     main_rect:Ref<ColorRect>,
     label:Ref<Label>,
-    tx:Sender<Command>,
+    tx:Sender<InventoryAction>,
     hovering:bool,
 }
-impl InstancedDefault<Control,Sender<Command>> for InventorySlot{
-    fn make(args:&Sender<Command>) -> Self{
+impl InstancedDefault<Control,Sender<InventoryAction>> for InventorySlot{
+    fn make(args:&Sender<InventoryAction>) -> Self{
         InventorySlot{
+            typ:AbilityType::empty,
             bg_rect:ColorRect::new().into_shared(),
             main_rect:ColorRect::new().into_shared(),
             label:Label::new().into_shared(),
@@ -125,22 +49,26 @@ impl InstancedDefault<Control,Sender<Command>> for InventorySlot{
         }
     }
 }
-impl Windowed<Command> for InventorySlot{
+impl Windowed<InventoryAction> for InventorySlot{
     const bg_highlight_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
     const bg_color:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
-    const main_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
+    const main_color:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
     const margin_size:f32 = 5.0;
-    
+    fn from_command(&self,cmd:Action) -> InventoryAction{
+        match cmd{
+            Action::clicked => InventoryAction::clicked(self.typ),
+            _ => InventoryAction::unhandled,
+        }
+    }
     fn hovering(&self) -> bool {self.hovering}
     fn set_hovering(&mut self,value:bool){self.hovering = value}
-    fn tx(&self) -> &Sender<Command> {&self.tx}
+    fn tx(&self) -> &Sender<InventoryAction> {&self.tx}
     fn bg_rect(&self) -> &Ref<ColorRect>{&self.bg_rect}
     fn main_rect(&self) -> &Ref<ColorRect>{&self.main_rect}
 }
-impl LabelButton<Command> for InventorySlot{
+impl LabelButton<InventoryAction> for InventorySlot{
     fn label(&self) -> &Ref<Label>{&self.label}
 }
-
 #[methods]
 impl InventorySlot{
     fn register_signals(builder:&ClassBuilder<Self>){
@@ -148,18 +76,18 @@ impl InventorySlot{
     }
     #[method]
     fn _ready(&self,#[base] owner:TRef<Control>){
-        <Self as LabelButton<Command>>::ready(self,owner);
+        <Self as LabelButton<InventoryAction>>::ready(self,owner);
         owner.connect("mouse_entered",owner,"entered",VariantArray::new_shared(),0);
         owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
         owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
     }
     #[method]
     fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
-        <Self as LabelButton<Command>>::process(self,owner,delta);
+        <Self as LabelButton<InventoryAction>>::process(self,owner,delta);
     }
     #[method]
     fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
-        <Self as Windowed<Command>>::input(self,owner,event.clone());
+        <Self as Windowed<InventoryAction>>::input(self,owner,event.clone());
         let event = unsafe{event.assume_safe()};
         if event.is_action_released("inventory_toggle",true){
             owner.set_visible(!owner.is_visible());
@@ -178,41 +106,219 @@ impl InventorySlot{
         godot_print!("Inventory Menu Clicked!");
     }
     #[method]
-    fn set_type(&self,typ:u8){
+    fn set_type(&mut self,typ:u8){
         let label = unsafe{self.label.assume_safe()};
-        let typ = OpType::from(typ);
+        let typ = AbilityType::from(typ);
         self.set_text(typ.to_string());
+        self.typ = typ;
+    }
+    #[method]
+    fn is_empty(&self) -> bool{
+        self.typ == AbilityType::empty
+    }
+    #[method]
+    fn is_type(&self,typ:u8) -> bool{
+        self.typ == AbilityType::from(typ)
     }
 }
-trait ToColor{
-    fn to_color(&self) -> Color;
+/////////OPERATIONS//////////////////////////////////
+pub enum OperationType{
+    empty,
 }
-impl ToColor for OpType{
-    fn to_color(&self) -> Color{
-        match self{
-            OpType::smack => Color{r:255.0,g:255.0,b:0.0,a:1.0},
-            OpType::globular_teleport => Color{r:100.0,g:0.0,b:30.0,a:1.0},
-            OpType::empty => Color{r:0.0,g:0.0,b:0.0,a:1.0},
-
+impl From<u8> for OperationType {
+    fn from(item:u8) -> OperationType{
+        match item{
+            255 => OperationType::empty,
+            _ => todo!(),
         }
     }
 }
-pub enum InventoryMenuCommand{
-    Selected(OpType),
-    Unhandled
+#[derive(NativeClass)]
+#[inherit(Control)]
+#[register_with(Self::register_signals)]
+pub struct OperationButton {
+    typ:OperationType,
+    bg_rect:Ref<ColorRect>,
+    main_rect:Ref<ColorRect>,
+    label:Ref<Label>,
+    tx:Sender<Action>,
+    hovering:bool,
 }
+impl InstancedDefault<Control,Sender<Action>> for OperationButton{
+    fn make(args:&Sender<Action>) -> Self{
+        OperationButton{
+            typ:OperationType::empty,
+            bg_rect:ColorRect::new().into_shared(),
+            main_rect:ColorRect::new().into_shared(),
+            label:Label::new().into_shared(),
+            tx:args.clone(),
+            hovering:false,
+        }
+    }
+}
+impl Windowed<Action> for OperationButton{
+    const bg_highlight_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
+    const bg_color:Color = Color{r:0.0,g:0.0,b:10.0,a:1.0};
+    const main_color:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
+    const margin_size:f32 = 5.0;
+    fn hovering(&self) -> bool {self.hovering}
+    fn set_hovering(&mut self,value:bool){self.hovering = value}
+    fn tx(&self) -> &Sender<Action> {&self.tx}
+    fn bg_rect(&self) -> &Ref<ColorRect>{&self.bg_rect}
+    fn main_rect(&self) -> &Ref<ColorRect>{&self.main_rect}
+}
+impl LabelButton<Action> for OperationButton{
+    fn label(&self) -> &Ref<Label>{&self.label}
+}
+#[methods]
+impl OperationButton{
+    fn register_signals(builder:&ClassBuilder<Self>){
+        builder.signal("clicked").done();
+    }
+    #[method]
+    fn _ready(&self,#[base] owner:TRef<Control>){
+        <Self as LabelButton<Action>>::ready(self,owner);
+        owner.connect("mouse_entered",owner,"entered",VariantArray::new_shared(),0);
+        owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
+        owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
+    }
+    #[method]
+    fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
+        <Self as LabelButton<Action>>::process(self,owner,delta);
+    }
+    #[method]
+    fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
+        <Self as Windowed<Action>>::input(self,owner,event.clone());
+    }
+    #[method]
+    fn entered(&mut self){
+        self.hover();
+    }
+    #[method]
+    fn exited(&mut self){
+        self.unhover();
+    }
+    #[method]
+    fn clicked(&self) {
+        godot_print!("Operations clicked!");
+    }
+    #[method]
+    fn set_type(&mut self,typ:u8){
+        let label = unsafe{self.label.assume_safe()};
+        let typ = OperationType::from(typ);
+        self.set_text("test".to_string());
+        self.typ = typ;
+    }
+}
+////OPERATIONS MENU///////////////////////
+#[derive(NativeClass)]
+#[inherit(Control)]
+#[register_with(Self::register_signals)]
+pub struct InventoryOperations {
+    typ:AbilityType,
+    bg_rect:Ref<ColorRect>,
+    main_rect:Ref<ColorRect>,
+    place_button:Instance<OperationButton>,
+    tx:Sender<InventoryAction>,
+    buttons_tx:Sender<Action>,
+    buttons_rx:Receiver<Action>,
+    hovering:bool,
+}
+impl InstancedDefault<Control,Sender<InventoryAction>> for InventoryOperations{
+    fn make(args:&Sender<InventoryAction>) -> Self{
+        let (tx,rx) = mpsc::unbounded_channel::<Action>() ;
+        InventoryOperations{
+            typ:AbilityType::empty,
+            bg_rect:ColorRect::new().into_shared(),
+            main_rect:ColorRect::new().into_shared(),
+            place_button:OperationButton::make_instance(&tx).into_shared(),
+            tx:args.clone(),
+            buttons_tx:tx,
+            buttons_rx:rx,
+            hovering:false,
+        }
+    }
+}
+impl Windowed<InventoryAction> for InventoryOperations{
+    const bg_highlight_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
+    const bg_color:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
+    const main_color:Color = Color{r:255.0,g:0.0,b:255.0,a:1.0};
+    const margin_size:f32 = 5.0;
+    fn from_command(&self,cmd:Action) -> InventoryAction{
+        match cmd{
+            _ => InventoryAction::unhandled,
+        }
+    }
+    fn hovering(&self) -> bool {self.hovering}
+    fn set_hovering(&mut self,value:bool){self.hovering = value}
+    fn tx(&self) -> &Sender<InventoryAction> {&self.tx}
+    fn bg_rect(&self) -> &Ref<ColorRect>{&self.bg_rect}
+    fn main_rect(&self) -> &Ref<ColorRect>{&self.main_rect}
+}
+#[methods]
+impl InventoryOperations{
+    fn register_signals(builder:&ClassBuilder<Self>){
+        builder.signal("clicked").done();
+    }
+    #[method]
+    fn _ready(&self,#[base] owner:TRef<Control>){
+        <Self as Windowed<InventoryAction>>::ready(self,owner);
+        owner.connect("mouse_entered",owner,"entered",VariantArray::new_shared(),0);
+        owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
+        owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
+        owner.add_child(self.place_button.clone(),true);
+    }
+    #[method]
+    fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
+        <Self as Windowed<InventoryAction>>::process(self,owner,delta);
+        let place_button = unsafe{self.place_button.assume_safe()};
+        place_button.map(|_,control| control.set_size(owner.size()/4.0,false));
+    }
+    #[method]
+    fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
+        <Self as Windowed<InventoryAction>>::input(self,owner,event.clone());
+    }
+    #[method]
+    fn entered(&mut self){
+        self.hover();
+    }
+    #[method]
+    fn exited(&mut self){
+        self.unhover();
+    }
+    #[method]
+    fn clicked(&self) {
+        godot_print!("Operations clicked!");
+    }
+    #[method]
+    fn set_type(&mut self,typ:u8){
+        let typ = AbilityType::from(typ);
+        self.typ = typ;
+    }
+    #[method]
+    fn is_empty(&self) -> bool{
+        self.typ == AbilityType::empty
+    }
+    #[method]
+    fn is_type(&self,typ:u8) -> bool{
+        self.typ == AbilityType::from(typ)
+    }
+}
+////INVENTORY MENU///////////////////
 #[derive(NativeClass)]
 #[inherit(Control)]
 pub struct InventoryMenu{
     slots:Vec<Instance<InventorySlot>>,
-    tx:Sender<Command>,
-    rx:Receiver<Command>,
+    operations:Instance<InventoryOperations>,
+    tx:Sender<InventoryAction>,
+    rx:Receiver<InventoryAction>,
 }
 impl Instanced<Control> for InventoryMenu{
     fn make() -> Self{
-        let (tx,rx) = mpsc::unbounded_channel::<Command>();
+        let (tx,rx) = mpsc::unbounded_channel::<InventoryAction>();
         InventoryMenu{
             slots:Vec::new(),
+            operations:InventoryOperations::make_instance(&tx).into_shared(),
             tx:tx,
             rx:rx,
         }
@@ -222,20 +328,24 @@ impl Instanced<Control> for InventoryMenu{
 impl InventoryMenu{
     #[method]
     fn _ready(&mut self,#[base] owner:TRef<Control>){
-        self.add_slot(owner,OpType::smack.into());
-        self.add_slot(owner,OpType::smack.into());
-        self.add_slot(owner,OpType::smack.into());
-        self.add_slot(owner,OpType::smack.into());
-        self.add_slot(owner,OpType::smack.into());
-        self.add_slot(owner,OpType::smack.into());
-        self.add_slot(owner,OpType::smack.into());
-        self.add_slot(owner,OpType::smack.into());
-        self.add_slot(owner,OpType::smack.into());
-        self.add_slot(owner,OpType::smack.into());
+        self.add_slot(owner,AbilityType::empty.into());
+        self.add_slot(owner,AbilityType::empty.into());
+        self.add_slot(owner,AbilityType::empty.into());
+        self.add_slot(owner,AbilityType::empty.into());
+        self.add_slot(owner,AbilityType::empty.into());
+        self.add_slot(owner,AbilityType::empty.into());
+        self.add_slot(owner,AbilityType::empty.into());
+        self.add_slot(owner,AbilityType::empty.into());
+        self.add_slot(owner,AbilityType::empty.into());
+        self.add_slot(owner,AbilityType::empty.into());
+        owner.add_child(self.operations.clone(),true);
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
         match self.rx.try_recv(){
+            Ok(InventoryAction::clicked(typ)) => {
+                self.fill_slot(owner,0);
+            }
             Ok(_) => {}
             Err(_) => {}
         }
@@ -251,10 +361,19 @@ impl InventoryMenu{
         for slot in &self.slots{
             let slot = unsafe{slot.assume_safe()};
             slot.map(|_,control|control.set_size(slot_size_v,false));
-            slot.map(|_,control|control.set_position(Vector2{x:slot_size * (idx%max_per_row),y:slot_size * (idx/max_per_row).floor()},false));
+            slot.map(|_,control|
+                control.set_position(
+                    Vector2{
+                        x:slot_size * (idx%max_per_row),
+                        y:slot_size * (idx/max_per_row).floor()
+                    },
+                    false
+                )
+            );
             idx += 1.0;
         }
-        
+        let operations = unsafe{self.operations.assume_safe()};
+        operations.map(|_,control| control.set_size(owner.size()/2.0,false));
     }
     #[method]
     fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
@@ -268,13 +387,54 @@ impl InventoryMenu{
         let slot = InventorySlot::make_instance(&self.tx).into_shared();
         self.slots.push(slot.clone());
         let slot = unsafe{slot.assume_safe()};
-        slot.map(|obj,_| obj.set_type(typ));
+        slot.map_mut(|obj,_| obj.set_type(typ));
         owner.add_child(slot,true);
     }
+    #[method]
+    fn fill_slot(&mut self,#[base] owner:TRef<Control>, typ:u8){
+        let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
+        let empty_slot = slots.find(|x| x.map(|obj,_| obj.is_empty()).unwrap());
+        empty_slot.map(|slot| slot.map_mut(|obj,_| obj.set_type(typ)));
+    }
+    #[method]
+    fn fill_client_slot(&mut self,#[base] owner:TRef<Control>,id:String, typ:u8){
+        self.fill_slot(owner,typ);
+    }
+    #[method]
+    fn remove_item(&mut self,#[base] owner:TRef<Control>, typ:u8){
+        let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
+        let item_slot = slots.find(|x| x.map(|obj,_| obj.is_type(typ)).unwrap());
+        item_slot.map(|slot| slot.map_mut(|obj,_| obj.set_type(AbilityType::empty.into())));
+    }
+    #[method]
+    fn remove_client_item(&mut self,#[base] owner:TRef<Control>,id:String, typ:u8){
+        self.remove_item(owner,typ);
+    }
+    #[method]
+    fn clear(&mut self,#[base] owner:TRef<Control>){
+        for slot in &self.slots{
+            let slot = unsafe{slot.assume_safe()};
+            slot.map_mut(|obj,_| obj.set_type(AbilityType::empty.into()));
+        }
+    }
+
 }
 
 
 
+trait ToColor{
+    fn to_color(&self) -> Color;
+}
+impl ToColor for AbilityType{
+    fn to_color(&self) -> Color{
+        match self{
+            AbilityType::smack => Color{r:255.0,g:255.0,b:0.0,a:1.0},
+            AbilityType::globular_teleport => Color{r:100.0,g:0.0,b:30.0,a:1.0},
+            AbilityType::empty => Color{r:0.0,g:0.0,b:0.0,a:1.0},
+
+        }
+    }
+}
 
 
 

@@ -4,69 +4,69 @@ use gdnative::api::*;
 use crate::traits::{Defaulted};
 
 #[derive(Copy,Clone,Eq,Hash,PartialEq,Debug)]
-pub enum OpType{
+pub enum AbilityType{
     empty,
     smack,
     globular_teleport
 }
-impl Defaulted for OpType{
+impl Defaulted for AbilityType{
     fn default() -> Self{
-        OpType::empty
+        AbilityType::empty
     }
 }
-impl From<u8> for OpType{
+impl From<u8> for AbilityType{
     fn from(value:u8) -> Self{
         match value{
-            255 => OpType::empty,
-            0 => OpType::smack,
-            1 => OpType::globular_teleport,
+            255 => AbilityType::empty,
+            0 => AbilityType::smack,
+            1 => AbilityType::globular_teleport,
             _ => todo!(),
         }
     }
 }
-impl Into<u8> for OpType{
+impl Into<u8> for AbilityType{
     fn into(self) -> u8 {
         match self{
-            OpType::empty => 255,
-            OpType::smack => 0,
-            OpType::globular_teleport => 1,
+            AbilityType::empty => 255,
+            AbilityType::smack => 0,
+            AbilityType::globular_teleport => 1,
         }
     }
 }
 trait ToLabel{
     fn to_label(&self) -> String;
 }
-impl ToString for OpType{
+impl ToString for AbilityType{
     fn to_string(&self) -> String{
         match self{
-            OpType::empty => "Empty".to_string(),
-            OpType::smack => "Smack".to_string(),
-            OpType::globular_teleport => "Globular Teleport".to_string(),
+            AbilityType::empty => "Empty".to_string(),
+            AbilityType::smack => "Smack".to_string(),
+            AbilityType::globular_teleport => "Globular Teleport".to_string(),
         }
     }
 }
 #[derive(Copy,Clone,Eq,Hash,PartialEq)]
-pub enum SubOpType{
+pub enum SubAbilityType{
     empty,
     globular_teleport_anchor,
     globular_teleport_vertex,
 }
-impl From<u8> for SubOpType{
+impl From<u8> for SubAbilityType{
     fn from(value:u8) -> Self{
         match value{
-            255 => SubOpType::empty,
-            0 => SubOpType::globular_teleport_anchor,
-            1 => SubOpType::globular_teleport_vertex,
+            255 => SubAbilityType::empty,
+            0 => SubAbilityType::globular_teleport_anchor,
+            1 => SubAbilityType::globular_teleport_vertex,
             _ => todo!(),
         }
     }
 }
-impl Into<u8> for SubOpType{
+impl Into<u8> for SubAbilityType{
     fn into(self) -> u8 {
         match self{
-            SubOpType::empty => 255,
-            SubOpType::globular_teleport_anchor => 0,
-            SubOpType::globular_teleport_vertex => 1,
+            SubAbilityType::empty => 255,
+            SubAbilityType::globular_teleport_anchor => 0,
+            SubAbilityType::globular_teleport_vertex => 1,
         }
     }
 }

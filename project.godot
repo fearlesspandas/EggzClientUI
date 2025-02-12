@@ -249,6 +249,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://world/HealthStars.gd"
 }, {
+"base": "Node",
+"class": "Inventory",
+"language": "GDScript",
+"path": "res://user_interface/client/Inventory.gd"
+}, {
 "base": "Control",
 "class": "InventoryMenu",
 "language": "GDScript",
@@ -553,6 +558,7 @@ _global_script_class_icons={
 "GoalBlob": "",
 "HealthDisplay": "",
 "HealthStars": "",
+"Inventory": "",
 "InventoryMenu": "",
 "ItemSlot": "",
 "LinearVelocityIndicator": "",

@@ -5,7 +5,7 @@ use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_ability_mesh::{FieldAbilityMesh,ToMesh};
 use crate::field_ability_actions::ToAction;
-use crate::field_abilities::{OpType,SubOpType};
+use crate::field_abilities::{AbilityType,SubAbilityType};
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
@@ -16,7 +16,7 @@ pub const zone_height:f32 = 1.0;
 
 const collision_layer:i64 = 20;
 pub enum FieldZoneCommand{
-    Selected(OpType),
+    Selected(AbilityType),
     Proc(bool),
 
 }
@@ -37,7 +37,7 @@ pub struct FieldZone{
     mesh:Ref<MeshInstance>,
     proc_mesh:Ref<MeshInstance>,
     op_menu:Instance<FieldOps3D>,
-    pub abilities:HashMap<OpType,Instance<FieldAbilityMesh>>,
+    pub abilities:HashMap<AbilityType,Instance<FieldAbilityMesh>>,
     zone_tx:Sender<FieldZoneCommand>,
     zone_rx:Receiver<FieldZoneCommand>,
     field_tx:Option<Sender<FieldCommand>>,
@@ -161,7 +161,7 @@ impl FieldZone{
 
     #[method]
     fn place_ability(&mut self,#[base] owner:TRef<KinematicBody>,typ:u8){
-        let typ = OpType::from(typ);
+        let typ = AbilityType::from(typ);
         if self.abilities.contains_key(&typ){return ;}
         let mesh = FieldAbilityMesh::make_instance(&typ).into_shared();
         owner.add_child(mesh.clone(),true);
@@ -171,7 +171,7 @@ impl FieldZone{
     }
     #[method]
     pub fn remove_ability(&mut self,#[base] owner:TRef<KinematicBody>, typ:u8){
-        let typ = OpType::from(typ);
+        let typ = AbilityType::from(typ);
         if self.abilities.contains_key(&typ){
             let ability = self.abilities.get(&typ).unwrap();
             owner.remove_child(ability);
@@ -229,10 +229,10 @@ impl FieldZone{
     }
 }
 pub enum FieldCommand{
-    AddAbility(Location,OpType),
-    DoAbility(Location,OpType),
-    ModifyAbility(Location,SubOpType),
-    Trigger(Location,OpType),
+    AddAbility(Location,AbilityType),
+    DoAbility(Location,AbilityType),
+    ModifyAbility(Location,SubAbilityType),
+    Trigger(Location,AbilityType),
 }
 impl ToString for FieldCommand{
     fn to_string(&self) -> String{
@@ -247,17 +247,17 @@ impl ToString for FieldCommand{
 impl CreateSignal<Field> for FieldCommand{
     fn register(builder:&ClassBuilder<Field>){
         builder
-            .signal(&FieldCommand::AddAbility(Location::default(),OpType::empty).to_string())
+            .signal(&FieldCommand::AddAbility(Location::default(),AbilityType::empty).to_string())
             .with_param("location",VariantType::VariantArray)
             .with_param("type",VariantType::I64)
             .done();
         builder
-            .signal(&FieldCommand::DoAbility(Location::default(),OpType::empty).to_string())
+            .signal(&FieldCommand::DoAbility(Location::default(),AbilityType::empty).to_string())
             .with_param("location",VariantType::VariantArray)
             .with_param("type",VariantType::I64)
             .done();
         builder
-            .signal(&FieldCommand::ModifyAbility(Location::default(),SubOpType::empty).to_string())
+            .signal(&FieldCommand::ModifyAbility(Location::default(),SubAbilityType::empty).to_string())
             .with_param("location",VariantType::VariantArray)
             .with_param("type",VariantType::I64)
             .done();
@@ -357,7 +357,7 @@ impl Field{
         if !self.zones.contains_key(&location){return ;}
         let zone = self.zones.get(&location).unwrap();
         let zone = unsafe{zone.assume_safe()};
-        let typ = OpType::from(ability_id);
+        let typ = AbilityType::from(ability_id);
         zone.map_mut(|obj,body|{
             obj.place_ability(body,ability_id)
         });
@@ -390,7 +390,7 @@ impl Field{
 #[derive(NativeClass)]
 #[inherit(KinematicBody)]
 pub struct FieldOp3D{
-    typ:OpType,
+    typ:AbilityType,
     mesh:Instance<FieldAbilityMesh>,
     highlight_left:Ref<MeshInstance>,
     highlight_right:Ref<MeshInstance>,
@@ -398,8 +398,8 @@ pub struct FieldOp3D{
     field_tx:Option<Sender<FieldZoneCommand>>,
 
 }
-impl InstancedDefault<KinematicBody,OpType> for FieldOp3D{
-    fn make(args:&OpType) -> Self{
+impl InstancedDefault<KinematicBody,AbilityType> for FieldOp3D{
+    fn make(args:&AbilityType) -> Self{
         FieldOp3D{
             typ:*args,
             mesh:FieldAbilityMesh::make_instance(args).into_shared(),
@@ -510,7 +510,7 @@ impl FieldOps3D{
     
     #[method]
     fn add_op(&mut self,#[base] owner:TRef<Spatial>,typ:u8){
-        let op = FieldOp3D::make_instance(&OpType::from(typ)).into_shared();
+        let op = FieldOp3D::make_instance(&AbilityType::from(typ)).into_shared();
         owner.add_child(op.clone(),true);
         let num_ops = self.operations.len() as f32;
         self.operations.push(op.clone());
@@ -568,27 +568,27 @@ impl FieldOps3D{
 trait ToLabel{
     fn to_label(&self) -> String;
 }
-impl ToLabel for OpType{
+impl ToLabel for AbilityType{
     fn to_label(&self) -> String{
         match self{
-            OpType::empty => "Empty".to_string(),
-            OpType::smack => "Smack".to_string(),
-            OpType::globular_teleport => "Globular Teleport".to_string(),
+            AbilityType::empty => "Empty".to_string(),
+            AbilityType::smack => "Smack".to_string(),
+            AbilityType::globular_teleport => "Globular Teleport".to_string(),
         }
     }
 }
 #[derive(NativeClass)]
 #[inherit(Control)]
 pub struct FieldOp{
-    typ:OpType,
+    typ:AbilityType,
     label:Ref<Label>,
     bg_rect:Ref<ColorRect>,
     main_rect:Ref<ColorRect>,
     bg_color:Color,
     color:Color,
 }
-impl InstancedDefault<Control,OpType> for FieldOp{
-    fn make(args:&OpType) -> Self{
+impl InstancedDefault<Control,AbilityType> for FieldOp{
+    fn make(args:&AbilityType) -> Self{
         FieldOp{
             typ:*args,
             label:Label::new().into_shared(),
@@ -656,7 +656,7 @@ impl FieldOps{
     }
     #[method]
     fn add_op(&mut self,#[base] owner:TRef<Control>,typ:u8){
-        let op = FieldOp::make_instance(&OpType::from(typ)).into_shared();
+        let op = FieldOp::make_instance(&AbilityType::from(typ)).into_shared();
         owner.add_child(op.clone(),true);
         self.operations.push(op);
         

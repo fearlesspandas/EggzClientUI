@@ -2,16 +2,16 @@
 use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
-use crate::field_abilities::{OpType};
+use crate::field_abilities::{AbilityType};
 use tokio::sync::mpsc;
 
 pub trait ToMesh{
     fn to_mesh(&self,length:f32,radius:f32) -> Ref<MeshInstance>;
 }
-impl ToMesh for OpType{
+impl ToMesh for AbilityType{
     fn to_mesh(&self,length:f32,radius:f32) -> Ref<MeshInstance> {
         match self{
-            OpType::empty => {
+            AbilityType::empty => {
                 let mesh = MeshInstance::new().into_shared();
                 let mesh_obj = unsafe{mesh.assume_safe()};
                 let box_mesh = CubeMesh::new().into_shared();
@@ -23,7 +23,7 @@ impl ToMesh for OpType{
                 mesh_obj.set_mesh(box_mesh);
                 mesh
             }
-            OpType::smack => {
+            AbilityType::smack => {
                 let mesh = MeshInstance::new().into_shared();
                 let mesh_obj = unsafe{mesh.assume_safe()};
                 let sphere_mesh = SphereMesh::new().into_shared();
@@ -36,7 +36,7 @@ impl ToMesh for OpType{
                 mesh_obj.set_mesh(sphere_mesh);
                 mesh
             }
-            OpType::globular_teleport => {
+            AbilityType::globular_teleport => {
                 let mesh_anchor = MeshInstance::new().into_shared();
                 let mesh_0 = MeshInstance::new().into_shared();
                 let mesh_1 = MeshInstance::new().into_shared();
@@ -98,8 +98,8 @@ pub struct FieldAbilityMesh{
     length:f32,
     radius:f32,
 }
-impl InstancedDefault<Spatial,OpType> for FieldAbilityMesh{
-    fn make(args:&OpType) -> Self{
+impl InstancedDefault<Spatial,AbilityType> for FieldAbilityMesh{
+    fn make(args:&AbilityType) -> Self{
         FieldAbilityMesh{
             mesh:args.to_mesh(25.0,5.0),
             length:25.0,

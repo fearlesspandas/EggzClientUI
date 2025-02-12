@@ -5,20 +5,20 @@ use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_ability_mesh::{FieldAbilityMesh,ToMesh};
 use crate::field::{Location,zone_height,zone_width};
-use crate::field_abilities::{OpType};
+use crate::field_abilities::{AbilityType};
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
 
 pub enum FieldZoneCommand{
-    Selected(OpType),
+    Selected(AbilityType),
 }
 #[derive(NativeClass)]
 #[inherit(Area)]
 pub struct FieldZoneServer{
     location:Location,
-    abilities:HashMap<OpType,Instance<FieldAbilityMesh>>,
+    abilities:HashMap<AbilityType,Instance<FieldAbilityMesh>>,
     zone_tx:Sender<FieldZoneCommand>,
     zone_rx:Receiver<FieldZoneCommand>,
     field_tx:Option<Sender<FieldCommand>>,
@@ -70,7 +70,7 @@ impl FieldZoneServer{
     }
     #[method]
     fn place_ability(&mut self,#[base] owner:TRef<Area>,typ:u8){
-        let typ = OpType::from(typ);
+        let typ = AbilityType::from(typ);
         if self.abilities.contains_key(&typ){return ;}
         //let mesh = FieldAbilityMesh::make_instance(&typ).into_shared();
         //owner.add_child(mesh.clone(),true);
@@ -81,8 +81,8 @@ impl FieldZoneServer{
     }
 }
 pub enum FieldCommand{
-    AddAbility(Location,OpType),
-    DoAbility(Location,OpType),
+    AddAbility(Location,AbilityType),
+    DoAbility(Location,AbilityType),
 }
 impl ToString for FieldCommand{
     fn to_string(&self) -> String{
@@ -95,12 +95,12 @@ impl ToString for FieldCommand{
 impl CreateSignal<FieldServer> for FieldCommand{
     fn register(builder:&ClassBuilder<FieldServer>){
         builder
-            .signal(&FieldCommand::AddAbility(Location::default(),OpType::empty).to_string())
+            .signal(&FieldCommand::AddAbility(Location::default(),AbilityType::empty).to_string())
             .with_param("location",VariantType::VariantArray)
             .with_param("type",VariantType::I64)
             .done();
         builder
-            .signal(&FieldCommand::DoAbility(Location::default(),OpType::empty).to_string())
+            .signal(&FieldCommand::DoAbility(Location::default(),AbilityType::empty).to_string())
             .with_param("location",VariantType::VariantArray)
             .with_param("type",VariantType::I64)
             .done();
@@ -187,7 +187,7 @@ impl FieldServer{
         if !self.zones.contains_key(&location){return ;}
         let zone = self.zones.get(&location).unwrap();
         let zone = unsafe{zone.assume_safe()};
-        let typ = OpType::from(ability_id);
+        let typ = AbilityType::from(ability_id);
         zone.map_mut(|obj,body|{
             obj.place_ability(body,ability_id)
         });

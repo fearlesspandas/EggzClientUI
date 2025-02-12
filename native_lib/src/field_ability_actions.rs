@@ -3,21 +3,21 @@ use std::collections::HashMap;
 use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::field::{Location,FieldZone,FieldCommand};
-use crate::field_abilities::{OpType,SubOpType};
+use crate::field_abilities::{AbilityType,SubAbilityType};
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
 pub trait ToAction{
     fn to_action(&self,tx:Sender<FieldCommand>,location:&Location,field_state:&HashMap<Location,Instance<FieldZone>>);
 }
-impl ToAction for OpType{
+impl ToAction for AbilityType{
     fn to_action(&self,tx:Sender<FieldCommand>,location:&Location,field_state:&HashMap<Location,Instance<FieldZone>>){
         match self{
-            OpType::empty => { }
-            OpType::smack => { 
-                tx.send(FieldCommand::DoAbility(*location,OpType::smack));
+            AbilityType::empty => { }
+            AbilityType::smack => { 
+                tx.send(FieldCommand::DoAbility(*location,AbilityType::smack));
             }
-            OpType::globular_teleport => {
+            AbilityType::globular_teleport => {
                 let zone = field_state.get(location).unwrap();
                 let zone = unsafe{zone.assume_safe()};
                 let matching_zones = field_state.values().into_iter().filter(|mzone|{
@@ -29,7 +29,7 @@ impl ToAction for OpType{
                         .into_iter()
                         .filter(|pair| {
                             let (key,_) = pair;
-                            *key == OpType::globular_teleport
+                            *key == AbilityType::globular_teleport
                         })
                         .collect::<Vec<_>>()
                         .len() > 0
@@ -40,22 +40,22 @@ impl ToAction for OpType{
                 godot_print!("{}",format!("Matching:{matching_num:?}"));
                 match matching_zones.len() {
                     0 => {
-                        tx.send(FieldCommand::ModifyAbility(*location,SubOpType::globular_teleport_anchor));
+                        tx.send(FieldCommand::ModifyAbility(*location,SubAbilityType::globular_teleport_anchor));
                         zone.map_mut(|obj,_| obj.proc());
                     }
                     1 | 2 | 3 => {
-                        tx.send(FieldCommand::ModifyAbility(*location,SubOpType::globular_teleport_vertex));
+                        tx.send(FieldCommand::ModifyAbility(*location,SubAbilityType::globular_teleport_vertex));
                         zone.map_mut(|obj,_| obj.proc());
                     }
                     _ => {
-                        tx.send(FieldCommand::ModifyAbility(*location,SubOpType::globular_teleport_vertex));
+                        tx.send(FieldCommand::ModifyAbility(*location,SubAbilityType::globular_teleport_vertex));
                         for mzone in matching_zones{
                             let mzone = unsafe{mzone.assume_safe()};
                             mzone.map_mut(|obj,body| obj.remove_ability(body,(*self).into()));
                             mzone.map_mut(|obj,body| obj.unproc());
                         }
                         zone.map_mut(|obj,body| obj.remove_ability(body,(*self).into()));
-                        tx.send(FieldCommand::DoAbility(*location,OpType::globular_teleport));
+                        tx.send(FieldCommand::DoAbility(*location,AbilityType::globular_teleport));
                     }
                 }
             }
