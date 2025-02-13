@@ -58,10 +58,11 @@ func size_and_position():
 		item.rect_position += bg_offset_vec
 	
 
-func refresh_contents(id,contents):
+func refresh_contents(id,contents:Dictionary):
+	var keys = contents.keys()
 	for i in range(0,items.size()):
 		if i < contents.size():
-			items[i].fill(int(contents[i]))
+			items[i].fill(int(keys[i]))
 		else:
 			items[i].fill(255)
 			

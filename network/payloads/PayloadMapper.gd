@@ -18,9 +18,6 @@ func create_axis_spider(id:String,location:Vector3):
 func create_monk_garden(id:String,location:Vector3):
 	return {'CREATE_MONK':{'globId':id,'location':[location.x,location.y,location.z]}}
 
-func create_repair_egg(eggId:String,globId:String):
-	return {'CREATE_REPAIR_EGG':{'eggId':eggId,'globId':globId}}
-
 func get_blob(id:String):
 	return {'GET_GLOB':{'id':id}}
 
