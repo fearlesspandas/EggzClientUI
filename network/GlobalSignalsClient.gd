@@ -37,6 +37,11 @@ func destination_unhovered(uuid):
 	emit_signal("destination_unhovered",uuid)
 
 #INVENTORY SIGNALS
+#emits pocketed_item signal
+signal pocketed_item(client_id,item,amount)
+func pocketed_item(client_id,item,amount):
+	emit_signal("pocketed_item",client_id,int(item),int(amount))
+
 #emits the item_added signal
 signal item_added(client_id,item)
 func item_added(client_id,item):

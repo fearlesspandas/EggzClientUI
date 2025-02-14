@@ -96,9 +96,6 @@ func create_axis_spider(id:String,location:Vector3):
 func create_monk_garden(id:String,location:Vector3):
 	send_payload(PayloadMapper.create_monk_garden(id,location))
 
-func create_repair_egg(eggId:String,globId:String):
-	_client.get_peer(1).put_packet(JSON.print(PayloadMapper.create_repair_egg(eggId,globId)).to_utf8())
-
 func get_blob(id:String):
 	send_payload(PayloadMapper.get_blob(id))
 

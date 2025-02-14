@@ -49,6 +49,7 @@ fn init(handle:InitHandle){
     handle.add_class::<item_menu::InventorySlot>();
     handle.add_class::<item_menu::InventoryOperations>();
     handle.add_class::<item_menu::OperationButton>();
+    handle.add_class::<item_menu::SlotAmount>();
     //handle.add_class::<item_menu::ControlBox<item_menu::ItemSlotCommand>>();
 }
 godot_init!(init);

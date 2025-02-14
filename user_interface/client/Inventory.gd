@@ -14,6 +14,8 @@ func _ready():
 func refresh_contents(id,contents):
 	inventory_menu.clear();
 	for item in contents:
-		inventory_menu.fill_slot(int(item))
+		inventory_menu.fill_slot(int(item),int(contents[item]))
 
 	
+func pocket_item(client_id,item,amount):
+	pass
