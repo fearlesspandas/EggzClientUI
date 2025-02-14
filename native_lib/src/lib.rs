@@ -46,6 +46,7 @@ fn init(handle:InitHandle){
     handle.add_class::<field_server::FieldServer>();
     handle.add_class::<field_server::FieldZoneServer>();
     handle.add_class::<item_menu::InventoryMenu>();
+    handle.add_class::<item_menu::Pocket>();
     handle.add_class::<item_menu::InventorySlot>();
     handle.add_class::<item_menu::InventoryOperations>();
     handle.add_class::<item_menu::OperationButton>();

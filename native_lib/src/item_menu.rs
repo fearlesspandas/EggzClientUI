@@ -609,6 +609,146 @@ impl InventoryMenu{
 }
 
 
+#[derive(NativeClass)]
+#[inherit(Control)]
+pub struct Pocket{
+    slots:Vec<Instance<InventorySlot>>,
+    operations:Instance<InventoryOperations>,
+    tx:Sender<InventoryAction>,
+    rx:Receiver<InventoryAction>,
+}
+impl Instanced<Control> for Pocket{
+    fn make() -> Self{
+        let (tx,rx) = mpsc::unbounded_channel::<InventoryAction>();
+        Pocket{
+            slots:Vec::new(),
+            operations:InventoryOperations::make_instance(&tx).into_shared(),
+            tx:tx,
+            rx:rx,
+        }
+    }
+}
+#[methods]
+impl Pocket{
+    #[method]
+    fn _ready(&mut self,#[base] owner:TRef<Control>){
+        self.add_slot(owner,AbilityType::empty.into(),0);
+        self.add_slot(owner,AbilityType::empty.into(),0);
+        self.add_slot(owner,AbilityType::empty.into(),0);
+        self.add_slot(owner,AbilityType::empty.into(),0);
+        self.add_slot(owner,AbilityType::empty.into(),0);
+        owner.add_child(self.operations.clone(),true);
+        let operations = unsafe{self.operations.assume_safe()};
+        //operations.map(|_,control| control.set_visible(false));
+    }
+    #[method]
+    fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
+        match self.rx.try_recv(){
+            Ok(InventoryAction::clicked(typ,id)) => {
+                let operations = unsafe{self.operations.assume_safe()};
+                let slot = &self.slots[id as usize];
+                let slot = unsafe{slot.assume_safe()};
+                
+                slot
+                    .map(|_,control|control.position())
+                    .map(|position| operations.map(|_,op_control| op_control.set_position(position,false)));
+                operations.map(|_,control| control.set_visible(true));
+                operations.map_mut(|obj,_| obj.position = id);
+            }
+            Ok(InventoryAction::pocketed(typ,id)) => {
+                godot_print!("Item Pocketed");
+            }
+            Ok(InventoryAction::unpocketed(typ,id)) => {
+                godot_print!("Item unPocketed");
+            }
+            Ok(_) => {}
+            Err(_) => {}
+        }
+        let slot_size = 100.0;
+        let slot_size_v = Vector2{x:slot_size,y:slot_size};
+        let vp = owner.get_viewport().unwrap();
+        let vp  = unsafe{vp.assume_safe()};
+        let size = vp.get_visible_rect().size;
+        let mut self_size = size/2.0;
+        self_size.y = slot_size + 20.0;
+        owner.set_size(self_size,false);
+        let mut position = size/2.0 - self_size/2.0;
+        position.y = size.y - self_size.y;
+        owner.set_position(position,false);
+        let num_slots = self.slots.len() as f32;
+        let max_per_row = (owner.size().x / slot_size).floor();
+        let mut idx = 0.0;
+        for slot in &self.slots{
+            let slot = unsafe{slot.assume_safe()};
+            slot.map(|_,control|control.set_size(slot_size_v,false));
+            slot.map(|_,control|
+                control.set_position(
+                    Vector2{
+                        x:slot_size * (idx%max_per_row),
+                        y:slot_size * (idx/max_per_row).floor()
+                    },
+                    false
+                )
+            );
+            idx += 1.0;
+        }
+        let operations = unsafe{self.operations.assume_safe()};
+        operations.map(|_,control| control.set_size(owner.size()/2.0,false));
+    }
+    #[method]
+    fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
+        let event = unsafe{event.assume_safe()};
+        if event.is_action_released("inventory_toggle",true){
+            //owner.set_visible(!owner.is_visible());
+        }
+    }
+    #[method]
+    fn add_slot(&mut self ,#[base] owner:TRef<Control>,typ:u8,amount:i32){
+        let slot = InventorySlot::make_instance(&self.tx).into_shared();
+        let id = self.slots.len() as i32;
+        self.slots.push(slot.clone());
+        let slot = unsafe{slot.assume_safe()};
+        slot.map_mut(|obj,_| obj.set_type(typ));
+        slot.map_mut(|obj,_| obj.set_id(id));
+        slot.map_mut(|obj,_| obj.set_amount(amount));
+        owner.add_child(slot,true);
+    }
+    #[method]
+    fn fill_slot(&mut self,#[base] owner:TRef<Control>, typ:u8,amount:i32){
+        let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
+        let empty_slot = slots.find(|x| x.map(|obj,_| obj.is_empty()).unwrap());
+        empty_slot.map(|slot| {
+            slot.map_mut(|obj,_| obj.set_type(typ));
+            slot.map_mut(|obj,_| obj.set_amount(amount));
+        });
+    }
+    #[method]
+    fn fill_client_slot(&mut self,#[base] owner:TRef<Control>,id:String, typ:u8,amount:i32){
+        self.fill_slot(owner,typ,amount);
+    }
+    #[method]
+    fn remove_item(&mut self,#[base] owner:TRef<Control>, typ:u8,amount:i32){
+        let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
+        let item_slot = slots.find(|x| x.map(|obj,_| obj.is_type(typ)).unwrap());
+        item_slot.map(|slot| slot.map_mut(|obj,_| {
+                    obj.set_type(AbilityType::empty.into());
+                    obj.set_amount(obj.amount - amount);
+                }));
+    }
+    #[method]
+    fn remove_client_item(&mut self,#[base] owner:TRef<Control>,id:String, typ:u8,amount:i32){
+        self.remove_item(owner,typ,amount);
+    }
+    #[method]
+    fn clear(&mut self,#[base] owner:TRef<Control>){
+        for slot in &self.slots{
+            let slot = unsafe{slot.assume_safe()};
+            slot.map_mut(|obj,_| obj.set_type(AbilityType::empty.into()));
+            slot.map_mut(|obj,_| obj.set_amount(0));
+        }
+    }
+
+}
 
 trait ToColor{
     fn to_color(&self) -> Color;
