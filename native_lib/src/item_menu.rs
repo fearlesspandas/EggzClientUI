@@ -467,6 +467,7 @@ impl InventoryOperations{
 ////INVENTORY MENU///////////////////
 #[derive(NativeClass)]
 #[inherit(Control)]
+#[register_with(Self::register_signals)]
 pub struct InventoryMenu{
     slots:Vec<Instance<InventorySlot>>,
     operations:Instance<InventoryOperations>,
@@ -486,6 +487,18 @@ impl Instanced<Control> for InventoryMenu{
 }
 #[methods]
 impl InventoryMenu{
+    fn register_signals(builder:&ClassBuilder<Self>){
+        builder
+            .signal("pocketed")
+            .with_param("type",VariantType::I64)
+            .with_param("amount",VariantType::I64)
+            .done();
+        builder
+            .signal("unpocketed")
+            .with_param("type",VariantType::I64)
+            .with_param("amount",VariantType::I64)
+            .done();
+    }
     #[method]
     fn _ready(&mut self,#[base] owner:TRef<Control>){
         self.add_slot(owner,AbilityType::empty.into(),10);
@@ -517,11 +530,14 @@ impl InventoryMenu{
                     .map(|position| operations.map(|_,op_control| op_control.set_position(position,false)));
                 operations.map(|_,control| control.set_visible(true));
                 operations.map_mut(|obj,_| obj.position = id);
+                operations.map_mut(|obj,_| obj.set_type(typ.into()));
             }
             Ok(InventoryAction::pocketed(typ,id)) => {
-                godot_print!("Item Pocketed");
+                owner.emit_signal("pocketed",&[Variant::new(typ),Variant::new(1)]);
+                godot_print!("{}",format!("pocketed typ:{typ:?}, id:{id:?}"));
             }
             Ok(InventoryAction::unpocketed(typ,id)) => {
+                owner.emit_signal("unpocketed",&[Variant::new(typ),Variant::new(1)]);
                 godot_print!("Item unPocketed");
             }
             Ok(_) => {}
@@ -551,7 +567,7 @@ impl InventoryMenu{
             idx += 1.0;
         }
         let operations = unsafe{self.operations.assume_safe()};
-        operations.map(|_,control| control.set_size(owner.size()/2.0,false));
+        operations.map(|_,control| control.set_size(slot_size_v,false));
     }
     #[method]
     fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
@@ -639,7 +655,7 @@ impl Pocket{
         self.add_slot(owner,AbilityType::empty.into(),0);
         owner.add_child(self.operations.clone(),true);
         let operations = unsafe{self.operations.assume_safe()};
-        //operations.map(|_,control| control.set_visible(false));
+        operations.map(|_,control| control.set_visible(false));
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
@@ -693,7 +709,7 @@ impl Pocket{
             idx += 1.0;
         }
         let operations = unsafe{self.operations.assume_safe()};
-        operations.map(|_,control| control.set_size(owner.size()/2.0,false));
+        operations.map(|_,control| control.set_size(slot_size_v,false));
     }
     #[method]
     fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
@@ -747,7 +763,6 @@ impl Pocket{
             slot.map_mut(|obj,_| obj.set_amount(0));
         }
     }
-
 }
 
 trait ToColor{
@@ -759,7 +774,6 @@ impl ToColor for AbilityType{
             AbilityType::smack => Color{r:255.0,g:255.0,b:0.0,a:1.0},
             AbilityType::globular_teleport => Color{r:100.0,g:0.0,b:30.0,a:1.0},
             AbilityType::empty => Color{r:0.0,g:0.0,b:0.0,a:1.0},
-
         }
     }
 }

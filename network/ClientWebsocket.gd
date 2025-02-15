@@ -232,6 +232,13 @@ func fill_empty_chunk(uuid:String,trigger_entity:String):
 func get_cached_terrain(uuid:String):
 	send_payload(PayloadMapper.get_cached_terrain(uuid))
 
+func get_pocket(id:String):
+	send_payload(PayloadMapper.get_pocket(id))
+	assert(false)
+
+func pocket_ability(from:String,ability_id:int,amount:int):
+	send_payload(PayloadMapper.pocket_ability(from,ability_id,amount))
+
 func add_ability(from:String,ability_id:int,location:Vector2):
 	send_payload(PayloadMapper.add_ability(from,ability_id,location))
 

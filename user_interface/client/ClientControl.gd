@@ -107,6 +107,7 @@ func load_scene(id,secret):
 	ShopMenuEnv.connect("clear_inventory",shop_menu,"clear")
 	ShopMenuEnv.connect("add_to_inventory",shop_menu,"add_item")
 
+	inventory_menu_rust.client_id = profile.id
 	self.add_child(inventory_menu_rust)
 
 	#ServerTerminalGlobalSignals.connect_terminal(client_terminal)

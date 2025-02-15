@@ -33,6 +33,12 @@ impl Into<u8> for AbilityType{
         }
     }
 }
+impl ToVariant for AbilityType{
+    fn to_variant(&self) -> Variant{
+        let u:u8 = (*self).into();
+        Variant::new(u)
+    }
+}
 trait ToLabel{
     fn to_label(&self) -> String;
 }
