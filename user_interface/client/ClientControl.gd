@@ -15,7 +15,6 @@ onready var destination_display:DestinationDisplay = DestinationDisplay.new()
 onready var destination_display_window:DestinationWindow = DestinationWindow.new()
 onready var destination_type_indicator:DestinationTypeIndicator = DestinationTypeIndicator.new()
 onready var command_menu : CommandMenu = CommandMenu.new()
-onready var inventory_menu : InventoryMenu = InventoryMenu.new()
 onready var client_terminal = load("res://native_lib/ClientTerminal.gdns").new()
 onready var shop_menu = load("res://native_lib/ShopMenu.gdns").new()
 onready var inventory_menu_rust = Inventory.new()
@@ -80,8 +79,6 @@ func load_scene(id,secret):
 	
 	self.add_child(destination_type_indicator)
 	
-	inventory_menu.client_id = profile.id
-	self.add_child(inventory_menu)
 	
 	self.add_child(physical_stats)
 	entity_management.connect("spawned_player_character",physical_stats.position_indicator,"player_character_spawned")

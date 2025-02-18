@@ -40,7 +40,7 @@ func refresh_contents(id,contents):
 		inventory_menu.fill_slot(int(item),int(contents[item]))
 
 func refresh_pocket_contents(id,contents):
-	inventory_menu.clear();
+	pocket.clear();
 	for item in contents:
 		pocket.fill_slot(int(item),int(contents[item]))
 

@@ -234,7 +234,6 @@ func get_cached_terrain(uuid:String):
 
 func get_pocket(id:String):
 	send_payload(PayloadMapper.get_pocket(id))
-	assert(false)
 
 func pocket_ability(from:String,ability_id:int,amount:int):
 	send_payload(PayloadMapper.pocket_ability(from,ability_id,amount))

@@ -114,7 +114,7 @@ impl InstancedDefault<Control,Sender<InventoryAction>> for InventorySlot{
 }
 impl Windowed<InventoryAction> for InventorySlot{
     const bg_highlight_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
-    const bg_color:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
+    const bg_color:Color = Color{r:0.0,g:255.0,b:255.0,a:1.0};
     const main_color:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
     const margin_size:f32 = 5.0;
     fn from_command(&self,cmd:Action) -> InventoryAction{
@@ -186,7 +186,14 @@ impl InventorySlot{
     fn set_amount(&mut self,amount:i32){
         self.amount = amount;
         let amount_disp = unsafe{self.amount_display.assume_safe()};
-        amount_disp.map_mut(|obj,_| obj.set_amount(amount));
+        amount_disp.map_mut(|obj,_| obj.set_amount(self.amount));
+    }
+    #[method]
+    fn add_amount(&mut self,amount:i32){
+        self.amount += amount;
+        let amount_disp = unsafe{self.amount_display.assume_safe()};
+        amount_disp.map_mut(|obj,_| obj.set_amount(self.amount));
+        
     }
     #[method]
     fn is_empty(&self) -> bool{
@@ -513,9 +520,13 @@ impl InventoryMenu{
         self.add_slot(owner,AbilityType::empty.into(),10);
         self.add_slot(owner,AbilityType::empty.into(),10);
         self.add_slot(owner,AbilityType::empty.into(),10);
+
         owner.add_child(self.operations.clone(),true);
+        owner.set_visible(false);
         let operations = unsafe{self.operations.assume_safe()};
         operations.map(|_,control| control.set_visible(false));
+
+
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
@@ -590,10 +601,10 @@ impl InventoryMenu{
     #[method]
     fn fill_slot(&mut self,#[base] owner:TRef<Control>, typ:u8,amount:i32){
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
-        let empty_slot = slots.find(|x| x.map(|obj,_| obj.is_empty()).unwrap());
+        let empty_slot = slots.find(|x| x.map(|obj,_| obj.is_empty() || obj.typ == AbilityType::from(typ)).unwrap());
         empty_slot.map(|slot| {
             slot.map_mut(|obj,_| obj.set_type(typ));
-            slot.map_mut(|obj,_| obj.set_amount(amount));
+            slot.map_mut(|obj,_| obj.add_amount(amount));
         });
     }
     #[method]
@@ -602,6 +613,7 @@ impl InventoryMenu{
     }
     #[method]
     fn remove_item(&mut self,#[base] owner:TRef<Control>, typ:u8,amount:i32){
+        assert!(false,"removing item fail");
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
         let item_slot = slots.find(|x| x.map(|obj,_| obj.is_type(typ)).unwrap());
         item_slot.map(|slot| slot.map_mut(|obj,_| {
@@ -680,18 +692,18 @@ impl Pocket{
             Ok(_) => {}
             Err(_) => {}
         }
+        let num_slots = self.slots.len() as f32;
+
         let slot_size = 100.0;
         let slot_size_v = Vector2{x:slot_size,y:slot_size};
-        let vp = owner.get_viewport().unwrap();
-        let vp  = unsafe{vp.assume_safe()};
-        let size = vp.get_visible_rect().size;
-        let mut self_size = size/2.0;
-        self_size.y = slot_size + 20.0;
+        let size = OS::godot_singleton().window_size();
+        let self_size = Vector2{x:slot_size * num_slots,y:slot_size + 20.0};
         owner.set_size(self_size,false);
         let mut position = size/2.0 - self_size/2.0;
-        position.y = size.y - self_size.y;
+        position.x = size.x/2.0 - self_size.x/2.0;
+        position.y = size.y - self_size.y - 20.0;
         owner.set_position(position,false);
-        let num_slots = self.slots.len() as f32;
+
         let max_per_row = (owner.size().x / slot_size).floor();
         let mut idx = 0.0;
         for slot in &self.slots{
@@ -732,10 +744,10 @@ impl Pocket{
     #[method]
     fn fill_slot(&mut self,#[base] owner:TRef<Control>, typ:u8,amount:i32){
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
-        let empty_slot = slots.find(|x| x.map(|obj,_| obj.is_empty()).unwrap());
+        let empty_slot = slots.find(|x| x.map(|obj,_| obj.is_empty() || obj.typ == AbilityType::from(typ)).unwrap());
         empty_slot.map(|slot| {
             slot.map_mut(|obj,_| obj.set_type(typ));
-            slot.map_mut(|obj,_| obj.set_amount(amount));
+            slot.map_mut(|obj,_| obj.add_amount(amount));
         });
     }
     #[method]

@@ -1,3 +1,5 @@
+######DEPRECATED##############
+##############################
 extends Control
 class_name InventoryMenu
 
