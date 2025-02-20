@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Node",
+"class": "AbilityField",
+"language": "GDScript",
+"path": "res://entity/client/AbilityField.gd"
+}, {
 "base": "Spatial",
 "class": "AbilityOptionCreator",
 "language": "GDScript",
@@ -510,6 +515,7 @@ _global_script_classes=[ {
 "path": "res://user_interface/client/interfaces/WaypointCreator.gd"
 } ]
 _global_script_class_icons={
+"AbilityField": "",
 "AbilityOptionCreator": "",
 "AuthenticatedControl": "",
 "AuthenticationRequest": "",

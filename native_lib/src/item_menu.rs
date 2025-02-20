@@ -8,6 +8,7 @@ use crate::field_ability_actions::ToAction;
 use crate::field_abilities::{AbilityType};
 use crate::ui_traits::{AnimationWindow,Windowed,LabelButton,Action,Centering};
 use tokio::sync::mpsc;
+use rand::Rng;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
@@ -96,6 +97,9 @@ pub struct InventorySlot{
     hovering:bool,
     id:i32,
     amount_display:Instance<SlotAmount>,
+    color_mode:u8,
+    dynamic_color:Color,
+    tick:u64,
 }
 impl InstancedDefault<Control,Sender<InventoryAction>> for InventorySlot{
     fn make(args:&Sender<InventoryAction>) -> Self{
@@ -109,6 +113,9 @@ impl InstancedDefault<Control,Sender<InventoryAction>> for InventorySlot{
             hovering:false,
             id:0,
             amount_display:SlotAmount::make_instance(args).into_shared(),
+            color_mode:0,
+            dynamic_color:Color{r:0.0,g:0.0,b:0.0,a:1.0},
+            tick:0,
         }
     }
 }
@@ -149,7 +156,7 @@ impl InventorySlot{
         owner.add_child(amount_disp,true);
     }
     #[method]
-    fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
         <Self as LabelButton<InventoryAction>>::process(self,owner,delta);
         let amount_disp = unsafe{self.amount_display.assume_safe()};
         amount_disp.map(|_,control| control.set_size(owner.size()/3.0,false));
@@ -165,7 +172,7 @@ impl InventorySlot{
     }
     #[method]
     fn exited(&mut self){
-        self.unhover();
+           self.unhover();
     }
     #[method]
     fn clicked(&self) {

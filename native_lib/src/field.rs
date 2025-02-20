@@ -95,8 +95,6 @@ impl FieldZone{
         op_menu.map_mut(|obj,_| obj.set_tx(self.zone_tx.clone()));
             
         op_menu.map_mut(|obj,control| obj.add_op(control,255));
-        op_menu.map_mut(|obj,control| obj.add_op(control,0));
-        op_menu.map_mut(|obj,control| obj.add_op(control,1));
         op_menu.map(|obj , spatial| obj.hide(spatial));
 
 
@@ -120,7 +118,6 @@ impl FieldZone{
         owner.add_child(proc_mesh,true);
         owner.add_child(op_menu,true);
         //add signals
-        owner.connect("mouse_entered",owner,"clicked",VariantArray::new_shared(),0);
         
     }
     #[method]
@@ -146,7 +143,7 @@ impl FieldZone{
     }
     #[method]
     fn clicked(&self,#[base] owner:TRef<KinematicBody>,event_position:Vector2,intersect_position:Vector3){
-        //godot_print!("Field Area Clicked!");
+        godot_print!("Field Area Clicked!");
         if self.abilities.len() == 0{
             let op_menu = unsafe{self.op_menu.assume_safe()};
             op_menu.map(|obj,spatial| obj.toggle(spatial));
@@ -157,6 +154,17 @@ impl FieldZone{
                 field_tx.send(FieldCommand::Trigger(self.location,*typ));
             }
         }
+    }
+
+    #[method]
+    fn add_op_to_menu(&self,ability_id:u8){
+        let op_menu = unsafe{self.op_menu.assume_safe()};
+        op_menu.map_mut(|obj,control| obj.add_op(control,ability_id));
+    }
+    #[method]
+    fn clear_operations(&self){
+        let op_menu = unsafe{self.op_menu.assume_safe()};
+        op_menu.map_mut(|obj,control| obj.clear(control));
     }
 
     #[method]
@@ -249,7 +257,7 @@ impl CreateSignal<Field> for FieldCommand{
         builder
             .signal(&FieldCommand::AddAbility(Location::default(),AbilityType::empty).to_string())
             .with_param("location",VariantType::VariantArray)
-            .with_param("type",VariantType::I64)
+            .with_param("ability_id",VariantType::I64)
             .done();
         builder
             .signal(&FieldCommand::DoAbility(Location::default(),AbilityType::empty).to_string())
@@ -300,6 +308,7 @@ impl Field{
                         let mut loc:Vec<i64> = Vec::new();
                         loc.push(location.x);
                         loc.push(location.y);
+                        godot_print!("{}",format!("location : {loc:?}"));
                         owner.emit_signal(cmd.to_string(),&[Variant::new(loc),Variant::new(Into::<u8>::into(typ))]);
                     }
                     FieldCommand::Trigger(location,typ) => {
@@ -351,6 +360,21 @@ impl Field{
         
     }
     #[method]
+    fn add_op_to_menus(&self,ability_id:u8){
+        for zone in self.zones.values(){
+            let zone = unsafe{zone.assume_safe()};
+            zone.map_mut(|obj,_| obj.add_op_to_menu(ability_id));
+        }
+    }
+
+    #[method]
+    fn clear_all_operations(&self){
+        for zone in self.zones.values(){
+            let zone = unsafe{zone.assume_safe()};
+            zone.map_mut(|obj,_| obj.clear_operations());
+        }
+    }
+    #[method]
     fn add_field_ability(&self,#[base] owner:TRef<Spatial>,ability_id:u8,location:(i64,i64)){
         let (x,y) = location;
         let location = Location{x:x,y:y};
@@ -361,8 +385,6 @@ impl Field{
         zone.map_mut(|obj,body|{
             obj.place_ability(body,ability_id)
         });
-
-
     }
     #[method]
     fn hide(&self,#[base] owner:TRef<Spatial>){
@@ -505,8 +527,7 @@ impl Instanced<Spatial> for FieldOps3D{
 #[methods]
 impl FieldOps3D{
     #[method]
-    fn _ready(&self,#[base] owner:TRef<Spatial>){
-    }
+    fn _ready(&self,#[base] owner:TRef<Spatial>){ }
     
     #[method]
     fn add_op(&mut self,#[base] owner:TRef<Spatial>,typ:u8){
@@ -533,6 +554,17 @@ impl FieldOps3D{
             });
         }
         owner.set_visible(true);
+    }
+    #[method]
+    fn clear(&mut self,#[base] owner:TRef<Spatial>){
+        for op in self.operations.clone(){
+            let op = unsafe{op.assume_safe()};
+            op.map(|_,control| {
+                owner.remove_child(control.clone());
+                control.queue_free();
+            });
+            self.operations.clear();
+        }
     }
     #[method]
     fn hide(&self, #[base] owner:TRef<Spatial>){
@@ -659,7 +691,6 @@ impl FieldOps{
         let op = FieldOp::make_instance(&AbilityType::from(typ)).into_shared();
         owner.add_child(op.clone(),true);
         self.operations.push(op);
-        
     }
     #[method]
     fn _process(&self,#[base] owner:TRef<Control> , delta:f64){

@@ -44,9 +44,11 @@ func refresh_pocket_contents(id,contents):
 	for item in contents:
 		pocket.fill_slot(int(item),int(contents[item]))
 
-func add_item(id,ability_id,amount):
+func add_item(id,ability_id):
 	if self.client_id == id:
-		inventory_menu.fill_slot(ability_id,amount)
+		inventory_menu.fill_slot(ability_id,1)
+	else:
+		assert(false)
 
 func pocketed_item(client_id,item,amount):
 	if client_id == self.client_id:

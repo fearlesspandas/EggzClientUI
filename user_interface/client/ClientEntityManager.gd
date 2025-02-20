@@ -260,7 +260,7 @@ func handle_json(json) -> bool:
 			DataCache.add_data(id,'speed',speed)
 			return false
 		{'AbilityAdded':{'ability_id':var ability_id,'entity_id':var id,'location':[var x , var y]}}:
-			player.field.add_field_ability(int(ability_id),[int(x),int(y)])
+			player.field.add_field_ability(int(ability_id),Vector2(x,y))
 			return false
 		{'DoAbility':{'ability_id':var ability_id,'entity_id':var entity_id, 'location':[var x , var y],'args' : var args}}:
 			if !client_entities.has(entity_id):
@@ -271,7 +271,7 @@ func handle_json(json) -> bool:
 			#update abilities to have location/other metadata
 			var loc = entity.body.global_transform.origin
 			if entity is Player:
-				loc += entity.field.get_point_from_location(int(x),int(y))
+				loc += entity.field.ref.get_point_from_location(int(x),int(y))
 			AbilityManager.ability_client(int(ability_id),loc,args)	
 			return false
 		{'Fizzle':{'ability_id':var ability_id, 'entity_id':var entity_id,'reason': var reason}}:
