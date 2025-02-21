@@ -25,15 +25,15 @@ func _ready():
 	ref.connect("modify_ability",self,"change_ability_state")
 
 func add_abilities_to_menu(client_id,item,amount):
-	ref.add_op_to_menus(item)
+	ref.add_op_to_menus(item,amount)
 	
 func remove_abilities_from_menu(client_id,item,amount):
-	ref.remove_op_from_menus(item)
+	ref.remove_op_from_menus(item,amount)
 	
 func refresh_abilities(id,contents):
 	ref.clear_all_operations()
 	for item in contents:
-		ref.add_op_to_menus(int(item))
+		ref.add_op_to_menus(int(item),int(contents[item]))
 		
 
 func change_ability_state(location,op_id):

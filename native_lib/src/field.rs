@@ -551,7 +551,10 @@ impl FieldOps3D{
     fn add_op(&mut self,#[base] owner:TRef<Spatial>,typ:u8,amount:i64){
         let typ = AbilityType::from(typ);
 
-        if self.operations.contains_key(&typ){return ;}
+        self.op_count.insert(typ, self.op_count.get(&typ).map(|x|*x).unwrap_or(0) + amount);
+        if self.operations.contains_key(&typ){
+            return ;
+        }
 
         let op = FieldOp3D::make_instance(&typ).into_shared();
         owner.add_child(op.clone(),true);
@@ -566,7 +569,10 @@ impl FieldOps3D{
     #[method]
     fn remove_op(&mut self,#[base] owner:TRef<Spatial>,typ:u8,amount:i64){
         let typ = AbilityType::from(typ);
+        self.op_count.insert(typ,std::cmp::max(self.op_count.get(&typ).map(|x| *x).unwrap_or(0) - amount,0));
         if !self.operations.contains_key(&typ){return ;}
+        if self.op_count.get(&typ).map(|x|*x).unwrap_or(0) > 0 { return ;}
+
         let op = self.operations.get(&typ).unwrap();
         let op = unsafe{op.assume_safe()};
         owner.remove_child(op.clone());
