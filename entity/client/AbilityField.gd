@@ -17,6 +17,7 @@ func _ready():
 	ref.add_zone([-1,-1])
 	ref.add_zone([-1,1])
 	GlobalSignalsClient.connect("pocketed_item",self,"add_abilities_to_menu")
+	GlobalSignalsClient.connect("unpocketed_item",self,"remove_abilities_from_menu")
 	GlobalSignalsClient.connect("pocket",self,"refresh_abilities")
 
 	ref.connect("add_ability",self,"add_ability_to_field")
@@ -25,6 +26,9 @@ func _ready():
 
 func add_abilities_to_menu(client_id,item,amount):
 	ref.add_op_to_menus(item)
+	
+func remove_abilities_from_menu(client_id,item,amount):
+	ref.remove_op_from_menus(item)
 	
 func refresh_abilities(id,contents):
 	ref.clear_all_operations()

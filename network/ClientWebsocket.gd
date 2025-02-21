@@ -238,6 +238,9 @@ func get_pocket(id:String):
 func pocket_ability(from:String,ability_id:int,amount:int):
 	send_payload(PayloadMapper.pocket_ability(from,ability_id,amount))
 
+func unpocket_ability(from:String,ability_id:int,amount:int):
+	send_payload(PayloadMapper.unpocket_ability(from,ability_id,amount))
+
 func add_ability(from:String,ability_id:int,location:Vector2):
 	send_payload(PayloadMapper.add_ability(from,ability_id,location))
 

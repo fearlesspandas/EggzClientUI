@@ -94,7 +94,7 @@ impl FieldZone{
         //technically unneeded
         op_menu.map_mut(|obj,_| obj.set_tx(self.zone_tx.clone()));
             
-        op_menu.map_mut(|obj,control| obj.add_op(control,255));
+        op_menu.map_mut(|obj,control| obj.add_op(control,255,1));
         op_menu.map(|obj , spatial| obj.hide(spatial));
 
 
@@ -155,18 +155,21 @@ impl FieldZone{
             }
         }
     }
-
     #[method]
-    fn add_op_to_menu(&self,ability_id:u8){
+    fn add_op_to_menu(&self,ability_id:u8,amount:i64){
         let op_menu = unsafe{self.op_menu.assume_safe()};
-        op_menu.map_mut(|obj,control| obj.add_op(control,ability_id));
+        op_menu.map_mut(|obj,control| obj.add_op(control,ability_id,amount));
+    }
+    #[method]
+    fn remove_op_from_menu(&self,ability_id:u8,amount:i64){
+        let op_menu = unsafe{self.op_menu.assume_safe()};
+        op_menu.map_mut(|obj,control| obj.remove_op(control,ability_id,amount));
     }
     #[method]
     fn clear_operations(&self){
         let op_menu = unsafe{self.op_menu.assume_safe()};
         op_menu.map_mut(|obj,control| obj.clear(control));
     }
-
     #[method]
     fn place_ability(&mut self,#[base] owner:TRef<KinematicBody>,typ:u8){
         let typ = AbilityType::from(typ);
@@ -360,10 +363,17 @@ impl Field{
         
     }
     #[method]
-    fn add_op_to_menus(&self,ability_id:u8){
+    fn add_op_to_menus(&self,ability_id:u8,amount:i64){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
-            zone.map_mut(|obj,_| obj.add_op_to_menu(ability_id));
+            zone.map_mut(|obj,_| obj.add_op_to_menu(ability_id,amount));
+        }
+    }
+    #[method]
+    fn remove_op_from_menus(&self,ability_id:u8,amount:i64){
+        for zone in self.zones.values(){
+            let zone = unsafe{zone.assume_safe()};
+            zone.map_mut(|obj,_| obj.remove_op_from_menu(ability_id,amount));
         }
     }
 
@@ -509,17 +519,25 @@ impl FieldOp3D{
     fn set_tx(&mut self,tx:Sender<FieldZoneCommand>){
         self.field_tx = Some(tx);
     }
+    #[method]
+    fn set_height_idx(&self,#[base] owner:TRef<KinematicBody>,idx:u64,radius:f32){
+        let mut transform = owner.transform();
+        transform.origin = Vector3{x:0.0,y: radius + (idx as f32 * radius),z:0.0};
+        owner.set_transform(transform);
+    }
 }
 #[derive(NativeClass)]
 #[inherit(Spatial)]
 pub struct FieldOps3D{
-    operations:Vec<Instance<FieldOp3D>>,
+    operations:HashMap<AbilityType,Instance<FieldOp3D>>,
+    op_count:HashMap<AbilityType,i64>,
     field_tx:Option<Sender<FieldZoneCommand>>,
 }
 impl Instanced<Spatial> for FieldOps3D{
     fn make() -> Self{
         FieldOps3D{
-            operations:Vec::new(),
+            operations:HashMap::new(),
+            op_count:HashMap::new(),
             field_tx:None
         }
     }
@@ -530,23 +548,40 @@ impl FieldOps3D{
     fn _ready(&self,#[base] owner:TRef<Spatial>){ }
     
     #[method]
-    fn add_op(&mut self,#[base] owner:TRef<Spatial>,typ:u8){
-        let op = FieldOp3D::make_instance(&AbilityType::from(typ)).into_shared();
+    fn add_op(&mut self,#[base] owner:TRef<Spatial>,typ:u8,amount:i64){
+        let typ = AbilityType::from(typ);
+
+        if self.operations.contains_key(&typ){return ;}
+
+        let op = FieldOp3D::make_instance(&typ).into_shared();
         owner.add_child(op.clone(),true);
-        let num_ops = self.operations.len() as f32;
-        self.operations.push(op.clone());
+        let num_ops = self.operations.len();
+        self.operations.insert(typ,op.clone());
         let op = unsafe{op.assume_safe()};
-        op.map(|obj,spatial| {
-            let mut transform = spatial.transform();
-            let radius = obj.radius as f32;
-            transform.origin = Vector3{x:0.0,y: radius + (num_ops * radius),z:0.0};
-            spatial.set_transform(transform);
+        op.map(|obj,body| {
+           obj.set_height_idx(body,num_ops as u64,obj.radius as f32); 
         });
         op.map_mut(|obj,_| self.field_tx.as_ref().map(|tx|obj.set_tx(tx.clone())));
     }
     #[method]
+    fn remove_op(&mut self,#[base] owner:TRef<Spatial>,typ:u8,amount:i64){
+        let typ = AbilityType::from(typ);
+        if !self.operations.contains_key(&typ){return ;}
+        let op = self.operations.get(&typ).unwrap();
+        let op = unsafe{op.assume_safe()};
+        owner.remove_child(op.clone());
+        op.map(|_,control| control.queue_free());
+        self.operations.remove(&typ);
+        let mut idx:u64 = 0;
+        for r_op in self.operations.values(){
+            let r_op = unsafe{r_op.assume_safe()};
+            r_op.map(|obj,body| obj.set_height_idx(body,idx,obj.radius as f32));
+            idx += 1;
+        }
+    }
+    #[method]
     fn show(&self, #[base] owner:TRef<Spatial>){
-        for op in &self.operations{
+        for op in self.operations.values(){
             let op = unsafe{op.assume_safe()};
             op.map(|_,body| {
                 body.set_collision_layer_bit(collision_layer,true);
@@ -557,7 +592,7 @@ impl FieldOps3D{
     }
     #[method]
     fn clear(&mut self,#[base] owner:TRef<Spatial>){
-        for op in self.operations.clone(){
+        for op in self.operations.clone().values(){
             let op = unsafe{op.assume_safe()};
             op.map(|_,control| {
                 owner.remove_child(control.clone());
@@ -568,7 +603,7 @@ impl FieldOps3D{
     }
     #[method]
     fn hide(&self, #[base] owner:TRef<Spatial>){
-        for op in &self.operations{
+        for op in self.operations.values(){
             let op = unsafe{op.assume_safe()};
             op.map(|_,body| {
                 body.set_collision_layer_bit(collision_layer,false);
@@ -580,7 +615,7 @@ impl FieldOps3D{
     #[method]
     fn toggle(&self, #[base] owner:TRef<Spatial>){
         owner.set_visible(!owner.is_visible());
-        for op in &self.operations{
+        for op in self.operations.values(){
             let op = unsafe{op.assume_safe()};
             op.map(|_,body| {
                 body.set_collision_layer_bit(collision_layer,owner.is_visible());
@@ -590,7 +625,7 @@ impl FieldOps3D{
     }
     fn set_tx(&mut self,tx:Sender<FieldZoneCommand>){
         self.field_tx = Some(tx.clone());
-        for op in &self.operations{
+        for op in self.operations.values(){
             let op = unsafe{op.assume_safe()};
             op.map_mut(|obj,_|obj.set_tx(tx.clone()));
         }

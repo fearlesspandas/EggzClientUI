@@ -184,6 +184,9 @@ func get_pocket(from:String):
 func pocket_ability(from:String,ability_id:int,amount:int):
 	return {'POCKET_ABILITY':{'from':from,'ability_id':ability_id,'amount':amount}}
 
+func unpocket_ability(from:String,ability_id:int,amount:int):
+	return {'UNPOCKET_ABILITY':{'from':from,'ability_id':ability_id,'amount':amount}}
+
 func add_ability(from:String,ability_id:int,location:Vector2):
 	return {'ADD_ABILITY':{'from':from,'ability_id':ability_id,'location':[int(location.x),int(location.y)]}}
 

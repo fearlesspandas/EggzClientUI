@@ -435,7 +435,6 @@ impl InventoryOperations{
         let remove_button = unsafe{self.remove_button.assume_safe()};
         remove_button.map(|_,control| control.set_size(button_size,false));
         remove_button.map(|_,control| control.set_position(Vector2{x:owner.size().x - button_size.x,y:0.0},false));
-
         match self.buttons_rx.try_recv(){
             Ok(OperationType::place) => {
                 self.tx.send(InventoryAction::pocketed(self.typ,self.position));
@@ -624,8 +623,12 @@ impl InventoryMenu{
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
         let item_slot = slots.find(|x| x.map(|obj,_| obj.is_type(typ)).unwrap());
         item_slot.map(|slot| slot.map_mut(|obj,_| {
-                    obj.set_type(AbilityType::empty.into());
-                    obj.set_amount(obj.amount - amount);
+                    let new_amount = obj.amount - amount;
+                    match new_amount{
+                        x if x <= 0 => obj.set_type(AbilityType::empty.into()),
+                        _ => {}
+                    };
+                    obj.set_amount(new_amount);
                 }));
     }
     #[method]
@@ -640,12 +643,12 @@ impl InventoryMenu{
             slot.map_mut(|obj,_| obj.set_amount(0));
         }
     }
-
 }
 
 
 #[derive(NativeClass)]
 #[inherit(Control)]
+#[register_with(Self::register_signals)]
 pub struct Pocket{
     slots:Vec<Instance<InventorySlot>>,
     operations:Instance<InventoryOperations>,
@@ -665,6 +668,13 @@ impl Instanced<Control> for Pocket{
 }
 #[methods]
 impl Pocket{
+    fn register_signals(builder:&ClassBuilder<Self>){
+        builder
+            .signal("unpocketed")
+            .with_param("type",VariantType::I64)
+            .with_param("amount",VariantType::I64)
+            .done();
+    }
     #[method]
     fn _ready(&mut self,#[base] owner:TRef<Control>){
         self.add_slot(owner,AbilityType::empty.into(),0);
@@ -689,11 +699,11 @@ impl Pocket{
                     .map(|position| operations.map(|_,op_control| op_control.set_position(position,false)));
                 operations.map(|_,control| control.set_visible(true));
                 operations.map_mut(|obj,_| obj.position = id);
+                operations.map_mut(|obj,_| obj.set_type(typ.into()));
             }
-            Ok(InventoryAction::pocketed(typ,id)) => {
-                godot_print!("Item Pocketed");
-            }
+            Ok(InventoryAction::pocketed(typ,id)) => { }
             Ok(InventoryAction::unpocketed(typ,id)) => {
+                owner.emit_signal("unpocketed",&[Variant::new(typ),Variant::new(1)]);
                 godot_print!("Item unPocketed");
             }
             Ok(_) => {}
@@ -766,8 +776,12 @@ impl Pocket{
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
         let item_slot = slots.find(|x| x.map(|obj,_| obj.is_type(typ)).unwrap());
         item_slot.map(|slot| slot.map_mut(|obj,_| {
-                    obj.set_type(AbilityType::empty.into());
-                    obj.set_amount(obj.amount - amount);
+                    let new_amount = obj.amount - amount;
+                    match new_amount{
+                        x if x <= 0 => obj.set_type(AbilityType::empty.into()),
+                        _ => {}
+                    };
+                    obj.set_amount(new_amount);
                 }));
     }
     #[method]
