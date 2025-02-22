@@ -95,6 +95,7 @@ impl FieldZone{
         op_menu.map_mut(|obj,_| obj.set_tx(self.zone_tx.clone()));
             
         op_menu.map_mut(|obj,control| obj.add_op(control,255,1));
+        op_menu.map_mut(|obj,_| obj.width = zone_width/2.0);
         op_menu.map(|obj , spatial| obj.hide(spatial));
 
 
@@ -427,6 +428,7 @@ pub struct FieldOp3D{
     highlight_left:Ref<MeshInstance>,
     highlight_right:Ref<MeshInstance>,
     radius:f64,
+    width:f32,
     field_tx:Option<Sender<FieldZoneCommand>>,
 
 }
@@ -438,6 +440,7 @@ impl InstancedDefault<KinematicBody,AbilityType> for FieldOp3D{
             highlight_left:MeshInstance::new().into_shared(),
             highlight_right:MeshInstance::new().into_shared(),
             radius:5.0,
+            width:12.5,
             field_tx:None
         }
     }
@@ -473,8 +476,8 @@ impl FieldOp3D{
 
         let mut left_transform = highlight_left.transform();
         let mut right_transform = highlight_right.transform();
-        left_transform.origin = Vector3{x:-12.5,y:0.0,z:0.0};
-        right_transform.origin = Vector3{x:12.5,y:0.0,z:0.0};
+        left_transform.origin = Vector3{x:-self.width,y:0.0,z:0.0};
+        right_transform.origin = Vector3{x:self.width,y:0.0,z:0.0};
         highlight_left.set_transform(left_transform);
         highlight_right.set_transform(right_transform);
         highlight_left.set_visible(false);
@@ -484,7 +487,7 @@ impl FieldOp3D{
         let collision_shape = unsafe{collision_shape.assume_safe()};
         let collision_object = CollisionShape::new().into_shared();
         let collision_object = unsafe{collision_object.assume_safe()};
-        collision_shape.set_extents(Vector3{x:25.0,y:(self.radius/2.0)as f32,z:(self.radius/2.0) as f32});
+        collision_shape.set_extents(Vector3{x:self.width,y:(self.radius/2.0)as f32,z:(self.radius/2.0) as f32});
         collision_object.set_shape(collision_shape);
 
         owner.set_collision_layer_bit(0,false);
@@ -532,13 +535,15 @@ pub struct FieldOps3D{
     operations:HashMap<AbilityType,Instance<FieldOp3D>>,
     op_count:HashMap<AbilityType,i64>,
     field_tx:Option<Sender<FieldZoneCommand>>,
+    width:f32,
 }
 impl Instanced<Spatial> for FieldOps3D{
     fn make() -> Self{
         FieldOps3D{
             operations:HashMap::new(),
             op_count:HashMap::new(),
-            field_tx:None
+            field_tx:None,
+            width:12.5,
         }
     }
 }
@@ -557,7 +562,6 @@ impl FieldOps3D{
         }
 
         let op = FieldOp3D::make_instance(&typ).into_shared();
-        owner.add_child(op.clone(),true);
         let num_ops = self.operations.len();
         self.operations.insert(typ,op.clone());
         let op = unsafe{op.assume_safe()};
@@ -565,6 +569,8 @@ impl FieldOps3D{
            obj.set_height_idx(body,num_ops as u64,obj.radius as f32); 
         });
         op.map_mut(|obj,_| self.field_tx.as_ref().map(|tx|obj.set_tx(tx.clone())));
+        op.map_mut(|obj,_| obj.width = self.width);
+        owner.add_child(op.clone(),true);
     }
     #[method]
     fn remove_op(&mut self,#[base] owner:TRef<Spatial>,typ:u8,amount:i64){
