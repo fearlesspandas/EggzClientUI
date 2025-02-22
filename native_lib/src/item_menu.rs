@@ -247,6 +247,8 @@ impl Into<TileType> for OperationType{
     fn into(self) -> TileType{
         match self{
             OperationType::empty => TileType::empty,
+            OperationType::place => TileType::down_arrow,
+            OperationType::remove => TileType::up_arrow,
             _ => TileType::empty,
         }
     }
@@ -324,7 +326,7 @@ impl OperationButton{
         owner.connect("mouse_entered",owner,"entered",VariantArray::new_shared(),0);
         owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
         owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
-        self.set_tile(TileType::down_arrow);
+        self.set_tile(self.typ.into());
 
     }
     #[method]
@@ -355,6 +357,7 @@ impl OperationButton{
     fn set_type(&mut self,typ:u8){
         let typ = OperationType::from(typ);
         self.set_text(typ.to_string());
+        self.set_tile(typ.into());
         self.typ = typ;
     }
 }
@@ -490,6 +493,16 @@ impl InventoryOperations{
     #[method]
     fn is_type(&self,typ:u8) -> bool{
         self.typ == AbilityType::from(typ)
+    }
+    #[method]
+    fn set_place_button_visible(&self,visible:bool){
+        let place_button = unsafe{self.place_button.assume_safe()};
+        place_button.map(|_,control| control.set_visible(visible));
+    }
+    #[method]
+    fn set_remove_button_visible(&self,visible:bool){
+        let remove_button = unsafe{self.remove_button.assume_safe()};
+        remove_button.map(|_,control| control.set_visible(visible));
     }
 }
 ////INVENTORY MENU///////////////////
@@ -700,6 +713,7 @@ impl Pocket{
         owner.add_child(self.operations.clone(),true);
         let operations = unsafe{self.operations.assume_safe()};
         operations.map(|_,control| control.set_visible(false));
+        operations.map(|obj,_| obj.set_place_button_visible(false));
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
