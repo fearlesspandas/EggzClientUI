@@ -6,7 +6,8 @@ use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_ability_mesh::{FieldAbilityMesh,ToMesh};
 use crate::field_ability_actions::ToAction;
 use crate::field_abilities::{AbilityType};
-use crate::ui_traits::{AnimationWindow,Windowed,LabelButton,Action,Centering};
+use crate::ui_traits::{AnimationWindow,Windowed,LabelButton,Action,Centering,TileButton};
+use crate::button_tiles::{TileType,Tile};
 use tokio::sync::mpsc;
 use rand::Rng;
 
@@ -222,8 +223,8 @@ impl ToString for OperationType{
     fn to_string(&self) -> String{
         match self {
             OperationType::empty => "".to_string(),
-            OperationType::place => "place".to_string(),
-            OperationType::remove => "remove".to_string(),
+            OperationType::place => "+".to_string(),
+            OperationType::remove => "-".to_string(),
         }
     }
 }
@@ -242,6 +243,14 @@ impl From<u8> for OperationType {
         }
     }
 }
+impl Into<TileType> for OperationType{
+    fn into(self) -> TileType{
+        match self{
+            OperationType::empty => TileType::empty,
+            _ => TileType::empty,
+        }
+    }
+}
 impl Into<u8> for OperationType{
     fn into(self) -> u8{
         match self{
@@ -255,11 +264,12 @@ type OP_BUTTON = OperationType;
 #[derive(NativeClass)]
 #[inherit(Control)]
 #[register_with(Self::register_signals)]
-pub struct OperationButton {
+pub struct OperationButton{
     typ:OperationType,
     bg_rect:Ref<ColorRect>,
     main_rect:Ref<ColorRect>,
     label:Ref<Label>,
+    tile:Instance<Tile>,
     tx:Sender<OP_BUTTON>,
     hovering:bool,
     centering:Centering,
@@ -271,6 +281,7 @@ impl InstancedDefault<Control,Sender<OP_BUTTON>> for OperationButton{
             bg_rect:ColorRect::new().into_shared(),
             main_rect:ColorRect::new().into_shared(),
             label:Label::new().into_shared(),
+            tile:Tile::make_instance().into_shared(),
             tx:args.clone(),
             hovering:false,
             centering:Centering::center,
@@ -279,7 +290,7 @@ impl InstancedDefault<Control,Sender<OP_BUTTON>> for OperationButton{
 }
 impl Windowed<OP_BUTTON> for OperationButton{
     const bg_highlight_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
-    const bg_color:Color = Color{r:0.0,g:0.0,b:10.0,a:0.3};
+    const bg_color:Color = Color{r:0.0,g:50.0,b:50.0,a:1.0};
     const main_color:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
     const margin_size:f32 = 5.0;
     fn from_command(&self,cmd:Action) -> OP_BUTTON{
@@ -299,6 +310,9 @@ impl Windowed<OP_BUTTON> for OperationButton{
 impl LabelButton<OP_BUTTON> for OperationButton{
     fn label(&self) -> &Ref<Label>{&self.label}
 }
+impl TileButton<OP_BUTTON> for OperationButton{
+    fn tile(&self) -> &Instance<Tile>{&self.tile}
+}
 #[methods]
 impl OperationButton{
     fn register_signals(builder:&ClassBuilder<Self>){
@@ -306,14 +320,16 @@ impl OperationButton{
     }
     #[method]
     fn _ready(&self,#[base] owner:TRef<Control>){
-        <Self as LabelButton<OP_BUTTON>>::ready(self,owner);
+        <Self as TileButton<OP_BUTTON>>::ready(self,owner);
         owner.connect("mouse_entered",owner,"entered",VariantArray::new_shared(),0);
         owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
         owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
+        self.set_tile(TileType::down_arrow);
+
     }
     #[method]
     fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
-        <Self as LabelButton<OP_BUTTON>>::process(self,owner,delta);
+        <Self as TileButton<OP_BUTTON>>::process(self,owner,delta);
     }
     #[method]
     fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
@@ -322,24 +338,24 @@ impl OperationButton{
     #[method]
     fn entered(&mut self){
         self.hover();
+        self.hover_symbol();
     }
     #[method]
     fn exited(&mut self){
         self.unhover();
+        self.unhover_symbol();
     }
     #[method]
     fn clicked(&self) {
     }
     #[method]
+    fn set_centering(&mut self,centering:Centering){
+        self.centering = centering;
+    }
     fn set_type(&mut self,typ:u8){
-        let label = unsafe{self.label.assume_safe()};
         let typ = OperationType::from(typ);
         self.set_text(typ.to_string());
         self.typ = typ;
-    }
-    #[method]
-    fn set_centering(&mut self,centering:Centering) {
-        self.centering = centering;
     }
 }
 ////OPERATIONS MENU///////////////////////
@@ -444,7 +460,6 @@ impl InventoryOperations{
             }
             Ok(_) => {}
             Err(_) => {}
-
         }
     }
     #[method]

@@ -18,9 +18,9 @@ func _ready():
 	assert(client_id != null and client_id.length() > 0)
 	socket = ServerNetwork.get(client_id)
 	assert(socket != null)
-	GlobalSignalsClient.connect("item_added",self,"add_item")
-	GlobalSignalsClient.connect("item_removed",self,"remove_item")
-	GlobalSignalsClient.connect("inventory",self,"refresh_contents")
+	#GlobalSignalsClient.connect("item_added",self,"add_item")
+	#GlobalSignalsClient.connect("item_removed",self,"remove_item")
+	#GlobalSignalsClient.connect("inventory",self,"refresh_contents")
 	bg_rect.color = Color.gray
 	self.add_child(bg_rect)
 	init_slots()
@@ -29,7 +29,7 @@ func _ready():
 	setup_timer.connect("timeout",self,"setup")
 	self.add_child(setup_timer)
 	setup_timer.start()
-	ClientTerminalGlobalSignals.connect("set_active",self,"set_terminal_active")
+	#ClientTerminalGlobalSignals.connect("set_active",self,"set_terminal_active")
 
 func setup():
 	setup_timer.one_shot = true

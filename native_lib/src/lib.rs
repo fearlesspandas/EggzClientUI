@@ -18,6 +18,7 @@ pub mod field_abilities;
 pub mod field_ability_mesh;
 pub mod field_ability_actions;
 pub mod item_menu;
+pub mod button_tiles;
 mod client_terminal;
 
 
@@ -51,6 +52,7 @@ fn init(handle:InitHandle){
     handle.add_class::<item_menu::InventoryOperations>();
     handle.add_class::<item_menu::OperationButton>();
     handle.add_class::<item_menu::SlotAmount>();
+    handle.add_class::<button_tiles::Tile>();
     //handle.add_class::<item_menu::ControlBox<item_menu::ItemSlotCommand>>();
 }
 godot_init!(init);

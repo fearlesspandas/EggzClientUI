@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
+use crate::button_tiles::{Tile,TileType};
 use tokio::sync::mpsc;
 
 enum Error{
@@ -162,6 +163,41 @@ pub trait LabelButton<T:From<Action>> where Self:Windowed<T>{
     fn set_text(&self,text:String){
         let label = unsafe{self.label().assume_safe()};
         label.set_text(text);
+    }
+}
+pub trait TileButton<T:From<Action>> where Self:Windowed<T>{
+    const symbol_color:Color = Self::bg_color;
+    const symbol_highlight_color:Color = Self::bg_highlight_color;
+    fn tile(&self) -> &Instance<Tile>;
+    fn ready(&self,owner:TRef<Control>){
+        <Self as Windowed<T>>::ready(self,owner);
+        let tile = unsafe{self.tile().assume_safe()};
+        owner.add_child(self.tile(),true);
+        tile.map(|_,control|control.set_mouse_filter(control::MouseFilter::IGNORE.into()));
+        tile.map_mut(|obj,_|obj.set_color(Self::symbol_color));
+        
+    }
+    fn process(&self,owner:TRef<Control>,delta:f64){
+        <Self as Windowed<T>>::process(self,owner,delta);
+        let tile = unsafe{self.tile().assume_safe()};
+        let owner_size = owner.size();
+        let main_rect = unsafe{self.main_rect().assume_safe()};
+        let tile_size = main_rect.size();
+        let tile_position =  main_rect.position();
+        tile.map(|_,control|control.set_size(tile_size,false));
+        tile.map(|_,control|control.set_position(tile_position,false));
+    }
+    fn set_tile(&self,typ:TileType){
+        let tile = unsafe{self.tile().assume_safe()};
+        tile.map_mut(|obj,_|obj.set_type(typ));
+    }
+    fn hover_symbol(&self){
+        let tile = unsafe{self.tile().assume_safe()};
+        tile.map_mut(|obj,_|obj.set_color(Self::symbol_highlight_color));
+    }
+    fn unhover_symbol(&self){
+        let tile = unsafe{self.tile().assume_safe()};
+        tile.map_mut(|obj,_|obj.set_color(Self::symbol_color));
     }
 }
 pub trait AnimationWindow<T:From<Action>> where Self:Windowed<T>{
