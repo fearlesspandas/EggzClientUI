@@ -59,6 +59,9 @@ impl ToAction for AbilityType{
                     }
                 }
             }
+            AbilityType::slizzard => {
+
+            }
         }
     }
 }

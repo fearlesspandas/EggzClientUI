@@ -643,19 +643,6 @@ impl FieldOps3D{
         }
     }
 }
-
-trait ToLabel{
-    fn to_label(&self) -> String;
-}
-impl ToLabel for AbilityType{
-    fn to_label(&self) -> String{
-        match self{
-            AbilityType::empty => "Empty".to_string(),
-            AbilityType::smack => "Smack".to_string(),
-            AbilityType::globular_teleport => "Globular Teleport".to_string(),
-        }
-    }
-}
 #[derive(NativeClass)]
 #[inherit(Control)]
 pub struct FieldOp{
@@ -688,7 +675,7 @@ impl FieldOp{
         
         bg_rect.set_frame_color(self.bg_color);
         main_rect.set_frame_color(self.color);
-        label.set_text(self.typ.to_label());
+        label.set_text(self.typ.to_string());
 
         //owner.add_child(bg_rect,true);
         owner.add_child(main_rect,true);

@@ -7,7 +7,8 @@ use crate::traits::{Defaulted};
 pub enum AbilityType{
     empty,
     smack,
-    globular_teleport
+    globular_teleport,
+    slizzard,
 }
 impl Defaulted for AbilityType{
     fn default() -> Self{
@@ -20,6 +21,7 @@ impl From<u8> for AbilityType{
             255 => AbilityType::empty,
             0 => AbilityType::smack,
             1 => AbilityType::globular_teleport,
+            2 => AbilityType::slizzard,
             _ => todo!(),
         }
     }
@@ -30,6 +32,7 @@ impl Into<u8> for AbilityType{
             AbilityType::empty => 255,
             AbilityType::smack => 0,
             AbilityType::globular_teleport => 1,
+            AbilityType::slizzard => 2,
         }
     }
 }
@@ -48,6 +51,7 @@ impl ToString for AbilityType{
             AbilityType::empty => "Empty".to_string(),
             AbilityType::smack => "Smack".to_string(),
             AbilityType::globular_teleport => "Globular Teleport".to_string(),
+            AbilityType::slizzard => "Slizzard".to_string(),
         }
     }
 }

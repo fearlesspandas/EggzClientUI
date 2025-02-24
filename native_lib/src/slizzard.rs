@@ -71,7 +71,7 @@ impl Slizzard{
     fn _ready(&self,#[base] owner:TRef<Spatial>){ }
 
     #[method]
-    fn add_body_piece(&mut self,#[base] owner:TRef<Spatial>){
+    pub fn add_body_piece(&mut self,#[base] owner:TRef<Spatial>){
         let body_piece = BodyPiece::make_instance().into_shared();
         owner.add_child(body_piece.clone(),true);
         self.body_pieces.push(body_piece.clone());

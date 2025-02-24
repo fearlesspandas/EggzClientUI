@@ -827,19 +827,6 @@ impl Pocket{
     }
 }
 
-trait ToColor{
-    fn to_color(&self) -> Color;
-}
-impl ToColor for AbilityType{
-    fn to_color(&self) -> Color{
-        match self{
-            AbilityType::smack => Color{r:255.0,g:255.0,b:0.0,a:1.0},
-            AbilityType::globular_teleport => Color{r:100.0,g:0.0,b:30.0,a:1.0},
-            AbilityType::empty => Color{r:0.0,g:0.0,b:0.0,a:1.0},
-        }
-    }
-}
-
 
 
 pub enum InventorySlotCommand{

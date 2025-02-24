@@ -4,14 +4,16 @@ use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_abilities::{AbilityType};
 use tokio::sync::mpsc;
+use crate::slizzard::Slizzard;
 
 pub trait ToMesh{
-    fn to_mesh(&self,length:f32,radius:f32) -> Ref<MeshInstance>;
+    fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial>;
 }
 impl ToMesh for AbilityType{
-    fn to_mesh(&self,length:f32,radius:f32) -> Ref<MeshInstance> {
+    fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial> {
         match self{
             AbilityType::empty => {
+                let spatial = Spatial::new();
                 let mesh = MeshInstance::new().into_shared();
                 let mesh_obj = unsafe{mesh.assume_safe()};
                 let box_mesh = CubeMesh::new().into_shared();
@@ -21,9 +23,12 @@ impl ToMesh for AbilityType{
                 box_material.set_albedo(Color{r:0.0,g:30.0,b:30.0,a:1.0});
                 box_mesh.set_material(box_material);
                 mesh_obj.set_mesh(box_mesh);
-                mesh
+                spatial.add_child(mesh.clone(),true);
+                //mesh
+                spatial.into_shared()
             }
             AbilityType::smack => {
+                let spatial = Spatial::new();
                 let mesh = MeshInstance::new().into_shared();
                 let mesh_obj = unsafe{mesh.assume_safe()};
                 let sphere_mesh = SphereMesh::new().into_shared();
@@ -34,9 +39,12 @@ impl ToMesh for AbilityType{
                 box_material.set_albedo(Color{r:100.0,g:100.0,b:0.0,a:1.0});
                 sphere_mesh.set_material(box_material);
                 mesh_obj.set_mesh(sphere_mesh);
-                mesh
+                spatial.add_child(mesh.clone(),true);
+                //mesh
+                spatial.into_shared()
             }
             AbilityType::globular_teleport => {
+                let spatial = Spatial::new();
                 let mesh_anchor = MeshInstance::new().into_shared();
                 let mesh_0 = MeshInstance::new().into_shared();
                 let mesh_1 = MeshInstance::new().into_shared();
@@ -85,7 +93,23 @@ impl ToMesh for AbilityType{
                 mesh_obj_anchor.add_child(mesh_obj_2,true);
                 mesh_obj_anchor.add_child(mesh_obj_3,true);
                 
-                mesh_anchor
+                spatial.add_child(mesh_anchor.clone(),true);
+                //mesh_anchor
+                spatial.into_shared()
+            }
+            AbilityType::slizzard => {
+                let slizzard = Slizzard::make_instance().into_shared();
+                let slizzard = unsafe{slizzard.assume_safe()};
+                slizzard.map_mut(|obj,body| obj.add_body_piece(body));
+                slizzard.map_mut(|obj,body| obj.add_body_piece(body));
+                slizzard.map_mut(|obj,body| obj.add_body_piece(body));
+                slizzard.map_mut(|obj,body| obj.add_body_piece(body));
+                slizzard.map_mut(|obj,body| obj.add_body_piece(body));
+                slizzard.map_mut(|obj,body| obj.add_body_piece(body));
+                slizzard.map_mut(|obj,body| body.rotate_y(90.0));
+                let spatial = Spatial::new();
+                spatial.add_child(slizzard,true);
+                spatial.into_shared()
             }
             
         }
@@ -94,7 +118,7 @@ impl ToMesh for AbilityType{
 #[derive(NativeClass)]
 #[inherit(Spatial)]
 pub struct FieldAbilityMesh{
-    mesh:Ref<MeshInstance>,
+    mesh:Ref<Spatial>,
     length:f32,
     radius:f32,
 }
