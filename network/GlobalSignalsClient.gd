@@ -51,6 +51,11 @@ signal unpocketed_item(client_id,item,amount)
 func unpocketed_item(client_id,item,amount):
 	emit_signal("unpocketed_item",client_id,int(item),int(amount))
 
+#emits field signal
+signal field(client_id,contents)
+func field(client_id,contents):
+	emit_signal("field",client_id,contents)
+
 #emits the item_added signal
 signal item_added(client_id,item)
 func item_added(client_id,item):

@@ -32,6 +32,7 @@ func ability_client(ability_id:int,location:Vector3,args:Dictionary):
 				_:
 					assert(false)
 		_:
+			assert(false)
 			print_debug("No ability found with id ", ability_id)
 
 

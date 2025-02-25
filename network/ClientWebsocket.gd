@@ -244,6 +244,9 @@ func unpocket_ability(from:String,ability_id:int,amount:int):
 func add_ability(from:String,ability_id:int,location:Vector2):
 	send_payload(PayloadMapper.add_ability(from,ability_id,location))
 
+func get_field(id:String):
+	send_payload(PayloadMapper.get_field(id))
+
 func ability(from:String,ability_id:int,location:Vector2,args = {'NoArgs':{}}):
 	send_payload(PayloadMapper.ability(from,ability_id,location,args))
 
