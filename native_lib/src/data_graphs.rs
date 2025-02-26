@@ -252,6 +252,7 @@ pub struct BarGraph{
     graph_actions_tx: Sender<GraphActions>,
     graph_actions_rx: Receiver<GraphActions>,
     resize_timer : Ref<Timer>,
+    _runtime:Runtime,
 } 
 impl Instanced<Control> for BarGraph{
     fn make() -> Self{
@@ -316,6 +317,7 @@ impl Instanced<Control> for BarGraph{
             graph_actions_tx: c_gtx,
             graph_actions_rx: grx,
             resize_timer : Timer::new().into_shared(),
+            _runtime:rt,
         }
     }
 }
