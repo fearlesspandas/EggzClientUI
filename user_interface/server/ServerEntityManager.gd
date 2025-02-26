@@ -224,6 +224,11 @@ func handle_json(json) -> bool:
 			DataCache.add_data(id,'max_speed',max_speed)
 			DataCache.add_data(id,'speed',speed)
 			return false
+		{'AbilityAdded':{'ability_id':var ability_id,'entity_id':var id,'location':[var x , var y]}}:
+			var entity = server_entities[id]
+			if entity is PlayerServerEntity:
+				entity.field.add_field_ability(int(ability_id),[int(x),int(y)])
+			return false
 		{'DoAbility':{'ability_id':var ability_id,'entity_id':var entity_id,'location':[var x , var y] ,'args': var args}}:
 			if !server_entities.has(entity_id):
 				assert(false, "no entity found with id " + entity_id)
@@ -234,6 +239,9 @@ func handle_json(json) -> bool:
 			if entity is PlayerServerEntity:
 				loc += entity.field.get_point_from_location(int(x),int(y))
 			AbilityManager.ability_server(int(ability_id),loc,args,entity.is_npc)	
+			return false
+		{'Field': {'id':var id,'items':var items}}:
+			GlobalSignalsServer.field(id,items)	
 			return false
 		{'ProgressUpdate':{'id':var id,'args':var args}}:
 			ProgressHandlerServer.handle_message(id,args)

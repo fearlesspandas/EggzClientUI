@@ -16,6 +16,7 @@ pub mod field;
 pub mod field_server;
 pub mod field_abilities;
 pub mod field_ability_mesh;
+pub mod field_ability_colliders;
 pub mod field_ability_actions;
 pub mod item_menu;
 pub mod button_tiles;

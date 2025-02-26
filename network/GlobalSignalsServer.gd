@@ -13,5 +13,7 @@ signal axis_spider_created(id,axis_spider)
 func axis_spider_created(id,axis_spider):
 	emit_signal("axis_spider_created",id,axis_spider)
 
-
-
+#emits field signal
+signal field(client_id,contents)
+func field(client_id:String,contents:Dictionary):
+	emit_signal("field",client_id,contents)

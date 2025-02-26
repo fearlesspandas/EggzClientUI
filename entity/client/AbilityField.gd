@@ -67,6 +67,8 @@ func refresh_field(id:String,contents:Dictionary):
 			var coords:
 				assert(false,"Misformatted Contents for field " + str(coords))
 				
+func add_field_ability(ability_id:int,location:Vector2): 
+	ref.add_field_ability(ability_id,[int(location.x),int(location.y)])
 
 func change_ability_state(_location,op_id:int):
 	match op_id: 
@@ -98,5 +100,3 @@ func add_ability_to_field(location:Array,ability_id:int):
 		_:
 			assert(false,"Malformed location for add_ability_to_field " + str(ability_id))
 
-func add_field_ability(ability_id:int,location:Vector2): 
-	ref.add_field_ability(ability_id,[int(location.x),int(location.y)])

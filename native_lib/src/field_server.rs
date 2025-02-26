@@ -3,22 +3,23 @@ use std::collections::HashMap;
 use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
-use crate::field_ability_mesh::{FieldAbilityMesh,ToMesh};
 use crate::field::{Location,zone_height,zone_width};
 use crate::field_abilities::{AbilityType};
+use crate::field_ability_colliders::ToCollider;
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
 
 pub enum FieldZoneCommand{
-    Selected(AbilityType),
 }
 #[derive(NativeClass)]
 #[inherit(Area)]
+#[register_with(Self::register_signals)]
 pub struct FieldZoneServer{
+    typ:AbilityType,
     location:Location,
-    abilities:HashMap<AbilityType,Instance<FieldAbilityMesh>>,
+    abilities:Option<Ref<Area>>,
     zone_tx:Sender<FieldZoneCommand>,
     zone_rx:Receiver<FieldZoneCommand>,
     field_tx:Option<Sender<FieldCommand>>,
@@ -27,8 +28,9 @@ impl InstancedDefault<Area,Location> for FieldZoneServer{
     fn make(args:&Location) -> Self{
         let (tx,rx) = mpsc::unbounded_channel::<FieldZoneCommand>();
         FieldZoneServer{
+            typ:AbilityType::empty,
             location:*args,
-            abilities:HashMap::new(),
+            abilities:None,
             zone_tx: tx,
             zone_rx: rx,
             field_tx:None,
@@ -37,6 +39,13 @@ impl InstancedDefault<Area,Location> for FieldZoneServer{
 }
 #[methods]
 impl FieldZoneServer{
+    fn register_signals(builder:&ClassBuilder<Self>){
+        builder
+            .signal("damage")
+            .with_param("id",VariantType::GodotString)
+            .with_param_default("amount",Variant::new(0.0))
+            .done();
+    }
     #[method]
     fn _ready(&self,#[base] owner:TRef<Area>){
         let cube_size = Vector3{x:zone_width,y:zone_height,z:zone_width}; 
@@ -59,52 +68,40 @@ impl FieldZoneServer{
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Area>,delta:f64){
         match self.zone_rx.try_recv() {
-            Ok(FieldZoneCommand::Selected(typ)) => {
-                self.field_tx
-                    .as_ref()
-                    .expect("field_tx not set for zone")
-                    .send(FieldCommand::AddAbility(self.location,typ));
-            }
+            Ok(_) => {}
             Err(_) => {}
         }
     }
     #[method]
+    fn handle_body(&self,#[base] owner:TRef<Area>,body:Ref<Node,Shared>){
+        let body = unsafe{body.assume_safe()};
+        let entity_id = body.get_parent().map(|parent|{
+            let parent = unsafe{parent.assume_safe()};
+            parent.get("id")
+        }).unwrap();
+        if entity_id.is_nil(){assert!(false)}
+        let entity_id = entity_id.try_to::<String>();
+        let field_tx = self.field_tx.clone().unwrap();
+        entity_id.map(|id| field_tx.send(FieldCommand::Damage(id,100.0)));
+    }
+    #[method]
     fn place_ability(&mut self,#[base] owner:TRef<Area>,typ:u8){
         let typ = AbilityType::from(typ);
-        if self.abilities.contains_key(&typ){return ;}
-        //let mesh = FieldAbilityMesh::make_instance(&typ).into_shared();
-        //owner.add_child(mesh.clone(),true);
-        //self.abilities.insert(typ,mesh);
+        let collider = typ.to_collider(Vector3{x:zone_width/2.0,y:zone_width/2.0,z:zone_width/2.0});
+        collider.map(|area| {
+            let area = unsafe{area.assume_safe()};
+            area.connect("body_entered",owner,"handle_body",VariantArray::new_shared(),0);
+        });
+        collider.map(|area| owner.add_child(area,true));
+        self.abilities = collider;
+        self.typ = typ;
     }
     fn set_tx(&mut self,tx:Sender<FieldCommand>){
         self.field_tx = Some(tx);
     }
 }
 pub enum FieldCommand{
-    AddAbility(Location,AbilityType),
-    DoAbility(Location,AbilityType),
-}
-impl ToString for FieldCommand{
-    fn to_string(&self) -> String{
-        match self{
-            FieldCommand::AddAbility(_,_) => "add_ability".to_string(),
-            FieldCommand::DoAbility(_,_) => "do_ability".to_string(),
-        }
-    }
-}
-impl CreateSignal<FieldServer> for FieldCommand{
-    fn register(builder:&ClassBuilder<FieldServer>){
-        builder
-            .signal(&FieldCommand::AddAbility(Location::default(),AbilityType::empty).to_string())
-            .with_param("location",VariantType::VariantArray)
-            .with_param("type",VariantType::I64)
-            .done();
-        builder
-            .signal(&FieldCommand::DoAbility(Location::default(),AbilityType::empty).to_string())
-            .with_param("location",VariantType::VariantArray)
-            .with_param("type",VariantType::I64)
-            .done();
-    }
+    Damage(String,f64),
 }
 
 #[derive(NativeClass)]
@@ -128,7 +125,11 @@ impl Instanced<Spatial> for FieldServer{
 #[methods]
 impl FieldServer{
     fn register_signals(builder:&ClassBuilder<Self>){
-        FieldCommand::register(builder);
+        builder
+            .signal("damage")
+            .with_param("id",VariantType::GodotString)
+            .with_param_default("amount",Variant::new(0.0))
+            .done();
     }
     #[method]
     fn _ready(&self, #[base] owner:TRef<Spatial>){
@@ -138,21 +139,8 @@ impl FieldServer{
         match self.rx.try_recv(){
             Ok(cmd) => {
                 match cmd{
-                    FieldCommand::AddAbility(location,typ) => {
-                        godot_print!("Ability Selected!");
-                        //todoin
-                        let mut loc:Vec<i64> = Vec::new();
-                        loc.push(location.x);
-                        loc.push(location.y);
-                        owner.emit_signal(cmd.to_string(),&[Variant::new(loc),Variant::new(Into::<u8>::into(typ))]);
-                    }
-                    FieldCommand::DoAbility(location,typ) => {
-                        godot_print!("Ability Selected!");
-                        //todoin
-                        let mut loc:Vec<i64> = Vec::new();
-                        loc.push(location.x);
-                        loc.push(location.y);
-                        owner.emit_signal(cmd.to_string(),&[Variant::new(loc),Variant::new(Into::<u8>::into(typ))]);
+                    FieldCommand::Damage(id,amount) => {
+                        owner.emit_signal("damage",&[Variant::new(id),Variant::new(amount)]);
                     }
                 }
             }
@@ -178,7 +166,6 @@ impl FieldServer{
             transform.origin = Vector3{x:zone_width * (location.x as f32),y:0.0,z:zone_width * (location.y as f32)};
             spatial.set_transform(transform);
         });
-        
     }
     #[method]
     fn add_field_ability(&self,#[base] owner:TRef<Spatial>,ability_id:u8,location:(i64,i64)){
