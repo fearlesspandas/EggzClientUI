@@ -84,7 +84,7 @@ impl TileType{
                 v.push(Vector2{x:0.75,y:1.0});
                 v
             }
-            TileType::empty => todo!()
+            TileType::empty => Vec::new(), 
         }
     }
 }

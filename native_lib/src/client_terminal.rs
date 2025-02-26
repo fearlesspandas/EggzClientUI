@@ -298,11 +298,12 @@ impl ClientTerminal{
             Ok(Action::AutoCompleteAccept) => {
                 let current_input = input.text().to_string();
                 let split_args = current_input.split_ascii_whitespace().collect::<Vec<&str>>();
-                let last = split_args.last().unwrap();
-                input.set_text(
-                    current_input.clone() + 
-                    &(self.auto_complete.get(0).unwrap_or(&"".to_string()).replace(&last.to_string(),""))
-                );
+                split_args.last().map(|last| {
+                        input.set_text(
+                            current_input.clone() + 
+                            &(self.auto_complete.get(0).unwrap_or(&"".to_string()).replace(&last.to_string(),""))
+                        );
+                    });
                 input.cursor_set_line(0,false,false,0);
                 input.cursor_set_column(input.text().len() as i64,false);
             }

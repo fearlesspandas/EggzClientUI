@@ -45,7 +45,6 @@ func request_data():
 
 func initialize(id,location,items):
 	if id == self.id:
-		print_debug("MonkGarden Received ",id," with items ", items)
 		initialized = true
 		self.items = items
 
@@ -64,15 +63,12 @@ func set_signal_handlers():
 
 func entered(body):
 	player_active = true
-	print_debug("body entered",str(body))
-	print_debug("monk items ", self.items)
 	assert(initialized)
 	for item in self.items:
 		ShopMenuEnv.add_to_inventory(int(item))
 
 func exited(body):
 	player_active = false
-	print_debug("body exited", str(body))
 	ShopMenuEnv.clear_inventory()
 
 func _physics_process(delta):

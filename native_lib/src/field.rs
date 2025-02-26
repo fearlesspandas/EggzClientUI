@@ -32,7 +32,7 @@ impl Defaulted for Location{
     }
 }
 #[derive(NativeClass)]
-#[inherit(KinematicBody)]
+#[inherit(StaticBody)]
 pub struct FieldZone{
     location:Location,
     mesh:Ref<MeshInstance>,
@@ -44,7 +44,7 @@ pub struct FieldZone{
     field_tx:Option<Sender<FieldCommand>>,
     pub proc:bool,
 }
-impl InstancedDefault<KinematicBody,Location> for FieldZone{
+impl InstancedDefault<StaticBody,Location> for FieldZone{
     fn make(args:&Location) -> Self{
         let (tx,rx) = mpsc::unbounded_channel::<FieldZoneCommand>();
         let op_menu = FieldOps3D::make_instance().into_shared();
@@ -66,7 +66,7 @@ impl InstancedDefault<KinematicBody,Location> for FieldZone{
 #[methods]
 impl FieldZone{
     #[method]
-    fn _ready(&self,#[base] owner:TRef<KinematicBody>){
+    fn _ready(&self,#[base] owner:TRef<StaticBody>){
         let op_menu = unsafe{self.op_menu.assume_safe()};
         let mesh = unsafe{self.mesh.assume_safe()};
         let proc_mesh = unsafe{self.proc_mesh.assume_safe()};
@@ -122,7 +122,7 @@ impl FieldZone{
         
     }
     #[method]
-    fn _process(&mut self,#[base] _owner:TRef<KinematicBody>,_delta:f64){
+    fn _process(&mut self,#[base] _owner:TRef<StaticBody>,_delta:f64){
         match self.zone_rx.try_recv() {
             Ok(FieldZoneCommand::Selected(typ)) => {
                 let _ = self.field_tx
@@ -143,7 +143,7 @@ impl FieldZone{
         }
     }
     #[method]
-    fn clicked(&self,#[base] _owner:TRef<KinematicBody>,_event_position:Vector2,_intersect_position:Vector3){
+    fn clicked(&self,#[base] _owner:TRef<StaticBody>,_event_position:Vector2,_intersect_position:Vector3){
         godot_print!("Field Area Clicked!");
         if self.abilities.len() == 0{
             let op_menu = unsafe{self.op_menu.assume_safe()};
@@ -171,17 +171,18 @@ impl FieldZone{
         let _ = op_menu.map_mut(|obj,control| obj.clear(control));
     }
     #[method]
-    fn place_ability(&mut self,#[base] owner:TRef<KinematicBody>,typ:u8){
+    fn place_ability(&mut self,#[base] owner:TRef<StaticBody>,typ:u8){
         let typ = AbilityType::from(typ);
         if self.abilities.contains_key(&typ){return ;}
         let mesh = FieldAbilityMesh::make_instance(&typ).into_shared();
-        owner.add_child(mesh.clone(),true);
-        self.abilities.insert(typ,mesh);
+        self.abilities.insert(typ,mesh.clone());
+        let mesh = unsafe{mesh.assume_safe()};
+        owner.add_child(mesh,true);
         let op_menu = unsafe{self.op_menu.assume_safe()};
         let _ = op_menu.map(|obj,spatial| obj.hide(spatial));
     }
     #[method]
-    pub fn remove_ability(&mut self,#[base] owner:TRef<KinematicBody>, typ:u8){
+    pub fn remove_ability(&mut self,#[base] owner:TRef<StaticBody>, typ:u8){
         let typ = AbilityType::from(typ);
         if self.abilities.contains_key(&typ){
             let ability = self.abilities.get(&typ).unwrap();
@@ -192,19 +193,19 @@ impl FieldZone{
         }
     }
     #[method]
-    fn entered(&self,#[base] _owner:TRef<KinematicBody>){
+    fn entered(&self,#[base] _owner:TRef<StaticBody>){
         let mesh = unsafe{self.mesh.assume_safe()};
         mesh.set_visible(true);
         //godot_print!("Body Entered!");
     }
     #[method]
-    fn exited(&self,#[base] _owner:TRef<KinematicBody>){
+    fn exited(&self,#[base] _owner:TRef<StaticBody>){
         let mesh = unsafe{self.mesh.assume_safe()};
         mesh.set_visible(false);
         //godot_print!("Body Exited!");
     }
     #[method]
-    fn hide(&self,#[base] owner:TRef<KinematicBody>){
+    fn hide(&self,#[base] owner:TRef<StaticBody>){
         if self.abilities.len() == 0{
             let op_menu = unsafe{self.op_menu.assume_safe()};
             let _ = op_menu.map(|obj,spatial| obj.hide(spatial));
@@ -214,13 +215,13 @@ impl FieldZone{
         owner.set_collision_mask_bit(COLLISION_LAYER,false);
     }
     #[method]
-    fn show(&self,#[base] owner:TRef<KinematicBody>){
+    fn show(&self,#[base] owner:TRef<StaticBody>){
         owner.set_visible(true);
         owner.set_collision_layer_bit(COLLISION_LAYER,true);
         owner.set_collision_mask_bit(COLLISION_LAYER,true);
     }
     #[method]
-    fn toggle(&self,#[base] owner:TRef<KinematicBody>){
+    fn toggle(&self,#[base] owner:TRef<StaticBody>){
         if owner.is_visible(){
             self.hide(owner);
         }else{
@@ -419,7 +420,7 @@ impl Field{
 }
 
 #[derive(NativeClass)]
-#[inherit(KinematicBody)]
+#[inherit(StaticBody)]
 pub struct FieldOp3D{
     typ:AbilityType,
     mesh:Instance<FieldAbilityMesh>,
@@ -430,7 +431,7 @@ pub struct FieldOp3D{
     field_tx:Option<Sender<FieldZoneCommand>>,
 
 }
-impl InstancedDefault<KinematicBody,AbilityType> for FieldOp3D{
+impl InstancedDefault<StaticBody,AbilityType> for FieldOp3D{
     fn make(args:&AbilityType) -> Self{
         FieldOp3D{
             typ:*args,
@@ -446,7 +447,7 @@ impl InstancedDefault<KinematicBody,AbilityType> for FieldOp3D{
 #[methods]
 impl FieldOp3D{
     #[method]
-    fn _ready(&self,#[base] owner:TRef<KinematicBody>){
+    fn _ready(&self,#[base] owner:TRef<StaticBody>){
         let mesh = unsafe{self.mesh.assume_safe()};
         let _ = mesh.map(|_,spatial| owner.add_child(spatial,true));
 
@@ -497,21 +498,21 @@ impl FieldOp3D{
         owner.add_child(highlight_right,true);
     }
     #[method]
-    fn clicked(&self,#[base] _owner:TRef<KinematicBody>,_event_position:Vector2,_intersect_position:Vector3){
+    fn clicked(&self,#[base] _owner:TRef<StaticBody>,_event_position:Vector2,_intersect_position:Vector3){
         let _ = self.field_tx
             .as_ref()
             .expect("field_tx not set")
             .send(FieldZoneCommand::Selected(self.typ));
     }
     #[method]
-    fn entered(&self,#[base] _owner:TRef<KinematicBody>){
+    fn entered(&self,#[base] _owner:TRef<StaticBody>){
         let highlight_left = unsafe{self.highlight_left.assume_safe()};
         let highlight_right = unsafe{self.highlight_right.assume_safe()};
         highlight_left.set_visible(true);
         highlight_right.set_visible(true);
     }
     #[method]
-    fn exited(&self,#[base] _owner:TRef<KinematicBody>){
+    fn exited(&self,#[base] _owner:TRef<StaticBody>){
         let highlight_left = unsafe{self.highlight_left.assume_safe()};
         let highlight_right = unsafe{self.highlight_right.assume_safe()};
         highlight_left.set_visible(false);
@@ -521,7 +522,7 @@ impl FieldOp3D{
         self.field_tx = Some(tx);
     }
     #[method]
-    fn set_height_idx(&self,#[base] owner:TRef<KinematicBody>,idx:u64,radius:f32){
+    fn set_height_idx(&self,#[base] owner:TRef<StaticBody>,idx:u64,radius:f32){
         let mut transform = owner.transform();
         transform.origin = Vector3{x:0.0,y: radius + (idx as f32 * radius),z:0.0};
         owner.set_transform(transform);

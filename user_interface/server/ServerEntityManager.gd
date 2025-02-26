@@ -184,6 +184,9 @@ func handle_entity(entity):
 			if server_entities.has(id):
 				despawn_spider(id)
 			var spawned_character = spawn_axis_spider(id,Vector3(x,y,z))
+		{"MonkGardenModel":{"id":var id, "items":var items, "location":var location}}:
+			pass
+		
 		_:
 			print_debug("could not find handler for entity ", entity)
 

@@ -165,7 +165,6 @@ impl InventorySlot{
     }
     #[method]
     fn clicked(&self) {
-        godot_print!("Inventory Menu Clicked!");
     }
     #[method]
     fn set_id(&mut self,id:i32){
@@ -560,11 +559,9 @@ impl InventoryMenu{
             }
             Ok(InventoryAction::pocketed(typ,id)) => {
                 owner.emit_signal("pocketed",&[Variant::new(typ),Variant::new(1)]);
-                godot_print!("{}",format!("pocketed typ:{typ:?}, id:{id:?}"));
             }
             Ok(InventoryAction::unpocketed(typ,_id)) => {
                 owner.emit_signal("unpocketed",&[Variant::new(typ),Variant::new(1)]);
-                godot_print!("Item unPocketed");
             }
             Ok(_) => {}
             Err(_) => {}
@@ -713,7 +710,6 @@ impl Pocket{
             Ok(InventoryAction::pocketed(_typ,_id)) => { }
             Ok(InventoryAction::unpocketed(typ,_id)) => {
                 owner.emit_signal("unpocketed",&[Variant::new(typ),Variant::new(1)]);
-                godot_print!("Item unPocketed");
             }
             Ok(_) => {}
             Err(_) => {}

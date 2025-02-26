@@ -151,14 +151,7 @@ func default_handle_message(msg,_delta_accum):
 		{'GravityActive':{'id': var _id, 'is_active':var active}}:
 			gravity_active = bool(active)
 		{'DestinationsActive':{'id': var _id, 'is_active':var active}}:
-			print_debug("destinations active", active)
 			destinations_active = bool(active)
-			if destinations_active and not gravity_active:
-				#physics_socket.lock_input_physics(id)
-				print_debug("input locked")
-			else:
-				#physics_socket.unlock_input_physics(id)
-				print_debug("input unlocked")
 		{'NoInput':{'id':var _id}}:
 			assert(false)
 			movement.entity_stop(body)
@@ -177,7 +170,7 @@ func default_handle_message(msg,_delta_accum):
 			destination.is_empty = true
 			destination.type = 'Empty'
 		_:
-			print("No server entity handler for " , msg)
+			assert(false)
 			pass
 	pass
 	
@@ -238,7 +231,7 @@ func default_physics_process_native(delta):
 			"{GRAVITY_BIND:{}}":
 				movement.entity_move_by_gravity(id,delta,destination.location,body)
 			_:
-				print_debug("no handler found for destination with type ", destination.type)
+				assert(false)
 
 	match destination.type:
 		'Empty':
@@ -292,7 +285,7 @@ func default_physics_process_godot(delta):
 			"{GRAVITY_BIND:{}}":
 				movement.entity_move_by_gravity(id,delta,destination.location,body)
 			_:
-				print_debug("no handler found for destination with type ", destination.type)
+				assert(false)
 
 	match destination.type:
 		'Empty':

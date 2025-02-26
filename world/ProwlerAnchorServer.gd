@@ -86,7 +86,6 @@ func reset_to_center(id):
 func init_npcs():
 	setup_timer.one_shot = true
 	for id in npc_ids:
-		print_debug("creating prowler, ", str(center.global_transform.origin + (Vector3.UP * radius)))
 		socket.create_prowler(id,center.global_transform.origin + (Vector3.UP * radius))
 		#socket.get_blob(id)
 
