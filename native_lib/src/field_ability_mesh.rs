@@ -1,9 +1,8 @@
 
 use gdnative::prelude::*;
 use gdnative::api::*;
-use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
+use crate::traits::{Instanced,InstancedDefault};
 use crate::field_abilities::{AbilityType};
-use tokio::sync::mpsc;
 use crate::slizzard::Slizzard;
 
 pub trait ToMesh{
@@ -100,13 +99,13 @@ impl ToMesh for AbilityType{
             AbilityType::slizzard => {
                 let slizzard = Slizzard::make_instance().into_shared();
                 let slizzard = unsafe{slizzard.assume_safe()};
-                slizzard.map_mut(|obj,body| obj.add_body_piece(body));
-                slizzard.map_mut(|obj,body| obj.add_body_piece(body));
-                slizzard.map_mut(|obj,body| obj.add_body_piece(body));
-                slizzard.map_mut(|obj,body| obj.add_body_piece(body));
-                slizzard.map_mut(|obj,body| obj.add_body_piece(body));
-                slizzard.map_mut(|obj,body| obj.add_body_piece(body));
-                slizzard.map_mut(|obj,body| body.rotate_y(90.0));
+                let _ = slizzard.map_mut(|obj,body| obj.add_body_piece(body));
+                let _ = slizzard.map_mut(|obj,body| obj.add_body_piece(body));
+                let _ = slizzard.map_mut(|obj,body| obj.add_body_piece(body));
+                let _ = slizzard.map_mut(|obj,body| obj.add_body_piece(body));
+                let _ = slizzard.map_mut(|obj,body| obj.add_body_piece(body));
+                let _ = slizzard.map_mut(|obj,body| obj.add_body_piece(body));
+                let _ = slizzard.map_mut(|obj,body| body.rotate_y(90.0));
                 let spatial = Spatial::new();
                 spatial.add_child(slizzard,true);
                 spatial.into_shared()
@@ -119,15 +118,11 @@ impl ToMesh for AbilityType{
 #[inherit(Spatial)]
 pub struct FieldAbilityMesh{
     mesh:Ref<Spatial>,
-    length:f32,
-    radius:f32,
 }
 impl InstancedDefault<Spatial,AbilityType> for FieldAbilityMesh{
     fn make(args:&AbilityType) -> Self{
         FieldAbilityMesh{
             mesh:args.to_mesh(25.0,5.0),
-            length:25.0,
-            radius:5.0,
         }
     }
 }

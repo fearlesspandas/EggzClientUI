@@ -1,6 +1,5 @@
 
 use gdnative::prelude::*;
-use gdnative::api::*;
 use crate::traits::{Defaulted};
 
 #[derive(Copy,Clone,Eq,Hash,PartialEq,Debug)]
@@ -40,6 +39,15 @@ impl ToVariant for AbilityType{
     fn to_variant(&self) -> Variant{
         let u:u8 = (*self).into();
         Variant::new(u)
+    }
+}
+impl FromVariant for AbilityType{
+    fn from_variant(item:&Variant) -> Result<AbilityType,FromVariantError>{
+        match item.get_type() {
+            VariantType::I64 => item.try_to::<u8>().map(|id| AbilityType::from(id)),
+            VariantType::F64 => item.try_to::<f64>().map(|id_f| id_f.round() as i64 as u8).map(|id| AbilityType::from(id)),
+            typ => {Err(FromVariantError::Custom(format!("Could not cast from given type {typ:?}").to_string()))}
+        }
     }
 }
 trait ToLabel{

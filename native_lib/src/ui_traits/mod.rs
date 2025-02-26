@@ -1,28 +1,11 @@
 
-use std::collections::HashMap;
 use gdnative::prelude::*;
 use gdnative::api::*;
-use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
+use crate::traits::{Instanced,InstancedDefault};
 use crate::button_tiles::{Tile,TileType};
 use tokio::sync::mpsc;
 
-enum Error{
-    set_bg_color_error,
-    set_main_color_error,
-
-}
-const set_bg_color_error:u8 = 0;
-const set_main_color_error:u8 = 1;
-impl ToVariant for Error{
-    fn to_variant(&self) -> Variant{
-        match self{
-            Error::set_bg_color_error => Variant::new(set_bg_color_error),
-            Error::set_main_color_error => Variant::new(set_main_color_error),
-        }
-    }
-}
 type Sender<T> = mpsc::UnboundedSender<T>;
-type Receiver<T> = mpsc::UnboundedReceiver<T>;
 pub enum Action{
     clicked,
     hover,
@@ -58,10 +41,10 @@ impl FromVariant for Centering{
     }
 }
 pub trait Windowed<T:From<Action>>{
-    const bg_highlight_color:Color;
-    const bg_color:Color;
-    const main_color:Color;
-    const margin_size:f32;
+    const BG_HIGHLIGHT_COLOR:Color;
+    const BG_COLOR:Color;
+    const MAIN_COLOR:Color;
+    const MARGIN_SIZE:f32;
     fn hovering(&self) -> bool;
     fn set_hovering(&mut self,value:bool);
     fn tx(&self) -> &Sender<T>;
@@ -77,8 +60,8 @@ pub trait Windowed<T:From<Action>>{
     fn ready(&self,owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect().assume_safe()};
         let main_rect = unsafe{self.main_rect().assume_safe()};
-        bg_rect.set_frame_color(Self::bg_color);
-        main_rect.set_frame_color(Self::main_color);
+        bg_rect.set_frame_color(Self::BG_COLOR);
+        main_rect.set_frame_color(Self::MAIN_COLOR);
         bg_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
         main_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
         owner.add_child(bg_rect,true);
@@ -89,7 +72,7 @@ pub trait Windowed<T:From<Action>>{
             let event = unsafe{event.assume_safe()};
             if event.is_action_released("left_click",true) && self.hovering(){
                 owner.emit_signal("clicked",&[]);
-                self.tx().send(self.from_command(Action::clicked));
+                let _ = self.tx().send(self.from_command(Action::clicked));
             }
         }
     }
@@ -100,46 +83,46 @@ pub trait Windowed<T:From<Action>>{
         bg_rect.set_size(size,false);
         let position = match self.centering(){
             Centering::center => {
-                size.x -= Self::margin_size;
-                size.y -= Self::margin_size;
-                Vector2{x:Self::margin_size/2.0,y:Self::margin_size/2.0}
+                size.x -= Self::MARGIN_SIZE;
+                size.y -= Self::MARGIN_SIZE;
+                Vector2{x:Self::MARGIN_SIZE/2.0,y:Self::MARGIN_SIZE/2.0}
             }
             Centering::top_left => { 
-                size.x -= Self::margin_size/2.0;
-                size.y -= Self::margin_size/2.0;
-                Vector2{x:Self::margin_size,y:Self::margin_size} 
+                size.x -= Self::MARGIN_SIZE/2.0;
+                size.y -= Self::MARGIN_SIZE/2.0;
+                Vector2{x:Self::MARGIN_SIZE,y:Self::MARGIN_SIZE} 
             }
             Centering::top_right => {
-                size.x -= Self::margin_size/2.0;
-                size.y -= Self::margin_size/2.0;
-                Vector2{x:0.0,y:Self::margin_size} 
+                size.x -= Self::MARGIN_SIZE/2.0;
+                size.y -= Self::MARGIN_SIZE/2.0;
+                Vector2{x:0.0,y:Self::MARGIN_SIZE} 
             }
             Centering::bottom_right => {
-                size.x -= Self::margin_size/2.0;
-                size.y -= Self::margin_size/2.0;
+                size.x -= Self::MARGIN_SIZE/2.0;
+                size.y -= Self::MARGIN_SIZE/2.0;
                 Vector2{x:0.0,y:0.0} 
             }
             Centering::bottom_left => {
-                size.x -= Self::margin_size/2.0;
-                size.y -= Self::margin_size/2.0;
-                Vector2{x:Self::margin_size,y:0.0} 
+                size.x -= Self::MARGIN_SIZE/2.0;
+                size.y -= Self::MARGIN_SIZE/2.0;
+                Vector2{x:Self::MARGIN_SIZE,y:0.0} 
             }
         };
-        size.x -= Self::margin_size/2.0;
-        size.y -= Self::margin_size/2.0;
+        size.x -= Self::MARGIN_SIZE/2.0;
+        size.y -= Self::MARGIN_SIZE/2.0;
         main_rect.set_size(size,false);
         main_rect.set_position(position,false);
     }
     fn hover(&mut self){
         let bg_rect = unsafe{self.bg_rect().assume_safe()};
-        bg_rect.set_frame_color(Self::bg_highlight_color);
-        self.tx().send(self.from_command(Action::hover));
+        bg_rect.set_frame_color(Self::BG_HIGHLIGHT_COLOR);
+        let _ = self.tx().send(self.from_command(Action::hover));
         self.set_hovering(true);
     }
     fn unhover(&mut self){
         let bg_rect = unsafe{self.bg_rect().assume_safe()};
-        bg_rect.set_frame_color(Self::bg_color);
-        self.tx().send(self.from_command(Action::unhover));
+        bg_rect.set_frame_color(Self::BG_COLOR);
+        let _ = self.tx().send(self.from_command(Action::unhover));
         self.set_hovering(false);
     }
 
@@ -166,15 +149,15 @@ pub trait LabelButton<T:From<Action>> where Self:Windowed<T>{
     }
 }
 pub trait TileButton<T:From<Action>> where Self:Windowed<T>{
-    const symbol_color:Color = Self::bg_color;
-    const symbol_highlight_color:Color = Self::bg_highlight_color;
+    const SYMBOL_COLOR:Color = Self::BG_COLOR;
+    const SYMBOL_HIGHLIGHT_COLOR:Color = Self::BG_HIGHLIGHT_COLOR;
     fn tile(&self) -> &Instance<Tile>;
     fn ready(&self,owner:TRef<Control>){
         <Self as Windowed<T>>::ready(self,owner);
         let tile = unsafe{self.tile().assume_safe()};
         owner.add_child(self.tile(),true);
-        tile.map(|_,control|control.set_mouse_filter(control::MouseFilter::IGNORE.into()));
-        tile.map_mut(|obj,_|obj.set_color(Self::symbol_color));
+        let _ = tile.map(|_,control|control.set_mouse_filter(control::MouseFilter::IGNORE.into()));
+        let _ = tile.map_mut(|obj,_|obj.set_color(Self::SYMBOL_COLOR));
         
     }
     fn process(&self,owner:TRef<Control>,delta:f64){
@@ -184,20 +167,20 @@ pub trait TileButton<T:From<Action>> where Self:Windowed<T>{
         let main_rect = unsafe{self.main_rect().assume_safe()};
         let tile_size = main_rect.size();
         let tile_position =  main_rect.position();
-        tile.map(|_,control|control.set_size(tile_size,false));
-        tile.map(|_,control|control.set_position(tile_position,false));
+        let _ = tile.map(|_,control|control.set_size(tile_size,false));
+        let _ = tile.map(|_,control|control.set_position(tile_position,false));
     }
     fn set_tile(&self,typ:TileType){
         let tile = unsafe{self.tile().assume_safe()};
-        tile.map_mut(|obj,_|obj.set_type(typ));
+        let _ = tile.map_mut(|obj,_|obj.set_type(typ));
     }
     fn hover_symbol(&self){
         let tile = unsafe{self.tile().assume_safe()};
-        tile.map_mut(|obj,_|obj.set_color(Self::symbol_highlight_color));
+        let _ = tile.map_mut(|obj,_|obj.set_color(Self::SYMBOL_HIGHLIGHT_COLOR));
     }
     fn unhover_symbol(&self){
         let tile = unsafe{self.tile().assume_safe()};
-        tile.map_mut(|obj,_|obj.set_color(Self::symbol_color));
+        let _ = tile.map_mut(|obj,_|obj.set_color(Self::SYMBOL_COLOR));
     }
 }
 pub trait AnimationWindow<T:From<Action>> where Self:Windowed<T>{

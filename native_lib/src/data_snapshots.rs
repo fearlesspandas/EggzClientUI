@@ -1,7 +1,6 @@
 use gdnative::prelude::*;
 use gdnative::api::*;
 use std::collections::HashMap;
-use serde_json::{Result as JResult, Value};
 use serde::{Deserialize,Serialize};
 
 use crate::traits::{Instanced};
@@ -37,7 +36,7 @@ impl DataSnapshots{
         }
         let file = gdnative::api::File::new().into_shared();
         let file = unsafe{file.assume_safe()};
-        file.open(GodotString::from_str(&file_name),gdnative::api::File::WRITE_READ)
+        let _ = file.open(GodotString::from_str(&file_name),gdnative::api::File::WRITE_READ)
             .map_err(|err| {godot_print!("{}",err);"Could not open file path, see logs for details"})
             .map(|_| file.store_line(GodotString::from_str(str)));
         file.close();
@@ -46,15 +45,15 @@ impl DataSnapshots{
     pub fn load(location:String) -> Result<BarGraphSnapshot,&'static str>{
         let file = gdnative::api::File::new().into_shared();
         let file = unsafe{file.assume_safe()};
-        file.open(GodotString::from_str(location.replace("\"","")),gdnative::api::File::READ);
+        let _ = file.open(GodotString::from_str(location.replace("\"","")),gdnative::api::File::READ);
         serde_json::from_str::<BarGraphSnapshot>(&file.get_as_text(false).to_string())
             .map_err(|err| {godot_print!("{}",err);"could not map bar graph snapshot"})
     } 
 
     pub fn get_available_snapshots(path:String) -> Vec<String>{
         let directory = Directory::new();
-        directory.open(path);
-        directory.list_dir_begin(true,false);
+        let _ = directory.open(path);
+        let _ = directory.list_dir_begin(true,false);
         let mut res = Vec::new();
         while let filename = directory.get_next(){
             if filename == "".into(){break}

@@ -73,8 +73,8 @@ impl MenuButton{
         owner.add_child(bg_rect,true);
         owner.add_child(display_rect,true);
         owner.add_child(label,true);
-        owner.connect("mouse_entered",owner,"hover",VariantArray::new_shared(),0);
-        owner.connect("mouse_exited",owner,"unhover",VariantArray::new_shared(),0);
+        let _ = owner.connect("mouse_entered",owner,"hover",VariantArray::new_shared(),0);
+        let _ = owner.connect("mouse_exited",owner,"unhover",VariantArray::new_shared(),0);
         bg_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
         display_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
     }
@@ -146,7 +146,6 @@ pub struct ShopItem{
     buy_button:Instance<MenuButton>,
     sell_button:Instance<MenuButton>,
     menu_tx:Sender<Command>,
-    color:Color,
     hovering:bool,
 }
 impl InstancedDefault<Control,Sender<Command>> for ShopItem{
@@ -160,7 +159,6 @@ impl InstancedDefault<Control,Sender<Command>> for ShopItem{
             buy_button:MenuButton::make_instance().into_shared(),
             sell_button:MenuButton::make_instance().into_shared(),
             menu_tx:args.clone(),
-            color:Color{r:0.0,g:255.0,b:255.0,a:1.0},
             hovering:false,
         }
     }
@@ -180,16 +178,16 @@ impl ShopItem{
         display_rect.set_frame_color(Color{r:0.0,g:0.0,b:0.0,a:1.0});
         name.set_text(self.item_type.to_string());
         description.set_text(self.item_type.to_description());
-        buy_button.map_mut(|obj,control| {
+        let _ = buy_button.map_mut(|obj,control| {
             obj.set_bg_color(Color{r:75.0,g:0.0,b:100.0,a:1.0});
             obj.set_label_text("Buy".to_string());
         });
-        buy_button.map(|_,control| control.connect("clicked",owner,"buy_item",VariantArray::new_shared(),0));
-        sell_button.map_mut(|obj,control| {
+        let _ = buy_button.map(|_,control| control.connect("clicked",owner,"buy_item",VariantArray::new_shared(),0));
+        let _ = sell_button.map_mut(|obj,control| {
             obj.set_bg_color(Color{r:75.0,g:0.0,b:100.0,a:1.0});
             obj.set_label_text("Sell".to_string());
         });
-        sell_button.map(|_,control| control.connect("clicked",owner,"sell_item",VariantArray::new_shared(),0));
+        let _ = sell_button.map(|_,control| control.connect("clicked",owner,"sell_item",VariantArray::new_shared(),0));
         //add children
         owner.add_child(bg_rect,true);
         owner.add_child(display_rect,true);
@@ -198,8 +196,8 @@ impl ShopItem{
         owner.add_child(buy_button,true);
         owner.add_child(sell_button,true);
         //connect signals
-        owner.connect("mouse_entered",owner,"hover",VariantArray::new_shared(),0);
-        owner.connect("mouse_exited",owner,"unhover",VariantArray::new_shared(),0);
+        let _ = owner.connect("mouse_entered",owner,"hover",VariantArray::new_shared(),0);
+        let _ = owner.connect("mouse_exited",owner,"unhover",VariantArray::new_shared(),0);
         bg_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
         display_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
     }
@@ -225,13 +223,13 @@ impl ShopItem{
         description.set_position(display_rect.position() + Vector2{x:0.0,y:name.size().y},false);
         //buy button
         let button_size = owner.size()/2.0;
-        buy_button.map(|_,control| {
+        let _ = buy_button.map(|_,control| {
             let position = Vector2{x:button_size.x,y:bg_offset.y/2.0};
             control.set_size(button_size,false);
             control.set_position(position,false);
         });
         //sell button
-        sell_button.map(|_,control| {
+        let _ = sell_button.map(|_,control| {
             let position = owner.size() - button_size - Vector2{x:0.0,y:bg_offset.y/2.0} ;
             control.set_size(button_size,false);
             control.set_position(position,false);
@@ -240,12 +238,12 @@ impl ShopItem{
     #[method]
     fn buy_item(&self){
         let item_type = self.item_type.clone();
-        self.menu_tx.send(Command::BuyItem(item_type));
+        let _ = self.menu_tx.send(Command::BuyItem(item_type));
     }
     #[method]
     fn sell_item(&self){
         let item_type = self.item_type.clone();
-        self.menu_tx.send(Command::SellItem(item_type));
+        let _ = self.menu_tx.send(Command::SellItem(item_type));
     }
 
     #[method]
@@ -323,30 +321,29 @@ impl ShopMenu{
     fn clear_from_id(&self,id:String){
         self.client_id.clone().map(|c_id| {
             if c_id == id{
-                self.tx.send(Command::ClearShop);
+                let _ = self.tx.send(Command::ClearShop);
             }
         });
     }
     #[method]
     fn clear(&self){
-        godot_print!("Clearing shop");
-        self.tx.send(Command::ClearShop);
+        let _ = self.tx.send(Command::ClearShop);
     }
     #[method]
     fn add_item_from_id(&mut self,id:String,item_type:u8){
         self.client_id.clone().map(|c_id| {
             if c_id == id {
-                self.tx.send(Command::AddItem(AbilityType::from(item_type)));
+                let _ = self.tx.send(Command::AddItem(AbilityType::from(item_type)));
             }
         });
     }
     #[method]
     fn add_item(&mut self,item_type:u8){
-        godot_print!("item added");
-        self.tx.send(Command::AddItem(AbilityType::from(item_type)));
+        let _ = self.tx.send(Command::AddItem(AbilityType::from(item_type)));
     }
+    #[method]
     fn add_item_type(&mut self,item_type:AbilityType){
-        self.tx.send(Command::AddItem(item_type));
+        let _ = self.tx.send(Command::AddItem(item_type));
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
@@ -354,7 +351,7 @@ impl ShopMenu{
             Ok(Command::AddItem(typ)) => {
                 let item = ShopItem::make_instance(&self.tx).into_shared();
                 let item_obj = unsafe{item.assume_safe()};
-                item_obj.map_mut(|obj,_|obj.item_type = typ);
+                let _ = item_obj.map_mut(|obj,_|obj.item_type = typ);
                 owner.add_child(item.clone(),true);
                 self.items.push(item);
             }
@@ -363,20 +360,18 @@ impl ShopMenu{
                 self.client_id.as_ref().map(|id|
                     owner.emit_signal(Signals::buy.to_string(),&[Variant::new(id),Variant::new(typ_label.clone())])
                 );
-                godot_print!("{}",format!("Buying Item {typ_label:?}"));
             }
             Ok(Command::SellItem(typ)) => {
                 let typ_label:u8 = typ.into();
                 self.client_id.as_ref().map(|id|
                     owner.emit_signal(Signals::sell.to_string(),&[Variant::new(id),Variant::new(typ_label.clone())])
                 );
-                godot_print!("{}",format!("Selling Item {typ_label:?}"));
             }
             Ok(Command::ClearShop) => {
                 for item in &self.items{
                     owner.remove_child(item);
                     let item = unsafe{item.assume_safe()};
-                    item.map(|_, control| control.queue_free());
+                    let _ = item.map(|_, control| control.queue_free());
                     
                 }
                 self.items.clear();
@@ -398,7 +393,7 @@ impl ShopMenu{
         let item_size = Vector2{x:owner_size.x,y:owner_size.y/num_items};
         for item in &self.items{
             let item = unsafe{item.assume_safe()};
-            item.map(|obj,control| {
+            let _ = item.map(|obj,control| {
                 control.set_size(item_size,false);
                 let position = Vector2{x:0.0,y:item_size.y * idx};
                 control.set_position(position,false);

@@ -1,9 +1,8 @@
 
 use gdnative::prelude::*;
 use gdnative::api::*;
-use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
+use crate::traits::{Instanced,InstancedDefault};
 use crate::collision_layer;
-use tokio::sync::mpsc;
 
 
 
@@ -19,7 +18,7 @@ impl Instanced<Spatial> for BodyPiece{
     fn make() -> Self{
         BodyPiece{
             radius:1.0,
-            color:Color{r:0.0,g:0.0,b:0.0,a:1.0},
+            color:Color{r:0.0,g:70.0,b:100.0,a:1.0},
             mesh:MeshInstance::new().into_shared(),
         }
     }
@@ -32,6 +31,10 @@ impl BodyPiece{
         let sphere_mesh = SphereMesh::new().into_shared();
         let sphere_mesh = unsafe{sphere_mesh.assume_safe()};
 
+        let material = SpatialMaterial::new().into_shared();
+        let material = unsafe{material.assume_safe()};
+        material.set_albedo(self.color);
+        sphere_mesh.set_material(material);
         mesh.set_mesh(sphere_mesh);
 
         mesh.translate(Vector3{x:0.0,y:self.radius,z:0.0});
@@ -85,14 +88,14 @@ impl Slizzard{
         shape.set_extents(Vector3{x:self.length,y:self.height as f32,z:self.length});
         collider.set_shape(shape);
         owner.add_child(collider,true);
-        owner.connect("body_entered",owner,"attack_entity",VariantArray::new_shared(),0);
+        let _ = owner.connect("body_entered",owner,"attack_entity",VariantArray::new_shared(),0);
     }
 
     #[method]
     fn attack_entity(&self,#[base] owner:TRef<Area>,body:Ref<Node,Shared>){
         let body = unsafe{body.assume_safe()};
         let position = body.cast::<KinematicBody>().map(|kinematic_body| kinematic_body.global_translation());
-        position.map(|pos| owner.look_at(pos,Vector3{x:0.0,y:1.0,z:0.0}));
+        let _ = position.map(|pos| owner.look_at(pos,Vector3{x:0.0,y:1.0,z:0.0}));
     }
 
     #[method]
@@ -101,7 +104,7 @@ impl Slizzard{
         owner.add_child(body_piece.clone(),true);
         self.body_pieces.push(body_piece.clone());
         let body_piece = unsafe{body_piece.assume_safe()};
-        body_piece.map(|obj,spatial| obj.set_offset(spatial,3.14 * 0.25 * (self.body_pieces.len() as f32)) );
+        let _ = body_piece.map(|obj,spatial| obj.set_offset(spatial,3.14 * 0.25 * (self.body_pieces.len() as f32)) );
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Area>,delta:f64){
@@ -111,7 +114,7 @@ impl Slizzard{
         let owner_transform = owner.transform();
         for piece in &self.body_pieces{
             let piece = unsafe{piece.assume_safe()};
-            piece.map(|obj,mesh| {
+            let _ = piece.map(|obj,mesh| {
                 let mut transform = mesh.transform();
                 let origin = owner_transform.origin - Vector3{x:0.0,y:0.0,z:self.length/2.0};
                 transform.origin = origin + Vector3{x:0.0,y:0.0,z:distance * idx};
@@ -159,7 +162,7 @@ impl SlizzardServer{
         shape.set_extents(Vector3{x:self.length,y:self.height as f32,z:self.length});
         collider.set_shape(shape);
         owner.add_child(collider,true);
-        owner.connect("body_entered",owner,"attack_entity",VariantArray::new_shared(),0);
+        let _ = owner.connect("body_entered",owner,"attack_entity",VariantArray::new_shared(),0);
         owner.set_collision_layer_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
         owner.set_collision_mask_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
         owner.set_collision_layer_bit(collision_layer::CLIENT_NPC_COLLISION_LAYER.into(),false);
@@ -173,7 +176,7 @@ impl SlizzardServer{
         if entity_id.is_nil(){
             assert!(false,"Body id is null");
         }else{
-            entity_id.try_to::<String>()
+            let _ = entity_id.try_to::<String>()
                 .map(|id| owner.emit_signal("damage",&[Variant::new(id),Variant::new(100.0)]))
                 .map_err(|err| assert!(false,"Incorrect type for id"));
         }

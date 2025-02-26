@@ -1,7 +1,6 @@
 
 use std::collections::HashMap;
 use gdnative::prelude::*;
-use gdnative::api::*;
 use crate::field::{Location,FieldZone,FieldCommand};
 use crate::field_abilities::{AbilityType,SubAbilityType};
 use crate::field_server;

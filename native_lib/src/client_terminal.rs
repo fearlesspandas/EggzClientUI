@@ -1,12 +1,10 @@
 use gdnative::prelude::*;
 use gdnative::api::*;
-use serde_json::{Result as JResult, Value};
-use serde::{Deserialize,Serialize};
+use serde_json::{Value};
 use tokio::sync::mpsc;
-use std::{fmt,str::FromStr};
-use crate::terminal_commands::{Command,CommandType,InputCommand,SocketModeArgs,SocketModeAllArgs,StartDataStreamArgs,ArgsConstructor,SaveSnapshotArgs};
+use std::{str::FromStr};
+use crate::terminal_commands::{Command,CommandType,InputCommand,ArgsConstructor};
 use crate::terminal_actions::{ActionType,Action};
-use crate::socket_mode::SocketMode;
 use crate::traits::{FromArgs,GetAll,Autocomplete,CreateSignal,Instanced};
 use crate::data_display::{DataDisplay,DataType};
 use crate::data_graphs::{BarGraph};
@@ -149,7 +147,7 @@ impl ClientTerminal{
     }
     
     #[method]
-    fn _process(&mut self,#[base] owner:TRef<CanvasLayer>,delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<CanvasLayer>,_delta:f64){
         let rect = unsafe{ self.bg_rect.assume_safe()};
         let input = unsafe{self.input.assume_safe()};
         let output = unsafe{self.output.assume_safe()};
@@ -175,11 +173,11 @@ impl ClientTerminal{
         let suggestion_loc = Vector2{x:0.0,y:input_loc.y - suggestion_size.y};
         suggestions.set_size(suggestion_size,false);
         suggestions.set_position(suggestion_loc,false);
-        let _ = data_display.map(|dat,dat_own| {
-            dat_own.set_size(data_display_size,false);
-            dat_own.set_position(data_display_loc,false);
+        let _ = data_display.map(|_,control| {
+            control.set_size(data_display_size,false);
+            control.set_position(data_display_loc,false);
         });
-        let _ = graph_display.map(|graph,control| {
+        let _ = graph_display.map(|_,control| {
             control.set_size(graph_display_size,false);
             control.set_position(graph_display_loc,false);
         });
@@ -193,7 +191,7 @@ impl ClientTerminal{
     fn add_incoming_data(&self,tag:String,data:String){
         let data_display = unsafe{self.data_display.assume_safe()};
         let _ = data_display
-            .map_mut(|display,control| display.add_data(tag,data))
+            .map_mut(|display,_| display.add_data(tag,data))
             .map_err(|e| godot_print!("{}",format!("Could not process incoming data due to {e:?}")));
     }
     #[method]
@@ -241,9 +239,9 @@ impl ClientTerminal{
                         .map_err(|err| self.output_append(err.into()));
                 }
                 Ok(Command::StartDataStream(data_type)) => {
-                    let data_type_str = &data_type.to_string();
+                    let _data_type_str = &data_type.to_string();
                     self.data_collection_types.push(data_type);
-                    self.output_append(format!("added data_type {data_type_str:?} to stream").into());
+                    self.output_append(format!("added data_type {_data_type_str:?} to stream").into());
                     let data_collection_timer = unsafe{self.data_collection_timer.assume_safe()};
                     if data_collection_timer.is_stopped(){
                         let _ = data_collection_timer.connect("timeout",owner,"send_data_requests",VariantArray::new_shared(),0);
@@ -252,9 +250,9 @@ impl ClientTerminal{
                     }
                 }
                 Ok(Command::StopDataStream(data_type)) => {
-                    let data_type_str = &data_type.to_string();
+                    let _data_type_str = &data_type.to_string();
                     self.data_collection_types.retain(|val| val != &data_type);
-                    self.output_append("removed data_type {data_type_str:?} from stream".into());
+                    self.output_append("removed data_type {_data_type_str:?} from stream".into());
                     let data_size = self.data_collection_types.len();
                     self.output_append("data_types size:{data_size:?}".into());
                     if data_size == 0{
@@ -308,7 +306,7 @@ impl ClientTerminal{
                 input.cursor_set_line(0,false,false,0);
                 input.cursor_set_column(input.text().len() as i64,false);
             }
-            Ok(Action::RequestData(data_type)) => {}
+            Ok(Action::RequestData(_data_type)) => {}
             Err(_) => {}
         }
     }
@@ -338,7 +336,6 @@ impl ClientTerminal{
 
     fn get_suggestions_from_input(text_input:String) -> Vec<String>{
         let split_input = text_input.split_ascii_whitespace().collect::<Vec<&str>>();
-        let len = split_input.len();
         match split_input.len(){
             0 => {Vec::new()},
             1 => {
@@ -353,7 +350,6 @@ impl ClientTerminal{
                     .map(|ct| ct.auto_complete()(split_input[1..].to_vec()))
                     .unwrap_or(Vec::new())
             }
-            //_ => {godot_print!("{}",format!("Unhandled input length {len:?}"));Vec::new()} 
         }
     }
 
@@ -382,7 +378,7 @@ impl ClientTerminal{
         output.set_text(output.text().clone() + text.clone() + "\n".into());
     }
 
-    fn get_command(mut raw: &str) -> Result<Command,&'static str>{
+    fn get_command(raw: &str) -> Result<Command,&'static str>{
         let Some((typ,args)) = raw.split_once(" ") else {return Err("cannot split command whitespace")};
         let typ_value = Value::String(typ.to_string());
         let args_value = Value::Array(
@@ -398,7 +394,7 @@ impl ClientTerminal{
         cmd_map.insert("args".to_string(), args_value);
         let cmd_obj = Value::Object(cmd_map);
         serde_json::from_value::<InputCommand>(cmd_obj)
-            .map_err(|e| "Error while parsing InputCommand")
+            .map_err(|_| "Error while parsing InputCommand")
             .and_then(|cmd| cmd.from_args(()))
     }
 }

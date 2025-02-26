@@ -1,15 +1,11 @@
 
-use std::collections::HashMap;
 use gdnative::prelude::*;
 use gdnative::api::*;
-use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
-use crate::field_ability_mesh::{FieldAbilityMesh,ToMesh};
-use crate::field_ability_actions::ToAction;
+use crate::traits::{Instanced,InstancedDefault};
 use crate::field_abilities::{AbilityType};
 use crate::ui_traits::{AnimationWindow,Windowed,LabelButton,Action,Centering,TileButton};
 use crate::button_tiles::{TileType,Tile};
 use tokio::sync::mpsc;
-use rand::Rng;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
@@ -18,8 +14,6 @@ enum InventoryAction{
     clicked(AbilityType,i32),
     pocketed(AbilityType,i32),
     unpocketed(AbilityType,i32),
-    hover(AbilityType),
-    unhover,
     unhandled,
 }
 impl From<Action> for InventoryAction{
@@ -52,10 +46,10 @@ impl InstancedDefault<Control,Sender<InventoryAction>> for SlotAmount{
     }
 }
 impl Windowed<InventoryAction> for SlotAmount{
-    const bg_highlight_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
-    const bg_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
-    const main_color:Color = Color{r:255.0,g:0.0,b:0.0,a:1.0};
-    const margin_size:f32 = 5.0;
+    const BG_HIGHLIGHT_COLOR:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
+    const BG_COLOR:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
+    const MAIN_COLOR:Color = Color{r:255.0,g:0.0,b:0.0,a:1.0};
+    const MARGIN_SIZE:f32 = 5.0;
     fn hovering(&self) -> bool {self.hovering}
     fn set_hovering(&mut self,value:bool){self.hovering = value}
     fn centering(&self) -> Centering {Centering::center}
@@ -98,9 +92,6 @@ pub struct InventorySlot{
     hovering:bool,
     id:i32,
     amount_display:Instance<SlotAmount>,
-    color_mode:u8,
-    dynamic_color:Color,
-    tick:u64,
 }
 impl InstancedDefault<Control,Sender<InventoryAction>> for InventorySlot{
     fn make(args:&Sender<InventoryAction>) -> Self{
@@ -114,17 +105,14 @@ impl InstancedDefault<Control,Sender<InventoryAction>> for InventorySlot{
             hovering:false,
             id:0,
             amount_display:SlotAmount::make_instance(args).into_shared(),
-            color_mode:0,
-            dynamic_color:Color{r:0.0,g:0.0,b:0.0,a:1.0},
-            tick:0,
         }
     }
 }
 impl Windowed<InventoryAction> for InventorySlot{
-    const bg_highlight_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
-    const bg_color:Color = Color{r:0.0,g:255.0,b:255.0,a:1.0};
-    const main_color:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
-    const margin_size:f32 = 5.0;
+    const BG_HIGHLIGHT_COLOR:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
+    const BG_COLOR:Color = Color{r:0.0,g:255.0,b:255.0,a:1.0};
+    const MAIN_COLOR:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
+    const MARGIN_SIZE:f32 = 5.0;
     fn from_command(&self,cmd:Action) -> InventoryAction{
         match cmd{
             Action::clicked => InventoryAction::clicked(self.typ,self.id),
@@ -185,7 +173,6 @@ impl InventorySlot{
     }
     #[method]
     fn set_type(&mut self,typ:u8){
-        let label = unsafe{self.label.assume_safe()};
         let typ = AbilityType::from(typ);
         self.set_text(typ.to_string());
         self.typ = typ;
@@ -229,7 +216,7 @@ impl ToString for OperationType{
     }
 }
 impl From<Action> for OperationType{
-    fn from(item:Action) -> Self{
+    fn from(_item:Action) -> Self{
         OperationType::empty
     }
 }
@@ -249,7 +236,6 @@ impl Into<TileType> for OperationType{
             OperationType::empty => TileType::empty,
             OperationType::place => TileType::down_arrow,
             OperationType::remove => TileType::up_arrow,
-            _ => TileType::empty,
         }
     }
 }
@@ -291,10 +277,10 @@ impl InstancedDefault<Control,Sender<OP_BUTTON>> for OperationButton{
     }
 }
 impl Windowed<OP_BUTTON> for OperationButton{
-    const bg_highlight_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
-    const bg_color:Color = Color{r:0.0,g:50.0,b:50.0,a:1.0};
-    const main_color:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
-    const margin_size:f32 = 5.0;
+    const BG_HIGHLIGHT_COLOR:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
+    const BG_COLOR:Color = Color{r:0.0,g:50.0,b:50.0,a:1.0};
+    const MAIN_COLOR:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
+    const MARGIN_SIZE:f32 = 5.0;
     fn from_command(&self,cmd:Action) -> OP_BUTTON{
         match cmd{
             Action::clicked => self.typ,
@@ -373,7 +359,6 @@ pub struct InventoryOperations {
     place_button:Instance<OperationButton>,
     remove_button:Instance<OperationButton>,
     tx:Sender<InventoryAction>,
-    buttons_tx:Sender<OP_BUTTON>,
     buttons_rx:Receiver<OP_BUTTON>,
     hovering:bool,
 }
@@ -388,17 +373,16 @@ impl InstancedDefault<Control,Sender<InventoryAction>> for InventoryOperations{
             place_button:OperationButton::make_instance(&tx).into_shared(),
             remove_button:OperationButton::make_instance(&tx).into_shared(),
             tx:args.clone(),
-            buttons_tx:tx,
             buttons_rx:rx,
             hovering:false,
         }
     }
 }
 impl Windowed<InventoryAction> for InventoryOperations{
-    const bg_highlight_color:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
-    const bg_color:Color = Color{r:0.0,g:0.0,b:0.0,a:0.5};
-    const main_color:Color = Color{r:255.0,g:0.0,b:255.0,a:0.5};
-    const margin_size:f32 = 5.0;
+    const BG_HIGHLIGHT_COLOR:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
+    const BG_COLOR:Color = Color{r:0.0,g:0.0,b:0.0,a:0.5};
+    const MAIN_COLOR:Color = Color{r:255.0,g:0.0,b:255.0,a:0.5};
+    const MARGIN_SIZE:f32 = 5.0;
     fn from_command(&self,cmd:Action) -> InventoryAction{
         match cmd{
             _ => InventoryAction::unhandled,
@@ -412,16 +396,13 @@ impl Windowed<InventoryAction> for InventoryOperations{
     fn main_rect(&self) -> &Ref<ColorRect>{&self.main_rect}
 }
 impl AnimationWindow<InventoryAction> for InventoryOperations{
-    fn animation(start:Vector2,delta:f64) -> Vector2{
+    fn animation(_start:Vector2,_delta:f64) -> Vector2{
         todo!()
     }
     fn shapes(&self) -> Vec<Ref<Control>>{
-        let num_shapes = 10;
         let mut vec = Vec::new();
         let rect = Control::new().into_shared();
         vec.push(rect.clone());
-        let rect = unsafe{rect.assume_safe()};
-        //rect.translate(todo!());
         vec
     }
 }
@@ -563,7 +544,7 @@ impl InventoryMenu{
 
     }
     #[method]
-    fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<Control>,_delta:f64){
         match self.rx.try_recv(){
             Ok(InventoryAction::clicked(typ,id)) => {
                 let operations = unsafe{self.operations.assume_safe()};
@@ -581,7 +562,7 @@ impl InventoryMenu{
                 owner.emit_signal("pocketed",&[Variant::new(typ),Variant::new(1)]);
                 godot_print!("{}",format!("pocketed typ:{typ:?}, id:{id:?}"));
             }
-            Ok(InventoryAction::unpocketed(typ,id)) => {
+            Ok(InventoryAction::unpocketed(typ,_id)) => {
                 owner.emit_signal("unpocketed",&[Variant::new(typ),Variant::new(1)]);
                 godot_print!("Item unPocketed");
             }
@@ -594,7 +575,6 @@ impl InventoryMenu{
         owner.set_size(size/2.0,false);
         let slot_size = 100.0;
         let slot_size_v = Vector2{x:slot_size,y:slot_size};
-        let num_slots = self.slots.len() as f32;
         let max_per_row = (owner.size().x / slot_size).floor();
         let mut idx = 0.0;
         for slot in &self.slots{
@@ -633,7 +613,7 @@ impl InventoryMenu{
         owner.add_child(slot,true);
     }
     #[method]
-    fn fill_slot(&mut self,#[base] owner:TRef<Control>, typ:u8,amount:i32){
+    fn fill_slot(&mut self,#[base] _owner:TRef<Control>, typ:u8,amount:i32){
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
         let empty_slot = slots.find(|x| x.map(|obj,_| obj.is_empty() || obj.typ == AbilityType::from(typ)).unwrap());
         let _ = empty_slot.map(|slot| {
@@ -642,11 +622,11 @@ impl InventoryMenu{
         });
     }
     #[method]
-    fn fill_client_slot(&mut self,#[base] owner:TRef<Control>,id:String, typ:u8,amount:i32){
+    fn fill_client_slot(&mut self,#[base] owner:TRef<Control>,_id:String, typ:u8,amount:i32){
         self.fill_slot(owner,typ,amount);
     }
     #[method]
-    fn remove_item(&mut self,#[base] owner:TRef<Control>, typ:u8,amount:i32){
+    fn remove_item(&mut self,#[base] _owner:TRef<Control>, typ:u8,amount:i32){
         assert!(false,"removing item fail");
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
         let item_slot = slots.find(|x| x.map(|obj,_| obj.is_type(typ)).unwrap());
@@ -660,11 +640,11 @@ impl InventoryMenu{
                 }));
     }
     #[method]
-    fn remove_client_item(&mut self,#[base] owner:TRef<Control>,id:String, typ:u8,amount:i32){
+    fn remove_client_item(&mut self,#[base] owner:TRef<Control>,_id:String, typ:u8,amount:i32){
         self.remove_item(owner,typ,amount);
     }
     #[method]
-    fn clear(&mut self,#[base] owner:TRef<Control>){
+    fn clear(&mut self,#[base] _owner:TRef<Control>){
         for slot in &self.slots{
             let slot = unsafe{slot.assume_safe()};
             let _ = slot.map_mut(|obj,_| obj.set_type(AbilityType::empty.into()));
@@ -716,7 +696,7 @@ impl Pocket{
         let _ = operations.map(|obj,_| obj.set_place_button_visible(false));
     }
     #[method]
-    fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<Control>,_delta:f64){
         match self.rx.try_recv(){
             Ok(InventoryAction::clicked(typ,id)) => {
                 let operations = unsafe{self.operations.assume_safe()};
@@ -730,8 +710,8 @@ impl Pocket{
                 let _ = operations.map_mut(|obj,_| obj.position = id);
                 let _ = operations.map_mut(|obj,_| obj.set_type(typ.into()));
             }
-            Ok(InventoryAction::pocketed(typ,id)) => { }
-            Ok(InventoryAction::unpocketed(typ,id)) => {
+            Ok(InventoryAction::pocketed(_typ,_id)) => { }
+            Ok(InventoryAction::unpocketed(typ,_id)) => {
                 owner.emit_signal("unpocketed",&[Variant::new(typ),Variant::new(1)]);
                 godot_print!("Item unPocketed");
             }
@@ -770,7 +750,7 @@ impl Pocket{
         let _ = operations.map(|_,control| control.set_size(slot_size_v,false));
     }
     #[method]
-    fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
+    fn _input(&self,#[base] _owner:TRef<Control>,event:Ref<InputEvent>){
         let event = unsafe{event.assume_safe()};
         if event.is_action_released("inventory_toggle",true){
             //owner.set_visible(!owner.is_visible());
@@ -788,7 +768,7 @@ impl Pocket{
         owner.add_child(slot,true);
     }
     #[method]
-    fn fill_slot(&mut self,#[base] owner:TRef<Control>, typ:u8,amount:i32){
+    fn fill_slot(&mut self,#[base] _owner:TRef<Control>, typ:u8,amount:i32){
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
         let empty_slot = slots.find(|x| x.map(|obj,_| obj.is_empty() || obj.typ == AbilityType::from(typ)).unwrap());
         empty_slot.map(|slot| {
@@ -797,11 +777,11 @@ impl Pocket{
         });
     }
     #[method]
-    fn fill_client_slot(&mut self,#[base] owner:TRef<Control>,id:String, typ:u8,amount:i32){
+    fn fill_client_slot(&mut self,#[base] owner:TRef<Control>,_id:String, typ:u8,amount:i32){
         self.fill_slot(owner,typ,amount);
     }
     #[method]
-    fn remove_item(&mut self,#[base] owner:TRef<Control>, typ:u8,amount:i32){
+    fn remove_item(&mut self,#[base] _owner:TRef<Control>, typ:u8,amount:i32){
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
         let item_slot = slots.find(|x| x.map(|obj,_| obj.is_type(typ)).unwrap());
         item_slot.map(|slot| slot.map_mut(|obj,_| {
@@ -814,11 +794,11 @@ impl Pocket{
                 }));
     }
     #[method]
-    fn remove_client_item(&mut self,#[base] owner:TRef<Control>,id:String, typ:u8,amount:i32){
+    fn remove_client_item(&mut self,#[base] owner:TRef<Control>,_id:String, typ:u8,amount:i32){
         self.remove_item(owner,typ,amount);
     }
     #[method]
-    fn clear(&mut self,#[base] owner:TRef<Control>){
+    fn clear(&mut self,#[base] _owner:TRef<Control>){
         for slot in &self.slots{
             let slot = unsafe{slot.assume_safe()};
             let _ = slot.map_mut(|obj,_| obj.set_type(AbilityType::empty.into()));

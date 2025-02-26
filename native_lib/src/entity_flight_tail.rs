@@ -66,7 +66,7 @@ impl Instanced<MeshInstance> for OrbitNode{
 #[methods]
 impl OrbitNode{
     fn set_type(&self,node_type:OrbitNodeType){
-        self.tx.send(OrbitNodeCommand::SetNodeType(node_type));
+        let _ = self.tx.send(OrbitNodeCommand::SetNodeType(node_type));
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<MeshInstance>,delta:f64){
@@ -92,7 +92,7 @@ impl OrbitNode{
             self.axis.y = y;
             self.axis.z = z;
         }
-        self.node_type.as_ref().map(|node| {
+        let _ = self.node_type.as_ref().map(|node| {
             node.orbit(owner.upcast::<Spatial>(),delta,self.axis);
         });
     }
@@ -116,9 +116,9 @@ impl BeltOrbital{
     fn add_sphere_node(&mut self,#[base] owner:TRef<Spatial>){
         let node = OrbitNode::make_instance().into_shared();
         let node_r = unsafe{node.assume_safe()};
-        node_r.map(|obj,_| obj.set_type(OrbitNodeType::SphereOrbital(Color{r:100.0,g:0.0,b:0.0,a:1.0})));
-        node_r.map(|_,spatial| spatial.translate(Vector3{x:0.0,y:0.0,z:5.0}));
-        node_r.map(|_,control| owner.add_child(control,true));
+        let _ = node_r.map(|obj,_| obj.set_type(OrbitNodeType::SphereOrbital(Color{r:100.0,g:0.0,b:0.0,a:1.0})));
+        let _ = node_r.map(|_,spatial| spatial.translate(Vector3{x:0.0,y:0.0,z:5.0}));
+        let _ = node_r.map(|_,control| owner.add_child(control,true));
         self.nodes.push(node);
     }
     #[method]

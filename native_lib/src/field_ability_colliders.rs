@@ -2,10 +2,8 @@
 
 use gdnative::prelude::*;
 use gdnative::api::*;
-use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
+use crate::traits::{Instanced,InstancedDefault};
 use crate::field_abilities::{AbilityType};
-use tokio::sync::mpsc;
-use crate::slizzard::Slizzard;
 use crate::collision_layer;
 
 pub trait ToCollider{

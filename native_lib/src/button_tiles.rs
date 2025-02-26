@@ -1,10 +1,8 @@
 
 
-use std::collections::HashMap;
 use gdnative::prelude::*;
 use gdnative::api::*;
-use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
-use tokio::sync::mpsc;
+use crate::traits::{Instanced,InstancedDefault};
 
 #[derive(NativeClass)]
 #[inherit(Control)]
@@ -36,7 +34,7 @@ impl Tile{
     }
 
     #[method]
-    fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
+    fn _process(&self,#[base] owner:TRef<Control>,_delta:f64){
         let symbol = unsafe{self.symbol.assume_safe()};
         symbol.clear_points();
         for point in &self.points{

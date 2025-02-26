@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
-use crate::field_ability_mesh::{FieldAbilityMesh,ToMesh};
+use crate::field_ability_mesh::{FieldAbilityMesh};
 use crate::field_ability_actions::ToAction;
 use crate::field_abilities::{AbilityType,SubAbilityType};
 use tokio::sync::mpsc;
@@ -11,10 +11,11 @@ use tokio::sync::mpsc;
 type Sender<T> = mpsc::UnboundedSender<T>;
 type Receiver<T> = mpsc::UnboundedReceiver<T>;
 
-pub const zone_width:f32 = 20.0;
-pub const zone_height:f32 = 1.0;
+pub const ZONE_WIDTH:f32 = 20.0;
+pub const ZONE_HEIGHT:f32 = 1.0;
 
-const collision_layer:i64 = 20;
+const COLLISION_LAYER:i64 = 20;
+
 pub enum FieldZoneCommand{
     Selected(AbilityType),
     Proc(bool),
@@ -48,7 +49,7 @@ impl InstancedDefault<KinematicBody,Location> for FieldZone{
         let (tx,rx) = mpsc::unbounded_channel::<FieldZoneCommand>();
         let op_menu = FieldOps3D::make_instance().into_shared();
         let op_menu_obj = unsafe{op_menu.assume_safe()};
-        op_menu_obj.map_mut(|obj,_| obj.set_tx(tx.clone()));
+        let _ = op_menu_obj.map_mut(|obj,_| obj.set_tx(tx.clone()));
         FieldZone{
             location:*args,
             mesh:MeshInstance::new().into_shared(),
@@ -73,7 +74,7 @@ impl FieldZone{
         let cube = unsafe{cube.assume_safe()};
         let proc_cube = CubeMesh::new().into_shared();
         let proc_cube = unsafe{proc_cube.assume_safe()};
-        let cube_size = Vector3{x:zone_width,y:zone_height,z:zone_width}; 
+        let cube_size = Vector3{x:ZONE_WIDTH,y:ZONE_HEIGHT,z:ZONE_WIDTH}; 
         cube.set_size(cube_size);
         mesh.set_mesh(cube);
         let proc_mesh_material = SpatialMaterial::new().into_shared();
@@ -86,22 +87,22 @@ impl FieldZone{
 
         //initialize
         //op_menu.map(|_ , control| control.set_size(Vector2{x:200.0,y:200.0},false));
-        op_menu.map(|_,spatial|{
+        let _ = op_menu.map(|_,spatial|{
             let mut transform = spatial.transform();
             transform.origin = cube_size/2.0;
         });
 
         //technically unneeded
-        op_menu.map_mut(|obj,_| obj.set_tx(self.zone_tx.clone()));
+        let _ = op_menu.map_mut(|obj,_| obj.set_tx(self.zone_tx.clone()));
             
-        op_menu.map_mut(|obj,control| obj.add_op(control,255,1));
-        op_menu.map_mut(|obj,_| obj.width = zone_width/2.0);
-        op_menu.map(|obj , spatial| obj.hide(spatial));
+        let _ = op_menu.map_mut(|obj,control| obj.add_op(control,255,1));
+        let _ = op_menu.map_mut(|obj,_| obj.width = ZONE_WIDTH/2.0);
+        let _ = op_menu.map(|obj , spatial| obj.hide(spatial));
 
 
         let collision_shape = BoxShape::new().into_shared();
         let collision_shape = unsafe{collision_shape.assume_safe()};
-        collision_shape.set_extents(Vector3{x:zone_width/2.0,y:zone_height/2.0,z:zone_width/2.0});
+        collision_shape.set_extents(Vector3{x:ZONE_WIDTH/2.0,y:ZONE_HEIGHT/2.0,z:ZONE_WIDTH/2.0});
 
         let collider = CollisionShape::new().into_shared();
         let collider = unsafe{collider.assume_safe()};
@@ -113,8 +114,8 @@ impl FieldZone{
         owner.add_child(collider,true);
         owner.set_collision_layer_bit(0,false);
         owner.set_collision_mask_bit(0,false);
-        owner.set_collision_layer_bit(collision_layer,true);
-        owner.set_collision_mask_bit(collision_layer,true);
+        owner.set_collision_layer_bit(COLLISION_LAYER,true);
+        owner.set_collision_mask_bit(COLLISION_LAYER,true);
         owner.add_child(mesh,true);
         owner.add_child(proc_mesh,true);
         owner.add_child(op_menu,true);
@@ -125,7 +126,7 @@ impl FieldZone{
     fn _process(&mut self,#[base] owner:TRef<KinematicBody>,delta:f64){
         match self.zone_rx.try_recv() {
             Ok(FieldZoneCommand::Selected(typ)) => {
-                self.field_tx
+                let _ = self.field_tx
                     .as_ref()
                     .expect("field_tx not set for zone")
                     .send(FieldCommand::AddAbility(self.location,typ));
@@ -147,29 +148,28 @@ impl FieldZone{
         godot_print!("Field Area Clicked!");
         if self.abilities.len() == 0{
             let op_menu = unsafe{self.op_menu.assume_safe()};
-            op_menu.map(|obj,spatial| obj.toggle(spatial));
+            let _ = op_menu.map(|obj,spatial| obj.toggle(spatial));
         }else{
             let field_tx = self.field_tx.clone().unwrap();
             for typ in self.abilities.keys(){
-
-                field_tx.send(FieldCommand::Trigger(self.location,*typ));
+                let _ = field_tx.send(FieldCommand::Trigger(self.location,*typ));
             }
         }
     }
     #[method]
     fn add_op_to_menu(&self,ability_id:u8,amount:i64){
         let op_menu = unsafe{self.op_menu.assume_safe()};
-        op_menu.map_mut(|obj,control| obj.add_op(control,ability_id,amount));
+        let _ = op_menu.map_mut(|obj,control| obj.add_op(control,ability_id,amount));
     }
     #[method]
     fn remove_op_from_menu(&self,ability_id:u8,amount:i64){
         let op_menu = unsafe{self.op_menu.assume_safe()};
-        op_menu.map_mut(|obj,control| obj.remove_op(control,ability_id,amount));
+        let _ = op_menu.map_mut(|obj,control| obj.remove_op(control,ability_id,amount));
     }
     #[method]
     fn clear_operations(&self){
         let op_menu = unsafe{self.op_menu.assume_safe()};
-        op_menu.map_mut(|obj,control| obj.clear(control));
+        let _ = op_menu.map_mut(|obj,control| obj.clear(control));
     }
     #[method]
     fn place_ability(&mut self,#[base] owner:TRef<KinematicBody>,typ:u8){
@@ -179,7 +179,7 @@ impl FieldZone{
         owner.add_child(mesh.clone(),true);
         self.abilities.insert(typ,mesh);
         let op_menu = unsafe{self.op_menu.assume_safe()};
-        op_menu.map(|obj,spatial| obj.hide(spatial));
+        let _ = op_menu.map(|obj,spatial| obj.hide(spatial));
     }
     #[method]
     pub fn remove_ability(&mut self,#[base] owner:TRef<KinematicBody>, typ:u8){
@@ -188,7 +188,7 @@ impl FieldZone{
             let ability = self.abilities.get(&typ).unwrap();
             owner.remove_child(ability);
             let ability = unsafe{ability.assume_safe()};
-            ability.map(|obj,mesh| mesh.queue_free());
+            let _ = ability.map(|obj,mesh| mesh.queue_free());
             self.abilities.remove(&typ);
         }
     }
@@ -208,17 +208,17 @@ impl FieldZone{
     fn hide(&self,#[base] owner:TRef<KinematicBody>){
         if self.abilities.len() == 0{
             let op_menu = unsafe{self.op_menu.assume_safe()};
-            op_menu.map(|obj,spatial| obj.hide(spatial));
+            let _ = op_menu.map(|obj,spatial| obj.hide(spatial));
         }        
         owner.set_visible(false);
-        owner.set_collision_layer_bit(collision_layer,false);
-        owner.set_collision_mask_bit(collision_layer,false);
+        owner.set_collision_layer_bit(COLLISION_LAYER,false);
+        owner.set_collision_mask_bit(COLLISION_LAYER,false);
     }
     #[method]
     fn show(&self,#[base] owner:TRef<KinematicBody>){
         owner.set_visible(true);
-        owner.set_collision_layer_bit(collision_layer,true);
-        owner.set_collision_mask_bit(collision_layer,true);
+        owner.set_collision_layer_bit(COLLISION_LAYER,true);
+        owner.set_collision_mask_bit(COLLISION_LAYER,true);
     }
     #[method]
     fn toggle(&self,#[base] owner:TRef<KinematicBody>){
@@ -233,11 +233,11 @@ impl FieldZone{
     }
     pub fn proc(&mut self){
         self.proc = true;
-        self.zone_tx.send(FieldZoneCommand::Proc(true));
+        let _ = self.zone_tx.send(FieldZoneCommand::Proc(true));
     }
     pub fn unproc(&mut self){
         self.proc = false;
-        self.zone_tx.send(FieldZoneCommand::Proc(false));
+        let _ = self.zone_tx.send(FieldZoneCommand::Proc(false));
     }
 }
 pub enum FieldCommand{
@@ -344,7 +344,7 @@ impl Field{
     }
     #[method]
     fn get_point_from_location(&self,x:i64,y:i64) -> Vector3{
-        Vector3{x:zone_width * (x as f32),y:0.0,z:zone_width * (y as f32)}
+        Vector3{x:ZONE_WIDTH * (x as f32),y:0.0,z:ZONE_WIDTH * (y as f32)}
     }
     #[method]
     fn add_zone(&mut self,#[base] owner:TRef<Spatial>,location:(i64,i64)){
@@ -354,11 +354,11 @@ impl Field{
         let zone = FieldZone::make_instance(&location).into_shared();
         self.zones.insert(location,zone.clone());
         let zone = unsafe{zone.assume_safe()};
-        zone.map_mut(|obj,_| obj.set_tx(self.tx.clone()));
+        let _ = zone.map_mut(|obj,_| obj.set_tx(self.tx.clone()));
         owner.add_child(zone.clone(),false);
-        zone.map(|obj,spatial| {
+        let _ = zone.map(|obj,spatial| {
             let mut transform = spatial.transform();
-            transform.origin = Vector3{x:zone_width * (location.x as f32),y:0.0,z:zone_width * (location.y as f32)};
+            transform.origin = Vector3{x:ZONE_WIDTH * (location.x as f32),y:0.0,z:ZONE_WIDTH * (location.y as f32)};
             spatial.set_transform(transform);
         });
         
@@ -367,14 +367,14 @@ impl Field{
     fn add_op_to_menus(&self,ability_id:u8,amount:i64){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
-            zone.map_mut(|obj,_| obj.add_op_to_menu(ability_id,amount));
+            let _ = zone.map_mut(|obj,_| obj.add_op_to_menu(ability_id,amount));
         }
     }
     #[method]
     fn remove_op_from_menus(&self,ability_id:u8,amount:i64){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
-            zone.map_mut(|obj,_| obj.remove_op_from_menu(ability_id,amount));
+            let _ = zone.map_mut(|obj,_| obj.remove_op_from_menu(ability_id,amount));
         }
     }
 
@@ -382,7 +382,7 @@ impl Field{
     fn clear_all_operations(&self){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
-            zone.map_mut(|obj,_| obj.clear_operations());
+            let _ = zone.map_mut(|obj,_| obj.clear_operations());
         }
     }
     #[method]
@@ -393,7 +393,7 @@ impl Field{
         let zone = self.zones.get(&location).unwrap();
         let zone = unsafe{zone.assume_safe()};
         let typ = AbilityType::from(ability_id);
-        zone.map_mut(|obj,body|{
+        let _ = zone.map_mut(|obj,body|{
             obj.place_ability(body,ability_id)
         });
     }
@@ -401,21 +401,21 @@ impl Field{
     fn hide(&self,#[base] owner:TRef<Spatial>){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
-            zone.map(|obj,body| obj.hide(body));
+            let _ = zone.map(|obj,body| obj.hide(body));
         }
     }
     #[method]
     fn show(&self,#[base] owner:TRef<Spatial>){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
-            zone.map(|obj,body| obj.show(body));
+            let _ = zone.map(|obj,body| obj.show(body));
         }
     }
     #[method]
     fn toggle(&self,#[base] owner:TRef<Spatial>){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
-            zone.map(|obj,body| obj.toggle(body));
+            let _ = zone.map(|obj,body| obj.toggle(body));
         }
     }
 }
@@ -450,7 +450,7 @@ impl FieldOp3D{
     #[method]
     fn _ready(&self,#[base] owner:TRef<KinematicBody>){
         let mesh = unsafe{self.mesh.assume_safe()};
-        mesh.map(|_,spatial| owner.add_child(spatial,true));
+        let _ = mesh.map(|_,spatial| owner.add_child(spatial,true));
 
         let highlight_left = unsafe{self.highlight_left.assume_safe()};
         let highlight_right = unsafe{self.highlight_right.assume_safe()};
@@ -500,7 +500,7 @@ impl FieldOp3D{
     }
     #[method]
     fn clicked(&self,#[base] owner:TRef<KinematicBody>,event_position:Vector2,intersect_position:Vector3){
-        self.field_tx
+        let _ = self.field_tx
             .as_ref()
             .expect("field_tx not set")
             .send(FieldZoneCommand::Selected(self.typ));
@@ -565,11 +565,11 @@ impl FieldOps3D{
         let num_ops = self.operations.len();
         self.operations.insert(typ,op.clone());
         let op = unsafe{op.assume_safe()};
-        op.map(|obj,body| {
+        let _ = op.map(|obj,body| {
            obj.set_height_idx(body,num_ops as u64,obj.radius as f32); 
         });
-        op.map_mut(|obj,_| self.field_tx.as_ref().map(|tx|obj.set_tx(tx.clone())));
-        op.map_mut(|obj,_| obj.width = self.width);
+        let _ = op.map_mut(|obj,_| self.field_tx.as_ref().map(|tx|obj.set_tx(tx.clone())));
+        let _ = op.map_mut(|obj,_| obj.width = self.width);
         owner.add_child(op.clone(),true);
     }
     #[method]
@@ -582,12 +582,12 @@ impl FieldOps3D{
         let op = self.operations.get(&typ).unwrap();
         let op = unsafe{op.assume_safe()};
         owner.remove_child(op.clone());
-        op.map(|_,control| control.queue_free());
+        let _ = op.map(|_,control| control.queue_free());
         self.operations.remove(&typ);
         let mut idx:u64 = 0;
         for r_op in self.operations.values(){
             let r_op = unsafe{r_op.assume_safe()};
-            r_op.map(|obj,body| obj.set_height_idx(body,idx,obj.radius as f32));
+            let _ = r_op.map(|obj,body| obj.set_height_idx(body,idx,obj.radius as f32));
             idx += 1;
         }
     }
@@ -595,9 +595,9 @@ impl FieldOps3D{
     fn show(&self, #[base] owner:TRef<Spatial>){
         for op in self.operations.values(){
             let op = unsafe{op.assume_safe()};
-            op.map(|_,body| {
-                body.set_collision_layer_bit(collision_layer,true);
-                body.set_collision_mask_bit(collision_layer,true);
+            let _ = op.map(|_,body| {
+                body.set_collision_layer_bit(COLLISION_LAYER,true);
+                body.set_collision_mask_bit(COLLISION_LAYER,true);
             });
         }
         owner.set_visible(true);
@@ -606,7 +606,7 @@ impl FieldOps3D{
     fn clear(&mut self,#[base] owner:TRef<Spatial>){
         for op in self.operations.clone().values(){
             let op = unsafe{op.assume_safe()};
-            op.map(|_,control| {
+            let _ = op.map(|_,control| {
                 owner.remove_child(control.clone());
                 control.queue_free();
             });
@@ -617,9 +617,9 @@ impl FieldOps3D{
     fn hide(&self, #[base] owner:TRef<Spatial>){
         for op in self.operations.values(){
             let op = unsafe{op.assume_safe()};
-            op.map(|_,body| {
-                body.set_collision_layer_bit(collision_layer,false);
-                body.set_collision_mask_bit(collision_layer,false);
+            let _ = op.map(|_,body| {
+                body.set_collision_layer_bit(COLLISION_LAYER,false);
+                body.set_collision_mask_bit(COLLISION_LAYER,false);
             });
         }
         owner.set_visible(false);
@@ -629,9 +629,9 @@ impl FieldOps3D{
         owner.set_visible(!owner.is_visible());
         for op in self.operations.values(){
             let op = unsafe{op.assume_safe()};
-            op.map(|_,body| {
-                body.set_collision_layer_bit(collision_layer,owner.is_visible());
-                body.set_collision_mask_bit(collision_layer,owner.is_visible());
+            let _ = op.map(|_,body| {
+                body.set_collision_layer_bit(COLLISION_LAYER,owner.is_visible());
+                body.set_collision_mask_bit(COLLISION_LAYER,owner.is_visible());
             });
         }
     }
@@ -639,7 +639,7 @@ impl FieldOps3D{
         self.field_tx = Some(tx.clone());
         for op in self.operations.values(){
             let op = unsafe{op.assume_safe()};
-            op.map_mut(|obj,_|obj.set_tx(tx.clone()));
+            let _ = op.map_mut(|obj,_|obj.set_tx(tx.clone()));
         }
     }
 }
@@ -736,7 +736,7 @@ impl FieldOps{
         for op in &self.operations{
             let op = unsafe{op.assume_safe()};
             let mut idx = 0.0;
-            op.map(|obj,control| {
+            let _ = op.map(|obj,control| {
                 control.set_size(op_size,false);
                 control.set_position(op_size * idx ,false);
             });
