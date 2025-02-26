@@ -107,14 +107,14 @@ impl Slizzard{
         let _ = body_piece.map(|obj,spatial| obj.set_offset(spatial,3.14 * 0.25 * (self.body_pieces.len() as f32)) );
     }
     #[method]
-    fn _process(&mut self,#[base] owner:TRef<Area>,delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<Area>,_delta:f64){
         let num_pieces = self.body_pieces.len() as f32;
         let mut idx = 0.0;
         let distance = self.length/num_pieces;
         let owner_transform = owner.transform();
         for piece in &self.body_pieces{
             let piece = unsafe{piece.assume_safe()};
-            let _ = piece.map(|obj,mesh| {
+            let _ = piece.map(|_,mesh| {
                 let mut transform = mesh.transform();
                 let origin = owner_transform.origin - Vector3{x:0.0,y:0.0,z:self.length/2.0};
                 transform.origin = origin + Vector3{x:0.0,y:0.0,z:distance * idx};
@@ -178,10 +178,10 @@ impl SlizzardServer{
         }else{
             let _ = entity_id.try_to::<String>()
                 .map(|id| owner.emit_signal("damage",&[Variant::new(id),Variant::new(100.0)]))
-                .map_err(|err| assert!(false,"Incorrect type for id"));
+                .map_err(|_err| assert!(false,"Incorrect type for id"));
         }
     }
     #[method]
-    fn _process(&mut self,#[base] owner:TRef<Area>,delta:f64){
+    fn _process(&mut self,#[base] _owner:TRef<Area>,_delta:f64){
     }
 }

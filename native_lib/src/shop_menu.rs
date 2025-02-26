@@ -9,7 +9,7 @@ type Receiver<T> = mpsc::UnboundedReceiver<T>;
 
 impl <T> Defaulted for Sender<T>{
     fn default() -> Self{
-        let (tx,rx) = mpsc::unbounded_channel::<T>();
+        let (tx,_) = mpsc::unbounded_channel::<T>();
         tx
     }
 }
@@ -79,7 +79,7 @@ impl MenuButton{
         display_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
     }
     #[method]
-    fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
+    fn _process(&self,#[base] owner:TRef<Control>,_delta:f64){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         let display_rect = unsafe{self.display_rect.assume_safe()};
         let label = unsafe{self.label.assume_safe()};
@@ -106,13 +106,13 @@ impl MenuButton{
         }
     }
     #[method]
-    fn hover(&mut self,#[base] owner:TRef<Control>){
+    fn hover(&mut self,#[base] _owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
         self.hovering = true;
     }
     #[method]
-    fn unhover(&mut self,#[base] owner:TRef<Control>){
+    fn unhover(&mut self,#[base] _owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_frame_color(self.bg_color);
         self.hovering = false;
@@ -178,12 +178,12 @@ impl ShopItem{
         display_rect.set_frame_color(Color{r:0.0,g:0.0,b:0.0,a:1.0});
         name.set_text(self.item_type.to_string());
         description.set_text(self.item_type.to_description());
-        let _ = buy_button.map_mut(|obj,control| {
+        let _ = buy_button.map_mut(|obj,_| {
             obj.set_bg_color(Color{r:75.0,g:0.0,b:100.0,a:1.0});
             obj.set_label_text("Buy".to_string());
         });
         let _ = buy_button.map(|_,control| control.connect("clicked",owner,"buy_item",VariantArray::new_shared(),0));
-        let _ = sell_button.map_mut(|obj,control| {
+        let _ = sell_button.map_mut(|obj,_| {
             obj.set_bg_color(Color{r:75.0,g:0.0,b:100.0,a:1.0});
             obj.set_label_text("Sell".to_string());
         });
@@ -202,7 +202,7 @@ impl ShopItem{
         display_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
     }
     #[method]
-    fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
+    fn _process(&self,#[base] owner:TRef<Control>,_delta:f64){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         let display_rect = unsafe{self.display_rect.assume_safe()};
         let name = unsafe{self.name.assume_safe()};
@@ -247,13 +247,13 @@ impl ShopItem{
     }
 
     #[method]
-    fn hover(&mut self,#[base] owner:TRef<Control>){
+    fn hover(&mut self,#[base] _owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_frame_color(Color{r:255.0,g:255.0,b:255.0,a:1.0});
         self.hovering = true;
     }
     #[method]
-    fn unhover(&mut self,#[base] owner:TRef<Control>){
+    fn unhover(&mut self,#[base] _owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         bg_rect.set_frame_color(Color{r:0.0,g:255.0,b:255.0,a:1.0});
         self.hovering = false;
@@ -346,7 +346,7 @@ impl ShopMenu{
         let _ = self.tx.send(Command::AddItem(item_type));
     }
     #[method]
-    fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<Control>,_delta:f64){
         match self.rx.try_recv(){
             Ok(Command::AddItem(typ)) => {
                 let item = ShopItem::make_instance(&self.tx).into_shared();
@@ -393,7 +393,7 @@ impl ShopMenu{
         let item_size = Vector2{x:owner_size.x,y:owner_size.y/num_items};
         for item in &self.items{
             let item = unsafe{item.assume_safe()};
-            let _ = item.map(|obj,control| {
+            let _ = item.map(|_,control| {
                 control.set_size(item_size,false);
                 let position = Vector2{x:0.0,y:item_size.y * idx};
                 control.set_position(position,false);

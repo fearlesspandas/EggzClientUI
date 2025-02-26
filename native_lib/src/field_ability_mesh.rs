@@ -105,7 +105,7 @@ impl ToMesh for AbilityType{
                 let _ = slizzard.map_mut(|obj,body| obj.add_body_piece(body));
                 let _ = slizzard.map_mut(|obj,body| obj.add_body_piece(body));
                 let _ = slizzard.map_mut(|obj,body| obj.add_body_piece(body));
-                let _ = slizzard.map_mut(|obj,body| body.rotate_y(90.0));
+                let _ = slizzard.map_mut(|_,body| body.rotate_y(90.0));
                 let spatial = Spatial::new();
                 spatial.add_child(slizzard,true);
                 spatial.into_shared()

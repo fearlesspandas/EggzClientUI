@@ -16,7 +16,7 @@ enum OrbitNodeCommand{
 impl OrbitNodeType{
     fn to_mesh(&self) -> Ref<Mesh>{
         match self{
-            OrbitNodeType::SphereOrbital(color) => {
+            OrbitNodeType::SphereOrbital(_color) => {
                 let mesh = SphereMesh::new().into_shared();
                 let meshi = unsafe{mesh.assume_safe()};
                 let material = SpatialMaterial::new().into_shared();
@@ -70,7 +70,6 @@ impl OrbitNode{
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<MeshInstance>,delta:f64){
-        let location = owner.transform().origin;
         match self.rx.try_recv(){
             Ok(OrbitNodeCommand::SetNodeType(node_type)) => {
                 let mesh = node_type.to_mesh();
@@ -132,7 +131,7 @@ impl BeltOrbital{
         self.add_sphere_node(owner);
     }
     #[method]
-    fn _process(&self,#[base] owner:TRef<Spatial>,delta:f64){
+    fn _process(&self,#[base] _owner:TRef<Spatial>,_delta:f64){
 
     }
 }

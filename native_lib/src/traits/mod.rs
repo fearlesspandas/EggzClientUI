@@ -24,7 +24,7 @@ pub trait EmitSignal{
 }
 pub trait Instanced<T>{
     fn make() -> Self where Self:Sized;
-    fn new(base:&T) -> Self where Self:Sized{
+    fn new(_base:&T) -> Self where Self:Sized{
         Self::make()
     }
     fn make_instance() -> Instance<Self,Unique> 
@@ -39,7 +39,7 @@ pub trait Defaulted{
 }
 pub trait InstancedDefault<T,A:Defaulted>{
     fn make(args:&A) -> Self where Self:Sized;
-    fn new(base:&T) -> Self where Self:Sized{
+    fn new(_base:&T) -> Self where Self:Sized{
         Self::make(&Defaulted::default())
     }
     fn make_instance(args:&A) -> Instance<Self,Unique> 
@@ -51,7 +51,7 @@ pub trait InstancedDefault<T,A:Defaulted>{
 }
 pub trait RuntimeInstanced<T>{
     fn make(runtime:&Runtime) -> Self where Self:Sized;
-    fn new(base:&T) -> Self where Self:Sized{
+    fn new(_base:&T) -> Self where Self:Sized{
         Self::make(&Runtime::new().unwrap())
     }
     fn make_instance(runtime:&Runtime) -> Instance<Self,Unique> 

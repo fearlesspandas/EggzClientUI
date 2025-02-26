@@ -59,7 +59,7 @@ impl AggregateStats{
         owner.add_child(self.label,true);
     }
     #[method]
-    fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
+    fn _process(&self,#[base] owner:TRef<Control>,_delta:f64){
         let label = unsafe{self.label.assume_safe()};
         let avg = self.avg;
         let min = self.min;
@@ -132,7 +132,7 @@ impl HoverStats{
         owner.set_visible(false);
     }
     #[method]
-    fn _process(&self,#[base] owner:TRef<Control>,delta:f64 ){
+    fn _process(&self,#[base] owner:TRef<Control>,_delta:f64 ){
         let label = unsafe{self.stats_label.assume_safe()};
         let value = self.value;
         let tag = &self.tag;
@@ -207,7 +207,7 @@ impl BarGraphColumn{
     }
 
     #[method]
-    fn _process(&self,#[base] owner: TRef<Control>,delta:f64){
+    fn _process(&self,#[base] owner: TRef<Control>,_delta:f64){
         let bar = unsafe{self.bar.assume_safe()};
         bar.set_size(owner.size(),false);
         if self.hovering{
@@ -338,17 +338,15 @@ impl BarGraph{
         owner.add_child(max_label,true);
         owner.add_child(center_label,true);
         owner.add_child(min_label,true);
-        let _ = hover_stats.map(|obj,canvas| {
+        let _ = hover_stats.map(|_,canvas| {
             owner.add_child(canvas,true);
         });
         let _ = aggregate_stats.map(|_,control| owner.add_child(control,true));
         //aggregate_stats.map(|_,control| control.set_visible(false));
     }
     #[method]
-    fn resize_graph(&self, #[base] owner:TRef<Control>){
+    fn resize_graph(&self, #[base] _owner:TRef<Control>){
        let tag_to_data = self.tag_to_data.lock().unwrap();
-       let calculated_max:&f32  = &0.0;
-       let calculated_min:&f32  = &0.0;
        let values = tag_to_data.values().into_iter().map(|x|*x).collect::<Vec<f32>>();
        let calc_max = values.iter().fold(0.0,|acc,curr| f32::max(acc,*curr));
        let calc_min = values.iter().fold(0.0,|acc,curr| f32::min(acc,*curr));
@@ -356,7 +354,7 @@ impl BarGraph{
        self.current_min.store(calc_min.to_bits(),Ordering::Relaxed);
     }
     #[method]
-    fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<Control>,_delta:f64){
         if !owner.is_visible(){
             return;
         }
@@ -364,7 +362,6 @@ impl BarGraph{
            Ok(GraphActions::CreateColumn(tag)) => {
                let columns = &mut self.columns;
                let hover_stats = unsafe{self.hover_stats.assume_safe()};
-               let color_rect: Ref<ColorRect> = ColorRect::new().into_shared();
                let bar = BarGraphColumn::make_instance().into_shared();
                let tag_label : Ref<Label> = Label::new().into_shared();
                columns.insert(tag.clone(),(bar.clone(),tag_label));
@@ -450,7 +447,6 @@ impl BarGraph{
         let _ = aggregate_stats.map_mut(|obj,_| obj.set_max(current_max));
     }
     pub fn snapshot(&self, name:String) -> Result<(),&'static str>{
-        let snapshots = unsafe{self.snapshot_api.assume_safe()};
         let tag_to_data = self.tag_to_data.lock().unwrap();
         let data_obj = BarGraphSnapshot{
             path:"user://snapshots".to_string().replace("\"",""),

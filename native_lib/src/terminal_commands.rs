@@ -39,7 +39,7 @@ pub enum CommandType{
     //toggle_aggregate_stats,
 }
 impl CommandType{
-    fn default(args:Vec<&str>) -> Vec<String>{Vec::new()}
+    fn default(_args:Vec<&str>) -> Vec<String>{Vec::new()}
 }
 impl CreateSignal<ClientTerminal> for CommandType{
     fn register(builder:&ClassBuilder<ClientTerminal>){
@@ -125,7 +125,7 @@ impl ArgsConstructor<Command,&Value,&'static str> for CommandType{
                 .map(|parsed| Command::StopDataStream(parsed.data_type)),
             CommandType::clear_data => 
                 ClearDataArgs::new(args)
-                .map(|parsed| Command::ClearData),
+                .map(|_parsed| Command::ClearData),
             CommandType::save_snapshot => 
                 SaveSnapshotArgs::new(args)
                 .map(|parsed| Command::SaveSnapshot(parsed.name)),
@@ -201,7 +201,7 @@ pub struct InputCommand{
     pub args: Value
 }
 impl ArgsConstructor<Command,(),&'static str> for InputCommand{
-    fn from_args(&self,args:()) -> Result<Command,&'static str>{
+    fn from_args(&self,_args:()) -> Result<Command,&'static str>{
         self.typ.from_args(&self.args)
     }
 }
@@ -242,7 +242,7 @@ impl FromArgs<Value> for SocketModeArgs{
                 fmt_args.insert("id".to_string(),id.clone());
                 fmt_args.insert("mode".to_string(),mode.clone());
                 serde_json::from_value::<SocketModeArgs>(Value::Object(fmt_args))
-                    .map_err(|e| "Error while parsing args for SocketModeArgs")
+                    .map_err(|_e| "Error while parsing args for SocketModeArgs")
             }
             _ => {Err("unexpected value type for socket mode args; expected Value::Array")}
         }
@@ -282,7 +282,7 @@ impl FromArgs<Value> for SocketModeAllArgs{
                 let mode = &values[0];
                 fmt_args.insert("mode".to_string(),mode.clone());
                 serde_json::from_value::<SocketModeAllArgs>(Value::Object(fmt_args))
-                    .map_err(|e| "Error while parsing args for SocketModeAllArgs")
+                    .map_err(|_e| "Error while parsing args for SocketModeAllArgs")
             }
             _ => {Err("unexpected value type for socket mode args; expected Value::Array")}
         }
@@ -323,7 +323,7 @@ impl FromArgs<Value> for StartDataStreamArgs{
                 let data_type = &values[0];
                 fmt_args.insert("data_type".to_string(),data_type.clone());
                 serde_json::from_value::<StartDataStreamArgs>(Value::Object(fmt_args))
-                    .map_err(|e| "could not map StartDataStreamArgs")
+                    .map_err(|_e| "could not map StartDataStreamArgs")
             }
             _ => {Err("unexpected value type for StartDataStreamArgs; expected Value::Array")}
         }
@@ -371,8 +371,8 @@ impl FromArgs<Value> for SetHealthArgs{
 #[derive(Deserialize,Serialize)]
 pub struct ClearDataArgs;
 impl FromArgs<Value> for ClearDataArgs{
-    fn autocomplete_args(args:Vec<&str>) -> Vec<String> {Vec::new()}
-    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
+    fn autocomplete_args(_args:Vec<&str>) -> Vec<String> {Vec::new()}
+    fn new(_args:&Value) -> Result<Self,&'static str> where Self:Sized{
         Ok(ClearDataArgs)
     }
 }

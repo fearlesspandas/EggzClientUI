@@ -1,7 +1,7 @@
 
 use gdnative::prelude::*;
 use gdnative::api::*;
-use crate::traits::{Instanced,InstancedDefault};
+
 use crate::button_tiles::{Tile,TileType};
 use tokio::sync::mpsc;
 
@@ -76,7 +76,7 @@ pub trait Windowed<T:From<Action>>{
             }
         }
     }
-    fn process(&self,owner:TRef<Control>,delta:f64){
+    fn process(&self,owner:TRef<Control>,_delta:f64){
         let bg_rect = unsafe{self.bg_rect().assume_safe()};
         let main_rect = unsafe{self.main_rect().assume_safe()};
         let mut size = owner.size();
@@ -163,7 +163,6 @@ pub trait TileButton<T:From<Action>> where Self:Windowed<T>{
     fn process(&self,owner:TRef<Control>,delta:f64){
         <Self as Windowed<T>>::process(self,owner,delta);
         let tile = unsafe{self.tile().assume_safe()};
-        let owner_size = owner.size();
         let main_rect = unsafe{self.main_rect().assume_safe()};
         let tile_size = main_rect.size();
         let tile_position =  main_rect.position();

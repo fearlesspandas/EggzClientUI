@@ -83,7 +83,6 @@ impl FieldZone{
         proc_cube.set_size(cube_size + Vector3{x:1.0,y:1.0,z:1.0});
         proc_cube.set_material(proc_mesh_material);
         proc_mesh.set_mesh(proc_cube);
-        let owner_transform = owner.transform();
 
         //initialize
         //op_menu.map(|_ , control| control.set_size(Vector2{x:200.0,y:200.0},false));
@@ -123,7 +122,7 @@ impl FieldZone{
         
     }
     #[method]
-    fn _process(&mut self,#[base] owner:TRef<KinematicBody>,delta:f64){
+    fn _process(&mut self,#[base] _owner:TRef<KinematicBody>,_delta:f64){
         match self.zone_rx.try_recv() {
             Ok(FieldZoneCommand::Selected(typ)) => {
                 let _ = self.field_tx
@@ -144,7 +143,7 @@ impl FieldZone{
         }
     }
     #[method]
-    fn clicked(&self,#[base] owner:TRef<KinematicBody>,event_position:Vector2,intersect_position:Vector3){
+    fn clicked(&self,#[base] _owner:TRef<KinematicBody>,_event_position:Vector2,_intersect_position:Vector3){
         godot_print!("Field Area Clicked!");
         if self.abilities.len() == 0{
             let op_menu = unsafe{self.op_menu.assume_safe()};
@@ -188,18 +187,18 @@ impl FieldZone{
             let ability = self.abilities.get(&typ).unwrap();
             owner.remove_child(ability);
             let ability = unsafe{ability.assume_safe()};
-            let _ = ability.map(|obj,mesh| mesh.queue_free());
+            let _ = ability.map(|_,mesh| mesh.queue_free());
             self.abilities.remove(&typ);
         }
     }
     #[method]
-    fn entered(&self,#[base] owner:TRef<KinematicBody>){
+    fn entered(&self,#[base] _owner:TRef<KinematicBody>){
         let mesh = unsafe{self.mesh.assume_safe()};
         mesh.set_visible(true);
         //godot_print!("Body Entered!");
     }
     #[method]
-    fn exited(&self,#[base] owner:TRef<KinematicBody>){
+    fn exited(&self,#[base] _owner:TRef<KinematicBody>){
         let mesh = unsafe{self.mesh.assume_safe()};
         mesh.set_visible(false);
         //godot_print!("Body Exited!");
@@ -300,10 +299,10 @@ impl Field{
         FieldCommand::register(builder);
     }
     #[method]
-    fn _ready(&self, #[base] owner:TRef<Spatial>){
+    fn _ready(&self, #[base] _owner:TRef<Spatial>){
     }
     #[method]
-    fn _process(&mut self,#[base] owner:TRef<Spatial>,delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<Spatial>,_delta:f64){
         match self.rx.try_recv(){
             Ok(cmd) => {
                 match cmd{
@@ -356,7 +355,7 @@ impl Field{
         let zone = unsafe{zone.assume_safe()};
         let _ = zone.map_mut(|obj,_| obj.set_tx(self.tx.clone()));
         owner.add_child(zone.clone(),false);
-        let _ = zone.map(|obj,spatial| {
+        let _ = zone.map(|_,spatial| {
             let mut transform = spatial.transform();
             transform.origin = Vector3{x:ZONE_WIDTH * (location.x as f32),y:0.0,z:ZONE_WIDTH * (location.y as f32)};
             spatial.set_transform(transform);
@@ -386,33 +385,32 @@ impl Field{
         }
     }
     #[method]
-    fn add_field_ability(&self,#[base] owner:TRef<Spatial>,ability_id:u8,location:(i64,i64)){
+    fn add_field_ability(&self,#[base] _owner:TRef<Spatial>,ability_id:u8,location:(i64,i64)){
         let (x,y) = location;
         let location = Location{x:x,y:y};
         if !self.zones.contains_key(&location){return ;}
         let zone = self.zones.get(&location).unwrap();
         let zone = unsafe{zone.assume_safe()};
-        let typ = AbilityType::from(ability_id);
         let _ = zone.map_mut(|obj,body|{
             obj.place_ability(body,ability_id)
         });
     }
     #[method]
-    fn hide(&self,#[base] owner:TRef<Spatial>){
+    fn hide(&self,#[base] _owner:TRef<Spatial>){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
             let _ = zone.map(|obj,body| obj.hide(body));
         }
     }
     #[method]
-    fn show(&self,#[base] owner:TRef<Spatial>){
+    fn show(&self,#[base] _owner:TRef<Spatial>){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
             let _ = zone.map(|obj,body| obj.show(body));
         }
     }
     #[method]
-    fn toggle(&self,#[base] owner:TRef<Spatial>){
+    fn toggle(&self,#[base] _owner:TRef<Spatial>){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
             let _ = zone.map(|obj,body| obj.toggle(body));
@@ -499,21 +497,21 @@ impl FieldOp3D{
         owner.add_child(highlight_right,true);
     }
     #[method]
-    fn clicked(&self,#[base] owner:TRef<KinematicBody>,event_position:Vector2,intersect_position:Vector3){
+    fn clicked(&self,#[base] _owner:TRef<KinematicBody>,_event_position:Vector2,_intersect_position:Vector3){
         let _ = self.field_tx
             .as_ref()
             .expect("field_tx not set")
             .send(FieldZoneCommand::Selected(self.typ));
     }
     #[method]
-    fn entered(&self,#[base] owner:TRef<KinematicBody>){
+    fn entered(&self,#[base] _owner:TRef<KinematicBody>){
         let highlight_left = unsafe{self.highlight_left.assume_safe()};
         let highlight_right = unsafe{self.highlight_right.assume_safe()};
         highlight_left.set_visible(true);
         highlight_right.set_visible(true);
     }
     #[method]
-    fn exited(&self,#[base] owner:TRef<KinematicBody>){
+    fn exited(&self,#[base] _owner:TRef<KinematicBody>){
         let highlight_left = unsafe{self.highlight_left.assume_safe()};
         let highlight_right = unsafe{self.highlight_right.assume_safe()};
         highlight_left.set_visible(false);
@@ -550,7 +548,7 @@ impl Instanced<Spatial> for FieldOps3D{
 #[methods]
 impl FieldOps3D{
     #[method]
-    fn _ready(&self,#[base] owner:TRef<Spatial>){ }
+    fn _ready(&self,#[base] _owner:TRef<Spatial>){ }
     
     #[method]
     fn add_op(&mut self,#[base] owner:TRef<Spatial>,typ:u8,amount:i64){
@@ -683,7 +681,7 @@ impl FieldOp{
     }
 
     #[method]
-    fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
+    fn _process(&self,#[base] owner:TRef<Control>,_delta:f64){
         let label = unsafe{self.label.assume_safe()};
         let bg_rect = unsafe{self.bg_rect.assume_safe()};
         let main_rect = unsafe{self.bg_rect.assume_safe()};
@@ -717,7 +715,7 @@ impl Instanced<Control> for FieldOps{
 #[methods]
 impl FieldOps{
     #[method]
-    fn _ready(&self,#[base] owner:TRef<Control>){
+    fn _ready(&self,#[base] _owner:TRef<Control>){
 
     }
     #[method]
@@ -727,7 +725,7 @@ impl FieldOps{
         self.operations.push(op);
     }
     #[method]
-    fn _process(&self,#[base] owner:TRef<Control> , delta:f64){
+    fn _process(&self,#[base] owner:TRef<Control> , _delta:f64){
         let owner_size = owner.size(); 
         let num_ops = self.operations.len() as f32;
 
@@ -736,7 +734,7 @@ impl FieldOps{
         for op in &self.operations{
             let op = unsafe{op.assume_safe()};
             let mut idx = 0.0;
-            let _ = op.map(|obj,control| {
+            let _ = op.map(|_,control| {
                 control.set_size(op_size,false);
                 control.set_position(op_size * idx ,false);
             });

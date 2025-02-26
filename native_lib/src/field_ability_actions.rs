@@ -35,7 +35,6 @@ impl ToAction for AbilityType{
                         .len() > 0
                         ).unwrap_or(false)
                 }).collect::<Vec<_>>();
-                let matching_num = matching_zones.len();
                 match matching_zones.len() {
                     0 => {
                         let _ = tx.send(FieldCommand::ModifyAbility(*location,SubAbilityType::globular_teleport_anchor));
@@ -50,7 +49,7 @@ impl ToAction for AbilityType{
                         for mzone in matching_zones{
                             let mzone = unsafe{mzone.assume_safe()};
                             let _ = mzone.map_mut(|obj,body| obj.remove_ability(body,(*self).into()));
-                            let _ = mzone.map_mut(|obj,body| obj.unproc());
+                            let _ = mzone.map_mut(|obj,_| obj.unproc());
                         }
                         let _ = zone.map_mut(|obj,body| obj.remove_ability(body,(*self).into()));
                         let _ = tx.send(FieldCommand::DoAbility(*location,AbilityType::globular_teleport));
@@ -74,7 +73,7 @@ impl ServerEnteredAction for AbilityType{
     fn server_body_entered(
         &self,
         tx:Sender<field_server::FieldCommand>,
-        location:&Location,
+        _location:&Location,
         entity_id:String,
     ){ 
         match self{

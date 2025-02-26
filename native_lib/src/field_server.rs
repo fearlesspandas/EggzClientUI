@@ -27,7 +27,6 @@ pub struct FieldZoneServer{
 }
 impl InstancedDefault<Area,Location> for FieldZoneServer{
     fn make(args:&Location) -> Self{
-        let (tx,rx) = mpsc::unbounded_channel::<FieldZoneCommand>();
         FieldZoneServer{
             typ:AbilityType::empty,
             location:*args,
@@ -49,7 +48,6 @@ impl FieldZoneServer{
     }
     #[method]
     fn _ready(&self,#[base] owner:TRef<Area>){
-        let cube_size = Vector3{x:ZONE_WIDTH,y:ZONE_HEIGHT,z:ZONE_WIDTH}; 
         //initialize
         let collision_shape = BoxShape::new().into_shared();
         let collision_shape = unsafe{collision_shape.assume_safe()};
@@ -67,10 +65,10 @@ impl FieldZoneServer{
         
     }
     #[method]
-    fn _process(&mut self,#[base] owner:TRef<Area>,delta:f64){
+    fn _process(&mut self,#[base] _owner:TRef<Area>,_delta:f64){
     }
     #[method]
-    fn handle_body(&self,#[base] owner:TRef<Area>,body:Ref<Node,Shared>){
+    fn handle_body(&self,#[base] _owner:TRef<Area>,body:Ref<Node,Shared>){
         let body = unsafe{body.assume_safe()};
         let entity_id = body.get_parent().map(|parent|{
             let parent = unsafe{parent.assume_safe()};
@@ -129,10 +127,10 @@ impl FieldServer{
             .done();
     }
     #[method]
-    fn _ready(&self, #[base] owner:TRef<Spatial>){
+    fn _ready(&self, #[base] _owner:TRef<Spatial>){
     }
     #[method]
-    fn _process(&mut self,#[base] owner:TRef<Spatial>,delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<Spatial>,_delta:f64){
         match self.rx.try_recv(){
             Ok(cmd) => {
                 match cmd{
@@ -158,20 +156,19 @@ impl FieldServer{
         let zone = unsafe{zone.assume_safe()};
         let _ = zone.map_mut(|obj,_| obj.set_tx(self.tx.clone()));
         owner.add_child(zone.clone(),true);
-        let _ = zone.map(|obj,spatial| {
+        let _ = zone.map(|_,spatial| {
             let mut transform = spatial.transform();
             transform.origin = Vector3{x:ZONE_WIDTH * (location.x as f32),y:0.0,z:ZONE_WIDTH * (location.y as f32)};
             spatial.set_transform(transform);
         });
     }
     #[method]
-    fn add_field_ability(&self,#[base] owner:TRef<Spatial>,ability_id:u8,location:(i64,i64)){
+    fn add_field_ability(&self,#[base] _owner:TRef<Spatial>,ability_id:u8,location:(i64,i64)){
         let (x,y) = location;
         let location = Location{x:x,y:y};
         if !self.zones.contains_key(&location){return ;}
         let zone = self.zones.get(&location).unwrap();
         let zone = unsafe{zone.assume_safe()};
-        let typ = AbilityType::from(ability_id);
         let _ = zone.map_mut(|obj,body|{
             obj.place_ability(body,ability_id)
         });

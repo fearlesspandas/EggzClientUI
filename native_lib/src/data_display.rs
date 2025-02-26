@@ -75,7 +75,7 @@ pub struct DataDisplay{
 } 
 #[methods]
 impl DataDisplay{
-    pub fn new(base: &Control) -> Self{
+    pub fn new(_base: &Control) -> Self{
         DataDisplay{
             tag_to_data: HashMap::new(),
             text_display: RichTextLabel::new().into_shared(),
@@ -96,7 +96,7 @@ impl DataDisplay{
         owner.add_child(text_display,true);
     }
     #[method]
-    fn _process(&self,#[base] owner:&Control,delta:f64){
+    fn _process(&self,#[base] owner:&Control,_delta:f64){
         let text_display = unsafe{self.text_display.assume_safe()};
         text_display.set_size(owner.size(),true);
         let mut text_data = "".to_string();
