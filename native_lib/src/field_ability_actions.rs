@@ -4,6 +4,7 @@ use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::field::{Location,FieldZone,FieldCommand};
 use crate::field_abilities::{AbilityType,SubAbilityType};
+use crate::field_server;
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
@@ -15,7 +16,7 @@ impl ToAction for AbilityType{
         match self{
             AbilityType::empty => { }
             AbilityType::smack => { 
-                tx.send(FieldCommand::DoAbility(*location,AbilityType::smack));
+                let _ = tx.send(FieldCommand::DoAbility(*location,AbilityType::smack));
             }
             AbilityType::globular_teleport => {
                 let zone = field_state.get(location).unwrap();
@@ -35,33 +36,53 @@ impl ToAction for AbilityType{
                         .len() > 0
                         ).unwrap_or(false)
                 }).collect::<Vec<_>>();
-
                 let matching_num = matching_zones.len();
-                godot_print!("{}",format!("Matching:{matching_num:?}"));
                 match matching_zones.len() {
                     0 => {
-                        tx.send(FieldCommand::ModifyAbility(*location,SubAbilityType::globular_teleport_anchor));
-                        zone.map_mut(|obj,_| obj.proc());
+                        let _ = tx.send(FieldCommand::ModifyAbility(*location,SubAbilityType::globular_teleport_anchor));
+                        let _ = zone.map_mut(|obj,_| obj.proc());
                     }
                     1 | 2 | 3 => {
-                        tx.send(FieldCommand::ModifyAbility(*location,SubAbilityType::globular_teleport_vertex));
-                        zone.map_mut(|obj,_| obj.proc());
+                        let _ = tx.send(FieldCommand::ModifyAbility(*location,SubAbilityType::globular_teleport_vertex));
+                        let _ = zone.map_mut(|obj,_| obj.proc());
                     }
                     _ => {
-                        tx.send(FieldCommand::ModifyAbility(*location,SubAbilityType::globular_teleport_vertex));
+                        let _ = tx.send(FieldCommand::ModifyAbility(*location,SubAbilityType::globular_teleport_vertex));
                         for mzone in matching_zones{
                             let mzone = unsafe{mzone.assume_safe()};
-                            mzone.map_mut(|obj,body| obj.remove_ability(body,(*self).into()));
-                            mzone.map_mut(|obj,body| obj.unproc());
+                            let _ = mzone.map_mut(|obj,body| obj.remove_ability(body,(*self).into()));
+                            let _ = mzone.map_mut(|obj,body| obj.unproc());
                         }
-                        zone.map_mut(|obj,body| obj.remove_ability(body,(*self).into()));
-                        tx.send(FieldCommand::DoAbility(*location,AbilityType::globular_teleport));
+                        let _ = zone.map_mut(|obj,body| obj.remove_ability(body,(*self).into()));
+                        let _ = tx.send(FieldCommand::DoAbility(*location,AbilityType::globular_teleport));
                     }
                 }
             }
-            AbilityType::slizzard => {
+            AbilityType::slizzard => { }
+        }
+    }
+}
 
+pub trait ServerEnteredAction{
+    fn server_body_entered(
+        &self,
+        tx:Sender<field_server::FieldCommand>,
+        location:&Location,
+        entity_id:String
+    );
+}
+impl ServerEnteredAction for AbilityType{
+    fn server_body_entered(
+        &self,
+        tx:Sender<field_server::FieldCommand>,
+        location:&Location,
+        entity_id:String,
+    ){ 
+        match self{
+            AbilityType::slizzard => {
+                let _ = tx.send(field_server::FieldCommand::Damage(entity_id,100.0));
             }
+            _ => {}
         }
     }
 }

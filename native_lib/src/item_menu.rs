@@ -149,19 +149,19 @@ impl InventorySlot{
     #[method]
     fn _ready(&self,#[base] owner:TRef<Control>){
         <Self as LabelButton<InventoryAction>>::ready(self,owner);
-        owner.connect("mouse_entered",owner,"entered",VariantArray::new_shared(),0);
-        owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
-        owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
+        let _ = owner.connect("mouse_entered",owner,"entered",VariantArray::new_shared(),0);
+        let _ = owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
+        let _ = owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
         let amount_disp = unsafe{self.amount_display.assume_safe()};
-        amount_disp.map(|_,control|control.set_mouse_filter(control::MouseFilter::IGNORE.into()));
+        let _ = amount_disp.map(|_,control|control.set_mouse_filter(control::MouseFilter::IGNORE.into()));
         owner.add_child(amount_disp,true);
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
         <Self as LabelButton<InventoryAction>>::process(self,owner,delta);
         let amount_disp = unsafe{self.amount_display.assume_safe()};
-        amount_disp.map(|_,control| control.set_size(owner.size()/3.0,false));
-        amount_disp.map(|_,control| control.set_position(owner.size() - control.size(),false));
+        let _ = amount_disp.map(|_,control| control.set_size(owner.size()/3.0,false));
+        let _ = amount_disp.map(|_,control| control.set_position(owner.size() - control.size(),false));
     }
     #[method]
     fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
@@ -194,13 +194,13 @@ impl InventorySlot{
     fn set_amount(&mut self,amount:i32){
         self.amount = amount;
         let amount_disp = unsafe{self.amount_display.assume_safe()};
-        amount_disp.map_mut(|obj,_| obj.set_amount(self.amount));
+        let _ = amount_disp.map_mut(|obj,_| obj.set_amount(self.amount));
     }
     #[method]
     fn add_amount(&mut self,amount:i32){
         self.amount += amount;
         let amount_disp = unsafe{self.amount_display.assume_safe()};
-        amount_disp.map_mut(|obj,_| obj.set_amount(self.amount));
+        let _ = amount_disp.map_mut(|obj,_| obj.set_amount(self.amount));
         
     }
     #[method]
@@ -323,9 +323,9 @@ impl OperationButton{
     #[method]
     fn _ready(&self,#[base] owner:TRef<Control>){
         <Self as TileButton<OP_BUTTON>>::ready(self,owner);
-        owner.connect("mouse_entered",owner,"entered",VariantArray::new_shared(),0);
-        owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
-        owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
+        let _ = owner.connect("mouse_entered",owner,"entered",VariantArray::new_shared(),0);
+        let _ = owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
+        let _ = owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
         self.set_tile(self.typ.into());
 
     }
@@ -433,33 +433,33 @@ impl InventoryOperations{
     #[method]
     fn _ready(&self,#[base] owner:TRef<Control>){
         <Self as Windowed<InventoryAction>>::ready(self,owner);
-        owner.connect("mouse_entered",owner,"entered",VariantArray::new_shared(),0);
-        owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
-        owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
+        let _ = owner.connect("mouse_entered",owner,"entered",VariantArray::new_shared(),0);
+        let _ = owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
+        let _ = owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
         let place_button = unsafe{self.place_button.assume_safe()};
         owner.add_child(place_button.clone(),true);
-        place_button.map_mut(|obj,_| obj.set_type(OperationType::place.into()));
-        place_button.map_mut(|obj,_| obj.set_centering(Centering::top_left));
+        let _ = place_button.map_mut(|obj,_| obj.set_type(OperationType::place.into()));
+        let _ = place_button.map_mut(|obj,_| obj.set_centering(Centering::top_left));
         let remove_button = unsafe{self.remove_button.assume_safe()};
         owner.add_child(remove_button.clone(),true);
-        remove_button.map_mut(|obj,_| obj.set_type(OperationType::remove.into()));
-        remove_button.map_mut(|obj,_| obj.set_centering(Centering::top_right));
+        let _ = remove_button.map_mut(|obj,_| obj.set_type(OperationType::remove.into()));
+        let _ = remove_button.map_mut(|obj,_| obj.set_centering(Centering::top_right));
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
         <Self as Windowed<InventoryAction>>::process(self,owner,delta);
         let place_button = unsafe{self.place_button.assume_safe()};
         let button_size = owner.size()/4.0;
-        place_button.map(|_,control| control.set_size(button_size,false));
+        let _ = place_button.map(|_,control| control.set_size(button_size,false));
         let remove_button = unsafe{self.remove_button.assume_safe()};
-        remove_button.map(|_,control| control.set_size(button_size,false));
-        remove_button.map(|_,control| control.set_position(Vector2{x:owner.size().x - button_size.x,y:0.0},false));
+        let _ = remove_button.map(|_,control| control.set_size(button_size,false));
+        let _ = remove_button.map(|_,control| control.set_position(Vector2{x:owner.size().x - button_size.x,y:0.0},false));
         match self.buttons_rx.try_recv(){
             Ok(OperationType::place) => {
-                self.tx.send(InventoryAction::pocketed(self.typ,self.position));
+                let _ = self.tx.send(InventoryAction::pocketed(self.typ,self.position));
             }
             Ok(OperationType::remove) => {
-                self.tx.send(InventoryAction::unpocketed(self.typ,self.position));
+                let _ = self.tx.send(InventoryAction::unpocketed(self.typ,self.position));
             }
             Ok(_) => {}
             Err(_) => {}
@@ -497,12 +497,12 @@ impl InventoryOperations{
     #[method]
     fn set_place_button_visible(&self,visible:bool){
         let place_button = unsafe{self.place_button.assume_safe()};
-        place_button.map(|_,control| control.set_visible(visible));
+        let _ = place_button.map(|_,control| control.set_visible(visible));
     }
     #[method]
     fn set_remove_button_visible(&self,visible:bool){
         let remove_button = unsafe{self.remove_button.assume_safe()};
-        remove_button.map(|_,control| control.set_visible(visible));
+        let _ = remove_button.map(|_,control| control.set_visible(visible));
     }
 }
 ////INVENTORY MENU///////////////////
@@ -558,7 +558,7 @@ impl InventoryMenu{
         owner.add_child(self.operations.clone(),true);
         owner.set_visible(false);
         let operations = unsafe{self.operations.assume_safe()};
-        operations.map(|_,control| control.set_visible(false));
+        let _ = operations.map(|_,control| control.set_visible(false));
 
 
     }
@@ -570,12 +570,12 @@ impl InventoryMenu{
                 let slot = &self.slots[id as usize];
                 let slot = unsafe{slot.assume_safe()};
                 
-                slot
+                let _ = slot
                     .map(|_,control|control.position())
                     .map(|position| operations.map(|_,op_control| op_control.set_position(position,false)));
-                operations.map(|_,control| control.set_visible(true));
-                operations.map_mut(|obj,_| obj.position = id);
-                operations.map_mut(|obj,_| obj.set_type(typ.into()));
+                let _ = operations.map(|_,control| control.set_visible(true));
+                let _ = operations.map_mut(|obj,_| obj.position = id);
+                let _ = operations.map_mut(|obj,_| obj.set_type(typ.into()));
             }
             Ok(InventoryAction::pocketed(typ,id)) => {
                 owner.emit_signal("pocketed",&[Variant::new(typ),Variant::new(1)]);
@@ -599,8 +599,8 @@ impl InventoryMenu{
         let mut idx = 0.0;
         for slot in &self.slots{
             let slot = unsafe{slot.assume_safe()};
-            slot.map(|_,control|control.set_size(slot_size_v,false));
-            slot.map(|_,control|
+            let _ = slot.map(|_,control|control.set_size(slot_size_v,false));
+            let _ = slot.map(|_,control|
                 control.set_position(
                     Vector2{
                         x:slot_size * (idx%max_per_row),
@@ -612,7 +612,7 @@ impl InventoryMenu{
             idx += 1.0;
         }
         let operations = unsafe{self.operations.assume_safe()};
-        operations.map(|_,control| control.set_size(slot_size_v,false));
+        let _ = operations.map(|_,control| control.set_size(slot_size_v,false));
     }
     #[method]
     fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
@@ -627,18 +627,18 @@ impl InventoryMenu{
         let id = self.slots.len() as i32;
         self.slots.push(slot.clone());
         let slot = unsafe{slot.assume_safe()};
-        slot.map_mut(|obj,_| obj.set_type(typ));
-        slot.map_mut(|obj,_| obj.set_id(id));
-        slot.map_mut(|obj,_| obj.set_amount(amount));
+        let _ = slot.map_mut(|obj,_| obj.set_type(typ));
+        let _ = slot.map_mut(|obj,_| obj.set_id(id));
+        let _ = slot.map_mut(|obj,_| obj.set_amount(amount));
         owner.add_child(slot,true);
     }
     #[method]
     fn fill_slot(&mut self,#[base] owner:TRef<Control>, typ:u8,amount:i32){
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
         let empty_slot = slots.find(|x| x.map(|obj,_| obj.is_empty() || obj.typ == AbilityType::from(typ)).unwrap());
-        empty_slot.map(|slot| {
-            slot.map_mut(|obj,_| obj.set_type(typ));
-            slot.map_mut(|obj,_| obj.add_amount(amount));
+        let _ = empty_slot.map(|slot| {
+            let _ = slot.map_mut(|obj,_| obj.set_type(typ));
+            let _ = slot.map_mut(|obj,_| obj.add_amount(amount));
         });
     }
     #[method]
@@ -667,8 +667,8 @@ impl InventoryMenu{
     fn clear(&mut self,#[base] owner:TRef<Control>){
         for slot in &self.slots{
             let slot = unsafe{slot.assume_safe()};
-            slot.map_mut(|obj,_| obj.set_type(AbilityType::empty.into()));
-            slot.map_mut(|obj,_| obj.set_amount(0));
+            let _ = slot.map_mut(|obj,_| obj.set_type(AbilityType::empty.into()));
+            let _ = slot.map_mut(|obj,_| obj.set_amount(0));
         }
     }
 }
@@ -712,8 +712,8 @@ impl Pocket{
         self.add_slot(owner,AbilityType::empty.into(),0);
         owner.add_child(self.operations.clone(),true);
         let operations = unsafe{self.operations.assume_safe()};
-        operations.map(|_,control| control.set_visible(false));
-        operations.map(|obj,_| obj.set_place_button_visible(false));
+        let _ = operations.map(|_,control| control.set_visible(false));
+        let _ = operations.map(|obj,_| obj.set_place_button_visible(false));
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
@@ -723,12 +723,12 @@ impl Pocket{
                 let slot = &self.slots[id as usize];
                 let slot = unsafe{slot.assume_safe()};
                 
-                slot
+                let _ = slot
                     .map(|_,control|control.position())
                     .map(|position| operations.map(|_,op_control| op_control.set_position(position,false)));
-                operations.map(|_,control| control.set_visible(true));
-                operations.map_mut(|obj,_| obj.position = id);
-                operations.map_mut(|obj,_| obj.set_type(typ.into()));
+                let _ = operations.map(|_,control| control.set_visible(true));
+                let _ = operations.map_mut(|obj,_| obj.position = id);
+                let _ = operations.map_mut(|obj,_| obj.set_type(typ.into()));
             }
             Ok(InventoryAction::pocketed(typ,id)) => { }
             Ok(InventoryAction::unpocketed(typ,id)) => {
@@ -754,8 +754,8 @@ impl Pocket{
         let mut idx = 0.0;
         for slot in &self.slots{
             let slot = unsafe{slot.assume_safe()};
-            slot.map(|_,control|control.set_size(slot_size_v,false));
-            slot.map(|_,control|
+            let _ = slot.map(|_,control|control.set_size(slot_size_v,false));
+            let _ = slot.map(|_,control|
                 control.set_position(
                     Vector2{
                         x:slot_size * (idx%max_per_row),
@@ -767,7 +767,7 @@ impl Pocket{
             idx += 1.0;
         }
         let operations = unsafe{self.operations.assume_safe()};
-        operations.map(|_,control| control.set_size(slot_size_v,false));
+        let _ = operations.map(|_,control| control.set_size(slot_size_v,false));
     }
     #[method]
     fn _input(&self,#[base] owner:TRef<Control>,event:Ref<InputEvent>){
@@ -782,9 +782,9 @@ impl Pocket{
         let id = self.slots.len() as i32;
         self.slots.push(slot.clone());
         let slot = unsafe{slot.assume_safe()};
-        slot.map_mut(|obj,_| obj.set_type(typ));
-        slot.map_mut(|obj,_| obj.set_id(id));
-        slot.map_mut(|obj,_| obj.set_amount(amount));
+        let _ = slot.map_mut(|obj,_| obj.set_type(typ));
+        let _ = slot.map_mut(|obj,_| obj.set_id(id));
+        let _ = slot.map_mut(|obj,_| obj.set_amount(amount));
         owner.add_child(slot,true);
     }
     #[method]
@@ -792,8 +792,8 @@ impl Pocket{
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
         let empty_slot = slots.find(|x| x.map(|obj,_| obj.is_empty() || obj.typ == AbilityType::from(typ)).unwrap());
         empty_slot.map(|slot| {
-            slot.map_mut(|obj,_| obj.set_type(typ));
-            slot.map_mut(|obj,_| obj.add_amount(amount));
+            let _ = slot.map_mut(|obj,_| obj.set_type(typ));
+            let _ = slot.map_mut(|obj,_| obj.add_amount(amount));
         });
     }
     #[method]
@@ -821,8 +821,8 @@ impl Pocket{
     fn clear(&mut self,#[base] owner:TRef<Control>){
         for slot in &self.slots{
             let slot = unsafe{slot.assume_safe()};
-            slot.map_mut(|obj,_| obj.set_type(AbilityType::empty.into()));
-            slot.map_mut(|obj,_| obj.set_amount(0));
+            let _ = slot.map_mut(|obj,_| obj.set_type(AbilityType::empty.into()));
+            let _ = slot.map_mut(|obj,_| obj.set_amount(0));
         }
     }
 }

@@ -18,6 +18,7 @@ pub mod field_abilities;
 pub mod field_ability_mesh;
 pub mod field_ability_colliders;
 pub mod field_ability_actions;
+pub mod collision_layer;
 pub mod item_menu;
 pub mod button_tiles;
 mod client_terminal;

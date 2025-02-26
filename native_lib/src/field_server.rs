@@ -6,6 +6,7 @@ use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field::{Location,zone_height,zone_width};
 use crate::field_abilities::{AbilityType};
 use crate::field_ability_colliders::ToCollider;
+use crate::field_ability_actions::ServerEnteredAction;
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
@@ -82,7 +83,7 @@ impl FieldZoneServer{
         if entity_id.is_nil(){assert!(false)}
         let entity_id = entity_id.try_to::<String>();
         let field_tx = self.field_tx.clone().unwrap();
-        entity_id.map(|id| field_tx.send(FieldCommand::Damage(id,100.0)));
+        entity_id.map(|id| self.typ.server_body_entered(field_tx,&self.location,id));
     }
     #[method]
     fn place_ability(&mut self,#[base] owner:TRef<Area>,typ:u8){

@@ -6,6 +6,7 @@ use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_abilities::{AbilityType};
 use tokio::sync::mpsc;
 use crate::slizzard::Slizzard;
+use crate::collision_layer;
 
 pub trait ToCollider{
     fn to_collider(&self,extents:Vector3) -> Option<Ref<Area>>;
@@ -32,6 +33,10 @@ impl ToCollider for AbilityType{
                 shape.set_extents(extents);
                 collider.set_shape(shape);
                 area.add_child(collider,true);
+                area.set_collision_layer_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
+                area.set_collision_mask_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
+                area.set_collision_layer_bit(collision_layer::SERVER_NPC_COLLISION_LAYER.into(),false);
+                area.set_collision_mask_bit(collision_layer::SERVER_NPC_COLLISION_LAYER.into(),true);
                 Some(area_ref)
             }
             

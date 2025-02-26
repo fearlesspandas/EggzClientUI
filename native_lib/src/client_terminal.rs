@@ -104,12 +104,12 @@ impl ClientTerminal{
             let event = unsafe{ event.assume_safe()};
             let tree = unsafe{owner.get_tree().unwrap().assume_safe()};
             if event.is_action_pressed("terminal_autocomplete_accept",true,true){
-                self.action_tx.send(Action::AutoCompleteAccept);
+                let _ = self.action_tx.send(Action::AutoCompleteAccept);
                 tree.set_input_as_handled();
             }
             if event.is_action_released("terminal_toggle",false){
                 owner.set_visible(!owner.is_visible());
-                self.action_tx.send(Action::SetActive(owner.is_visible()));
+                let _ = self.action_tx.send(Action::SetActive(owner.is_visible()));
                 if owner.is_visible(){input.grab_focus();}
                 tree.set_input_as_handled();
             }
@@ -138,7 +138,7 @@ impl ClientTerminal{
                 let res = Self::get_command(&input_text.to_string());
                 self.output_append(input_text.to_string().into());
                 self.output_append(format!("{res:?}\n").into());
-                res.map(|cmd| self.cmd_tx.send(cmd));
+                let _ = res.map(|cmd| self.cmd_tx.send(cmd));
                 self.hist_idx = -1;
                 self.input_update_from_idx();
                 let ov_scroh = unsafe{output.get_v_scroll().unwrap().assume_safe()};
@@ -175,11 +175,11 @@ impl ClientTerminal{
         let suggestion_loc = Vector2{x:0.0,y:input_loc.y - suggestion_size.y};
         suggestions.set_size(suggestion_size,false);
         suggestions.set_position(suggestion_loc,false);
-        data_display.map(|dat,dat_own| {
+        let _ = data_display.map(|dat,dat_own| {
             dat_own.set_size(data_display_size,false);
             dat_own.set_position(data_display_loc,false);
         });
-        graph_display.map(|graph,control| {
+        let _ = graph_display.map(|graph,control| {
             control.set_size(graph_display_size,false);
             control.set_position(graph_display_loc,false);
         });
@@ -192,14 +192,14 @@ impl ClientTerminal{
     #[method]
     fn add_incoming_data(&self,tag:String,data:String){
         let data_display = unsafe{self.data_display.assume_safe()};
-        data_display
+        let _ = data_display
             .map_mut(|display,control| display.add_data(tag,data))
             .map_err(|e| godot_print!("{}",format!("Could not process incoming data due to {e:?}")));
     }
     #[method]
     fn add_graph_data(&self,tag:String,data:f32){
         let graph = unsafe{self.graph_display.assume_safe()};
-        graph
+        let _ = graph
             .map_mut(|graph_disp,_| graph_disp.add_data(tag,data))
             .map_err(|e| godot_print!("{}",format!("Could not process incoming grpah data due to {e:?}")));
 
@@ -221,21 +221,21 @@ impl ClientTerminal{
                 Ok(Command::EntitiesRemoveMesh) => { owner.emit_signal(CommandType::entities_remove_mesh.to_string(),&[]); }
                 Ok(Command::ClearData) => {
                     let bar_graph = unsafe{self.graph_display.assume_safe()};
-                    bar_graph.map_mut(|obj,_| obj.queue_clear());
+                    let _ = bar_graph.map_mut(|obj,_| obj.queue_clear());
                 }
                 Ok(Command::SaveSnapshot(name)) => {
                     let name_c = name.clone();
                     let bar_graph = unsafe{self.graph_display.assume_safe()};
                     let res = bar_graph.map(|obj,_|obj.snapshot(name)).unwrap();
-                    res.map(|_| self.output_append(format!("Successfully saved snapshot {name_c:?}").into()))
+                    let _ = res.map(|_| self.output_append(format!("Successfully saved snapshot {name_c:?}").into()))
                         .map_err(|err| self.output_append(err.into()));
                 }
                 Ok(Command::LoadSnapshot(name)) => {
                     let bar_graph = unsafe{self.graph_display.assume_safe()};
                     let res = bar_graph.map(|obj,_|obj.load(name)).unwrap();
-                    res.map(|snapshot|{
+                    let _ = res.map(|snapshot|{
                         for (tag,data) in snapshot.data{
-                            bar_graph.map_mut(|obj,_|obj.add_data(tag,data));
+                            let _ = bar_graph.map_mut(|obj,_|obj.add_data(tag,data));
                         }
                     })
                         .map_err(|err| self.output_append(err.into()));
@@ -246,7 +246,7 @@ impl ClientTerminal{
                     self.output_append(format!("added data_type {data_type_str:?} to stream").into());
                     let data_collection_timer = unsafe{self.data_collection_timer.assume_safe()};
                     if data_collection_timer.is_stopped(){
-                        data_collection_timer.connect("timeout",owner,"send_data_requests",VariantArray::new_shared(),0);
+                        let _ = data_collection_timer.connect("timeout",owner,"send_data_requests",VariantArray::new_shared(),0);
                         data_collection_timer.start(-1.0);
                         self.output_append("started data stream".into());
                     }

@@ -2,6 +2,7 @@
 use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
+use crate::collision_layer;
 use tokio::sync::mpsc;
 
 
@@ -159,6 +160,10 @@ impl SlizzardServer{
         collider.set_shape(shape);
         owner.add_child(collider,true);
         owner.connect("body_entered",owner,"attack_entity",VariantArray::new_shared(),0);
+        owner.set_collision_layer_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
+        owner.set_collision_mask_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
+        owner.set_collision_layer_bit(collision_layer::CLIENT_NPC_COLLISION_LAYER.into(),false);
+        owner.set_collision_mask_bit(collision_layer::CLIENT_NPC_COLLISION_LAYER.into(),true);
     }
 
     #[method]
