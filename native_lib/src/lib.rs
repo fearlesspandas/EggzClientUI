@@ -23,6 +23,8 @@ pub mod item_menu;
 pub mod button_tiles;
 mod client_terminal;
 
+#[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
 
 fn init(handle:InitHandle){
     handle.add_class::<client_terminal::ClientTerminal>();

@@ -5,7 +5,7 @@ use tokio::sync::mpsc;
 use std::{str::FromStr};
 use crate::terminal_commands::{Command,CommandType,InputCommand,ArgsConstructor};
 use crate::terminal_actions::{ActionType,Action};
-use crate::traits::{FromArgs,GetAll,Autocomplete,CreateSignal,Instanced};
+use crate::traits::{GetAll,Autocomplete,CreateSignal,Instanced};
 use crate::data_display::{DataDisplay,DataType};
 use crate::data_graphs::{BarGraph};
 type Sender<T> = mpsc::UnboundedSender<T>;

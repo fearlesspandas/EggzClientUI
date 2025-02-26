@@ -2,7 +2,6 @@
 
 use gdnative::prelude::*;
 use gdnative::api::*;
-use crate::traits::{Instanced,InstancedDefault};
 use crate::field_abilities::{AbilityType};
 use crate::collision_layer;
 

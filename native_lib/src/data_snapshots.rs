@@ -55,7 +55,8 @@ impl DataSnapshots{
         let _ = directory.open(path);
         let _ = directory.list_dir_begin(true,false);
         let mut res = Vec::new();
-        while let filename = directory.get_next(){
+        loop{
+            let filename = directory.get_next();
             if filename == "".into(){break}
             res.push(filename.to_string());
         }
