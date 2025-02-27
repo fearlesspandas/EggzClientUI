@@ -16,7 +16,6 @@ onready var destination_display_window:DestinationWindow = DestinationWindow.new
 onready var destination_type_indicator:DestinationTypeIndicator = DestinationTypeIndicator.new()
 onready var command_menu : CommandMenu = CommandMenu.new()
 onready var client_terminal = load("res://native_lib/ClientTerminal.gdns").new()
-onready var shop_menu = load("res://native_lib/ShopMenu.gdns").new()
 onready var inventory_menu_rust = Inventory.new()
 
 var profile_id:String
@@ -97,12 +96,8 @@ func load_scene(id,secret):
 	ClientTerminalGlobalSignals.register_terminal(client_terminal)
 	ServerTerminalGlobalSignals.register_terminal(client_terminal)
 
-	self.add_child(shop_menu)
-	shop_menu.set_client_id(profile.id)
-	shop_menu.connect("buy",ShopMenuEnv,"buy_ability")
-	shop_menu.connect("sell",ShopMenuEnv,"sell_ability")
-	ShopMenuEnv.connect("clear_inventory",shop_menu,"clear")
-	ShopMenuEnv.connect("add_to_inventory",shop_menu,"add_item")
+	self.add_child(ShopMenuEnv.shop_menu)
+	ShopMenuEnv.set_client_id(profile.id)
 
 	inventory_menu_rust.client_id = profile.id
 	self.add_child(inventory_menu_rust)

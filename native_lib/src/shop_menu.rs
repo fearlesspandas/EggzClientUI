@@ -416,4 +416,12 @@ impl ShopMenu{
     fn set_client_id(&mut self,new_id:String){
         self.client_id = Some(new_id)
     }
+    #[method]
+    fn show(&self, #[base] owner:TRef<Control>){
+        owner.set_visible(true);
+    }
+    #[method]
+    fn hide(&self, #[base] owner:TRef<Control>){
+        owner.set_visible(false);
+    }
 }

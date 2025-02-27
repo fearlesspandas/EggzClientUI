@@ -66,10 +66,12 @@ func entered(body):
 	assert(initialized)
 	for item in self.items:
 		ShopMenuEnv.add_to_inventory(int(item))
+	ShopMenuEnv.show()
 
 func exited(body):
 	player_active = false
 	ShopMenuEnv.clear_inventory()
+	ShopMenuEnv.hide()
 
 func _physics_process(delta):
 	if player_active:
