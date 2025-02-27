@@ -36,7 +36,7 @@ func init_requests():
 	init_timer.stop()
 
 func do_damage(id:String,amount:float):
-	assert(false,"Damaged")
+	socket.remove_health(id,amount)
 
 func refresh_field(id:String,contents:Dictionary):
 	for item in contents:

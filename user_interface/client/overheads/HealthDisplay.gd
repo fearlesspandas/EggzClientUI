@@ -6,7 +6,7 @@ onready var text_mesh:TextMesh = TextMesh.new()
 onready var font:DynamicFont = DynamicFont.new()
 onready var font_data:DynamicFontData = DynamicFontData.new()
  
-
+var value:float = 0
 func _ready():
 	font_data.font_path = AssetMapper.matchPath(AssetMapper.username_font)
 	font.font_data = font_data
@@ -19,4 +19,7 @@ func _ready():
 
 
 func set_value(value:float):
+	self.value = value
 	text_mesh.text = str(value)
+
+

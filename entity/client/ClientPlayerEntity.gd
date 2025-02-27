@@ -8,6 +8,7 @@ onready var health:HealthDisplay = HealthDisplay.new()
 onready var physics_native_socket = null #load("res://native_lib/ClientPhysicsSocket.gdns").new()
 onready var physics_native_shared_socket = SharedRuntimeEnv.physics_native_shared_socket
 #onready var belt_orbital = load("res://native_lib/BeltOrbital.gdns").new()
+onready var damage_indicator = load("res://native_lib/DamageDisplay.gdns").new()
 
 
 var isSubbed = false
@@ -24,12 +25,15 @@ func _ready():
 	Subscriptions.subscribe(username.id,id)
 	body.add_child(username)
 	body.add_child(health)
+	body.add_child(damage_indicator)
+	
 	self.add_child(message_controller)
 	socket = ServerNetwork.get(client_id)
 	assert(socket != null)
 	physics_socket = ServerNetwork.get_physics(client_id)
 	assert(physics_socket != null)
 	#body.add_child(belt_orbital)
+
 
 	physics_native_shared_socket.add_entity_to_queue(id)
 	ClientTerminalGlobalSignals.connect("set_entity_socket_mode",self,"set_socket_mode_if_entity")
@@ -72,6 +76,8 @@ func getSocket() -> ClientWebSocket:
 		return res 
 	
 func set_health(value:float):
+	if value < health.value:
+		damage_indicator.show_for_duration(str(health.value - value),3.0)
 	health.set_value(value)
 	
 func get_direction():

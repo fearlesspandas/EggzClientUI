@@ -21,6 +21,7 @@ pub mod field_ability_actions;
 pub mod collision_layer;
 pub mod item_menu;
 pub mod button_tiles;
+pub mod damage_indicator;
 mod client_terminal;
 
 #[allow(non_snake_case)]
@@ -57,6 +58,8 @@ fn init(handle:InitHandle){
     handle.add_class::<item_menu::OperationButton>();
     handle.add_class::<item_menu::SlotAmount>();
     handle.add_class::<button_tiles::Tile>();
+    handle.add_class::<damage_indicator::DamageIndicator>();
+    handle.add_class::<damage_indicator::DamageDisplay>();
     //handle.add_class::<item_menu::ControlBox<item_menu::ItemSlotCommand>>();
 }
 godot_init!(init);
