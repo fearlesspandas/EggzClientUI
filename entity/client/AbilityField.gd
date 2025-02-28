@@ -70,6 +70,10 @@ func refresh_field(id:String,contents:Dictionary):
 func add_field_ability(ability_id:int,location:Vector2): 
 	ref.add_field_ability(ability_id,[int(location.x),int(location.y)])
 
+func remove_field_ability(entity_id:String,ability_id:int): 
+	if entity_id == client_id:
+		ref.remove_field_ability(ability_id)
+
 func change_ability_state(_location,op_id:int):
 	match op_id: 
 		0:

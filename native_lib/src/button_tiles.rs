@@ -58,6 +58,7 @@ pub enum TileType{
     empty,
     down_arrow,
     up_arrow,
+    zone_up,
 }
 impl TileType{
     pub fn to_points(&self) -> Vec<Vector2>{
@@ -82,6 +83,21 @@ impl TileType{
                 v.push(Vector2{x:1.0,y:0.5});
                 v.push(Vector2{x:0.75,y:0.5});
                 v.push(Vector2{x:0.75,y:1.0});
+                v
+            }
+            TileType::zone_up => {
+                let mut v = Vec::new();
+                v.push(Vector2{x:1.0/8.0,y:7.0/8.0});
+                v.push(Vector2{x:2.0/8.0,y:5.0/8.0});
+                v.push(Vector2{x:3.0/8.0,y:5.0/8.0});
+                v.push(Vector2{x:3.0/8.0,y:2.0/8.0});
+                v.push(Vector2{x:2.0/8.0,y:2.0/8.0});
+                v.push(Vector2{x:4.0/8.0,y:0.0});
+                v.push(Vector2{x:6.0/8.0,y:2.0/8.0});
+                v.push(Vector2{x:5.0/8.0,y:2.0/8.0});
+                v.push(Vector2{x:5.0/8.0,y:5.0/8.0});
+                v.push(Vector2{x:6.0/8.0,y:5.0/8.0});
+                v.push(Vector2{x:7.0/8.0,y:7.0/8.0});
                 v
             }
             TileType::empty => Vec::new(), 

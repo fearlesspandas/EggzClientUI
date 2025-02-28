@@ -25,7 +25,10 @@ func _ready():
 
 	inventory_menu.connect("pocketed",self,"pocket_item")
 	inventory_menu.connect("unpocketed",self,"unpocket_item")
+	inventory_menu.connect("lift",self,"remove_field_ability")
+
 	pocket.connect("unpocketed",self,"unpocket_item")
+	pocket.connect("lift",self,"remove_field_ability")
 
 	self.init_timer.wait_time = 1.5
 	self.init_timer.connect("timeout",self,"init_requests")
@@ -36,6 +39,9 @@ func init_requests():
 	self.init_timer.one_shot = true
 	var socket = ServerNetwork.get(client_id)
 	socket.get_pocket(client_id)
+
+func remove_field_ability(item:int):
+	ServerNetwork.get(client_id).remove_ability(client_id,item)
 
 func refresh_contents(id,contents):
 	inventory_menu.clear();

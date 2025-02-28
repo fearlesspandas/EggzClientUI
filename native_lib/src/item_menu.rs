@@ -14,6 +14,7 @@ enum InventoryAction{
     clicked(AbilityType,i32),
     pocketed(AbilityType,i32),
     unpocketed(AbilityType,i32),
+    lift(AbilityType),
     unhandled,
 }
 impl From<Action> for InventoryAction{
@@ -204,6 +205,7 @@ pub enum OperationType{
     empty,
     place,
     remove,
+    zone_up,
 }
 impl ToString for OperationType{
     fn to_string(&self) -> String{
@@ -211,6 +213,7 @@ impl ToString for OperationType{
             OperationType::empty => "".to_string(),
             OperationType::place => "+".to_string(),
             OperationType::remove => "-".to_string(),
+            OperationType::zone_up => "_^_".to_string(),
         }
     }
 }
@@ -225,6 +228,7 @@ impl From<u8> for OperationType {
             255 => OperationType::empty,
             0 => OperationType::place,
             1 => OperationType::remove,
+            2 => OperationType::zone_up,
             _ => todo!(),
         }
     }
@@ -235,6 +239,7 @@ impl Into<TileType> for OperationType{
             OperationType::empty => TileType::empty,
             OperationType::place => TileType::down_arrow,
             OperationType::remove => TileType::up_arrow,
+            OperationType::zone_up => TileType::zone_up,
         }
     }
 }
@@ -243,6 +248,7 @@ impl Into<u8> for OperationType{
         match self{
             OperationType::place => 0,
             OperationType::remove => 1,
+            OperationType::zone_up => 2,
             OperationType::empty => 255,
         }
     }
@@ -357,6 +363,7 @@ pub struct InventoryOperations {
     main_rect:Ref<ColorRect>,
     place_button:Instance<OperationButton>,
     remove_button:Instance<OperationButton>,
+    zone_up_button:Instance<OperationButton>,
     tx:Sender<InventoryAction>,
     buttons_rx:Receiver<OP_BUTTON>,
     hovering:bool,
@@ -371,6 +378,7 @@ impl InstancedDefault<Control,Sender<InventoryAction>> for InventoryOperations{
             main_rect:ColorRect::new().into_shared(),
             place_button:OperationButton::make_instance(&tx).into_shared(),
             remove_button:OperationButton::make_instance(&tx).into_shared(),
+            zone_up_button:OperationButton::make_instance(&tx).into_shared(),
             tx:args.clone(),
             buttons_rx:rx,
             hovering:false,
@@ -424,6 +432,10 @@ impl InventoryOperations{
         owner.add_child(remove_button.clone(),true);
         let _ = remove_button.map_mut(|obj,_| obj.set_type(OperationType::remove.into()));
         let _ = remove_button.map_mut(|obj,_| obj.set_centering(Centering::top_right));
+        let zone_up_button = unsafe{self.zone_up_button.assume_safe()};
+        owner.add_child(zone_up_button.clone(),true);
+        let _ = zone_up_button.map_mut(|obj,_| obj.set_type(OperationType::zone_up.into()));
+        let _ = zone_up_button.map_mut(|obj,_| obj.set_centering(Centering::bottom_left));
     }
     #[method]
     fn _process(&mut self,#[base] owner:TRef<Control>,delta:f64){
@@ -434,12 +446,18 @@ impl InventoryOperations{
         let remove_button = unsafe{self.remove_button.assume_safe()};
         let _ = remove_button.map(|_,control| control.set_size(button_size,false));
         let _ = remove_button.map(|_,control| control.set_position(Vector2{x:owner.size().x - button_size.x,y:0.0},false));
+        let zone_up_button = unsafe{self.zone_up_button.assume_safe()};
+        let _ = zone_up_button.map(|_,control| control.set_size(button_size,false));
+        let _ = zone_up_button.map(|_,control| control.set_position(Vector2{x:0.0,y:owner.size().y - button_size.y},false));
         match self.buttons_rx.try_recv(){
             Ok(OperationType::place) => {
                 let _ = self.tx.send(InventoryAction::pocketed(self.typ,self.position));
             }
             Ok(OperationType::remove) => {
                 let _ = self.tx.send(InventoryAction::unpocketed(self.typ,self.position));
+            }
+            Ok(OperationType::zone_up) => {
+                let _ = self.tx.send(InventoryAction::lift(self.typ));
             }
             Ok(_) => {}
             Err(_) => {}
@@ -519,6 +537,10 @@ impl InventoryMenu{
             .with_param("type",VariantType::I64)
             .with_param("amount",VariantType::I64)
             .done();
+        builder
+            .signal("lift")
+            .with_param("type",VariantType::I64)
+            .done();
     }
     #[method]
     fn _ready(&mut self,#[base] owner:TRef<Control>){
@@ -557,11 +579,14 @@ impl InventoryMenu{
                 let _ = operations.map_mut(|obj,_| obj.position = id);
                 let _ = operations.map_mut(|obj,_| obj.set_type(typ.into()));
             }
-            Ok(InventoryAction::pocketed(typ,id)) => {
+            Ok(InventoryAction::pocketed(typ,_amount)) => {
                 owner.emit_signal("pocketed",&[Variant::new(typ),Variant::new(1)]);
             }
-            Ok(InventoryAction::unpocketed(typ,_id)) => {
+            Ok(InventoryAction::unpocketed(typ,_amount)) => {
                 owner.emit_signal("unpocketed",&[Variant::new(typ),Variant::new(1)]);
+            }
+            Ok(InventoryAction::lift(typ)) => {
+                owner.emit_signal("lift",&[Variant::new(typ)]);
             }
             Ok(_) => {}
             Err(_) => {}
@@ -679,6 +704,10 @@ impl Pocket{
             .with_param("type",VariantType::I64)
             .with_param("amount",VariantType::I64)
             .done();
+        builder
+            .signal("lift")
+            .with_param("type",VariantType::I64)
+            .done();
     }
     #[method]
     fn _ready(&mut self,#[base] owner:TRef<Control>){
@@ -699,7 +728,6 @@ impl Pocket{
                 let operations = unsafe{self.operations.assume_safe()};
                 let slot = &self.slots[id as usize];
                 let slot = unsafe{slot.assume_safe()};
-                
                 let _ = slot
                     .map(|_,control|control.position())
                     .map(|position| operations.map(|_,op_control| op_control.set_position(position,false)));
@@ -707,9 +735,12 @@ impl Pocket{
                 let _ = operations.map_mut(|obj,_| obj.position = id);
                 let _ = operations.map_mut(|obj,_| obj.set_type(typ.into()));
             }
-            Ok(InventoryAction::pocketed(_typ,_id)) => { }
-            Ok(InventoryAction::unpocketed(typ,_id)) => {
+            Ok(InventoryAction::pocketed(_typ,_amount)) => { }
+            Ok(InventoryAction::unpocketed(typ,_amount)) => {
                 owner.emit_signal("unpocketed",&[Variant::new(typ),Variant::new(1)]);
+            }
+            Ok(InventoryAction::lift(typ)) => {
+                owner.emit_signal("lift",&[Variant::new(typ)]);
             }
             Ok(_) => {}
             Err(_) => {}

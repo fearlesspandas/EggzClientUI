@@ -91,6 +91,19 @@ impl FieldZoneServer{
         self.abilities = collider;
         self.typ = typ;
     }
+    #[method]
+    fn remove_ability(&mut self,#[base] owner:TRef<Area>,typ:u8){
+        let typ = AbilityType::from(typ);
+        let collider = self.abilities;
+        collider.map(|area| {
+            let area = unsafe{area.assume_safe()};
+            let _ = area.disconnect("body_entered",owner,"handle_body");
+            owner.remove_child(area);
+            area.queue_free();
+        });
+        self.abilities = None;
+        self.typ = AbilityType::empty;
+    }
     fn set_tx(&mut self,tx:Sender<FieldCommand>){
         self.field_tx = Some(tx);
     }
@@ -172,6 +185,18 @@ impl FieldServer{
         let _ = zone.map_mut(|obj,body|{
             obj.place_ability(body,ability_id)
         });
+    }
+    #[method]
+    fn remove_field_ability(&self,#[base] _owner:TRef<Spatial>,ability_id:u8){
+        let ability_id = AbilityType::from(ability_id);
+        for zone in self.zones.values(){
+            let zone = unsafe{zone.assume_safe()};
+            let _ = zone.map_mut(|obj,body|{
+                if obj.typ == ability_id{
+                    obj.remove_ability(body,ability_id.into())
+                }
+            });
+        }
     }
 }
 

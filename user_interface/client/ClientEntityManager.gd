@@ -262,6 +262,9 @@ func handle_json(json) -> bool:
 		{'AbilityAdded':{'ability_id':var ability_id,'entity_id':var id,'location':[var x , var y]}}:
 			player.field.add_field_ability(int(ability_id),Vector2(x,y))
 			return false
+		{'AbilityRemoved':{'ability_id':var ability_id,'entity_id':var id}}:
+			player.field.remove_field_ability(id,int(ability_id))
+			return false
 		{'DoAbility':{'ability_id':var ability_id,'entity_id':var entity_id, 'location':[var x , var y],'args' : var args}}:
 			if !client_entities.has(entity_id):
 				assert(false, "no entity found with id " + entity_id)

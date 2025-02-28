@@ -190,6 +190,9 @@ func unpocket_ability(from:String,ability_id:int,amount:int):
 func add_ability(from:String,ability_id:int,location:Vector2):
 	return {'ADD_ABILITY':{'from':from,'ability_id':ability_id,'location':[int(location.x),int(location.y)]}}
 
+func remove_ability(from:String,ability_id:int):
+	return {'REMOVE_ABILITY':{'from':from,'ability_id':ability_id}}
+
 func get_field(from:String):
 	return {'GET_FIELD':{'id':from}}
 

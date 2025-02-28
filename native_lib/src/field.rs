@@ -397,6 +397,18 @@ impl Field{
         });
     }
     #[method]
+    fn remove_field_ability(&self,#[base] _owner:TRef<Spatial>,ability_id:u8){
+        let ability_id = AbilityType::from(ability_id);
+        for zone in self.zones.values(){
+            let zone = unsafe{zone.assume_safe()};
+            let _ = zone.map_mut(|obj,body|{
+                if obj.abilities.contains_key(&ability_id){
+                    obj.remove_ability(body,ability_id.into())
+                }
+            });
+        }
+    }
+    #[method]
     fn hide(&self,#[base] _owner:TRef<Spatial>){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
