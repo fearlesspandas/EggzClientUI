@@ -12,7 +12,6 @@ onready var pointer:PlayerPathPointer = PlayerPathPointer.new()
 onready var input_timer:Timer = Timer.new()
 onready var position_data_timer : Timer = Timer.new()
 onready var navigator_mesh:NavigatorMesh = NavigatorMesh.new()
-onready var slizzard = load("res://native_lib/Slizzard.gdns").new()
 onready var field = AbilityField.new()
 
 var is_active = false
@@ -29,16 +28,6 @@ func _ready():
 	ClientTerminalGlobalSignals.connect("set_active",self,"set_terminal_active")
 	field.client_id = self.client_id
 	self.add_child(field)
-	body.add_child(slizzard)
-	slizzard.add_body_piece()
-	slizzard.add_body_piece()
-	slizzard.add_body_piece()
-	slizzard.add_body_piece()
-	slizzard.add_body_piece()
-	slizzard.add_body_piece()
-	slizzard.add_body_piece()
-	slizzard.add_body_piece()
-	slizzard.translate(Vector3(0,0,10))
 
 
 	

@@ -22,6 +22,7 @@ pub enum Command{
     SaveSnapshot(String),
     LoadSnapshot(String),
     SetHealth(String,f32),
+    GiveAbility(String,i32),
     //ToggleAggregateStats,
 }
 #[derive(Deserialize,Serialize,Debug)]
@@ -36,6 +37,7 @@ pub enum CommandType{
     save_snapshot,
     load_snapshot,
     set_health,
+    give_ability,
     //toggle_aggregate_stats,
 }
 impl CommandType{
@@ -66,6 +68,11 @@ impl CreateSignal<ClientTerminal> for CommandType{
             .with_param("value",VariantType::F64)
             .done();
         builder
+            .signal(&CommandType::give_ability.to_string())
+            .with_param("id",VariantType::GodotString)
+            .with_param("value",VariantType::I64)
+            .done();
+        builder
             .signal(&CommandType::entities_add_mesh.to_string())
             .done();
         builder
@@ -86,6 +93,7 @@ impl GetAll for CommandType{
         v.push( CommandType::save_snapshot);
         v.push( CommandType::load_snapshot);
         v.push( CommandType::set_health);
+        v.push( CommandType::give_ability);
         v
     }
 }
@@ -100,6 +108,7 @@ impl Autocomplete for CommandType{
             CommandType::save_snapshot => SaveSnapshotArgs::autocomplete_args,
             CommandType::load_snapshot => LoadSnapshotArgs::autocomplete_args,
             CommandType::set_health => SetHealthArgs::autocomplete_args,
+            CommandType::give_ability => GiveAbilityArgs::autocomplete_args,
             CommandType::entities_add_mesh => CommandType::default,
             CommandType::entities_remove_mesh => CommandType::default,
         }
@@ -135,6 +144,9 @@ impl ArgsConstructor<Command,&Value,&'static str> for CommandType{
             CommandType::set_health => 
                 SetHealthArgs::new(args)
                 .map(|parsed| Command::SetHealth(parsed.id,parsed.value)),
+            CommandType::give_ability => 
+                GiveAbilityArgs::new(args)
+                .map(|parsed| Command::GiveAbility(parsed.id,parsed.value)),
             CommandType::entities_add_mesh => Ok(Command::EntitiesAddMesh),
             CommandType::entities_remove_mesh => Ok(Command::EntitiesRemoveMesh),
         }
@@ -157,6 +169,9 @@ impl fmt::Display for CommandType{
             }
             CommandType::set_health => {
                 write!(f,"set_health")
+            }
+            CommandType::give_ability => {
+                write!(f,"give_ability")
             }
             CommandType::clear_data => {
                 write!(f,"clear_data")
@@ -365,6 +380,45 @@ impl FromArgs<Value> for SetHealthArgs{
                     .map_err(|e| {godot_print!("{}",format!("Error constructing set_health args; {e:?}"));"could not map SetHealthArgs"})
             }
             _ => {Err("unexpected value type for SetHealthArgs; expected Value::Array")}
+        }
+    }
+}
+#[derive(Deserialize,Serialize)]
+pub struct GiveAbilityArgs{
+    pub id:String,
+    pub value:i32
+}
+impl FromArgs<Value> for GiveAbilityArgs{
+    fn autocomplete_args(args:Vec<&str>) -> Vec<String>{
+        match args.len(){
+            0|1 => {
+                let mut v = Vec::new();
+                v.push("id:String".to_string());
+                v
+            }
+            2 => {
+                let mut v = Vec::new();
+                v.push("value:i32".to_string());
+                v
+            }
+            _ => {Vec::new()}
+        }
+    }
+    fn new(args:&Value) -> Result<Self,&'static str> where Self:Sized{
+        match args{
+            Value::Array(values) => {
+                if values.len() < 2{
+                    return Err("too few arguments for GiveAbilityArgs")
+                }
+                let mut fmt_args = serde_json::Map::new();
+                let id = &values[0];
+                let value = &values[1];
+                fmt_args.insert("id".to_string(),id.clone());
+                fmt_args.insert("value".to_string(),value.clone().as_str().unwrap().parse::<i32>().unwrap().into());
+                serde_json::from_value::<GiveAbilityArgs>(Value::Object(fmt_args))
+                    .map_err(|e| {godot_print!("{}",format!("Error constructing give_ability args; {e:?}"));"could not map GiveAbilityArgs"})
+            }
+            _ => {Err("unexpected value type for GiveAbilityArgs; expected Value::Array")}
         }
     }
 }

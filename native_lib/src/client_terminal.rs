@@ -284,6 +284,13 @@ impl ClientTerminal{
                     );
                     self.output_append("signaled set health".into());
                 }
+                Ok(Command::GiveAbility(id,value)) => {
+                    owner.emit_signal(
+                        CommandType::give_ability.to_string(),
+                        &[Variant::new(id),Variant::new(value)]
+                    );
+                    self.output_append("signaled give ability".into());
+                }
                 Err(_) => {}
             }
 

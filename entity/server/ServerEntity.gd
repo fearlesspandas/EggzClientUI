@@ -42,6 +42,7 @@ func _ready():
 	ServerTerminalGlobalSignals.connect("set_all_entity_socket_mode",self,"set_socket_mode")
 	ServerTerminalGlobalSignals.connect("request_data",self,"send_requested_data")
 	ServerTerminalGlobalSignals.connect("set_health",self,"terminal_set_health")
+	ServerTerminalGlobalSignals.connect("give_ability",self,"terminal_give_ability")
 	
 func send_requested_data(data_type):
 	match data_type:
@@ -68,6 +69,10 @@ func set_socket_mode(mode):
 func terminal_set_health(id,health):
 	if id == self.id:
 		socket.remove_health(self.id,health)
+
+func terminal_give_ability(id,health):
+	if id == self.id:
+		socket.add_item(self.id,health)
 
 func init_sockets():
 	socket = ServerNetwork.get(client_id)
