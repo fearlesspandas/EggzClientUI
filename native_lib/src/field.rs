@@ -94,7 +94,7 @@ impl FieldZone{
         //technically unneeded
         let _ = op_menu.map_mut(|obj,_| obj.set_tx(self.zone_tx.clone()));
             
-        let _ = op_menu.map_mut(|obj,control| obj.add_op(control,255,1));
+        let _ = op_menu.map_mut(|obj,control| obj.add_op(control,AbilityType::empty,1));
         let _ = op_menu.map_mut(|obj,_| obj.width = ZONE_WIDTH/2.0);
         let _ = op_menu.map(|obj , spatial| obj.hide(spatial));
 
@@ -156,12 +156,12 @@ impl FieldZone{
         }
     }
     #[method]
-    fn add_op_to_menu(&self,ability_id:u8,amount:i64){
+    fn add_op_to_menu(&self,ability_id:AbilityType,amount:i64){
         let op_menu = unsafe{self.op_menu.assume_safe()};
         let _ = op_menu.map_mut(|obj,control| obj.add_op(control,ability_id,amount));
     }
     #[method]
-    fn remove_op_from_menu(&self,ability_id:u8,amount:i64){
+    fn remove_op_from_menu(&self,ability_id:AbilityType,amount:i64){
         let op_menu = unsafe{self.op_menu.assume_safe()};
         let _ = op_menu.map_mut(|obj,control| obj.remove_op(control,ability_id,amount));
     }
@@ -171,7 +171,7 @@ impl FieldZone{
         let _ = op_menu.map_mut(|obj,control| obj.clear(control));
     }
     #[method]
-    fn place_ability(&mut self,#[base] owner:TRef<StaticBody>,typ:u8){
+    fn place_ability(&mut self,#[base] owner:TRef<StaticBody>,typ:AbilityType){
         let typ = AbilityType::from(typ);
         if self.abilities.contains_key(&typ){return ;}
         let mesh = FieldAbilityMesh::make_instance(&typ).into_shared();
@@ -182,7 +182,7 @@ impl FieldZone{
         let _ = op_menu.map(|obj,spatial| obj.hide(spatial));
     }
     #[method]
-    pub fn remove_ability(&mut self,#[base] owner:TRef<StaticBody>, typ:u8){
+    pub fn remove_ability(&mut self,#[base] owner:TRef<StaticBody>, typ:AbilityType){
         let typ = AbilityType::from(typ);
         if self.abilities.contains_key(&typ){
             let ability = self.abilities.get(&typ).unwrap();
@@ -364,14 +364,14 @@ impl Field{
         
     }
     #[method]
-    fn add_op_to_menus(&self,ability_id:u8,amount:i64){
+    fn add_op_to_menus(&self,ability_id:AbilityType,amount:i64){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
             let _ = zone.map_mut(|obj,_| obj.add_op_to_menu(ability_id,amount));
         }
     }
     #[method]
-    fn remove_op_from_menus(&self,ability_id:u8,amount:i64){
+    fn remove_op_from_menus(&self,ability_id:AbilityType,amount:i64){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
             let _ = zone.map_mut(|obj,_| obj.remove_op_from_menu(ability_id,amount));
@@ -386,7 +386,7 @@ impl Field{
         }
     }
     #[method]
-    fn add_field_ability(&self,#[base] _owner:TRef<Spatial>,ability_id:u8,location:(i64,i64)){
+    fn add_field_ability(&self,#[base] _owner:TRef<Spatial>,ability_id:AbilityType,location:(i64,i64)){
         let (x,y) = location;
         let location = Location{x:x,y:y};
         if !self.zones.contains_key(&location){return ;}
@@ -397,7 +397,7 @@ impl Field{
         });
     }
     #[method]
-    fn remove_field_ability(&self,#[base] _owner:TRef<Spatial>,ability_id:u8){
+    fn remove_field_ability(&self,#[base] _owner:TRef<Spatial>,ability_id:AbilityType){
         let ability_id = AbilityType::from(ability_id);
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
@@ -564,10 +564,11 @@ impl FieldOps3D{
     fn _ready(&self,#[base] _owner:TRef<Spatial>){ }
     
     #[method]
-    fn add_op(&mut self,#[base] owner:TRef<Spatial>,typ:u8,amount:i64){
+    fn add_op(&mut self,#[base] owner:TRef<Spatial>,typ:AbilityType,amount:i64){
         let typ = AbilityType::from(typ);
 
         self.op_count.insert(typ, self.op_count.get(&typ).map(|x|*x).unwrap_or(0) + amount);
+
         if self.operations.contains_key(&typ){
             return ;
         }
@@ -584,9 +585,11 @@ impl FieldOps3D{
         owner.add_child(op.clone(),true);
     }
     #[method]
-    fn remove_op(&mut self,#[base] owner:TRef<Spatial>,typ:u8,amount:i64){
+    fn remove_op(&mut self,#[base] owner:TRef<Spatial>,typ:AbilityType,amount:i64){
         let typ = AbilityType::from(typ);
+
         self.op_count.insert(typ,std::cmp::max(self.op_count.get(&typ).map(|x| *x).unwrap_or(0) - amount,0));
+
         if !self.operations.contains_key(&typ){return ;}
         if self.op_count.get(&typ).map(|x|*x).unwrap_or(0) > 0 { return ;}
 
@@ -732,7 +735,7 @@ impl FieldOps{
 
     }
     #[method]
-    fn add_op(&mut self,#[base] owner:TRef<Control>,typ:u8){
+    fn add_op(&mut self,#[base] owner:TRef<Control>,typ:AbilityType){
         let op = FieldOp::make_instance(&AbilityType::from(typ)).into_shared();
         owner.add_child(op.clone(),true);
         self.operations.push(op);

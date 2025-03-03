@@ -174,6 +174,8 @@ func default_handle_message(msg,_delta_accum):
 		{'NoLocation':{'id':var _id}}:
 			destination.is_empty = true
 			destination.type = 'Empty'
+		{'FieldCleared':{'entity_id':var id}}:
+			print_debug("Received Field Clear for id ", id)
 		_:
 			assert(false)
 			pass

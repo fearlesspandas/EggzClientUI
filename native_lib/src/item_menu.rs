@@ -649,7 +649,6 @@ impl InventoryMenu{
     }
     #[method]
     fn remove_item(&mut self,#[base] _owner:TRef<Control>, typ:u8,amount:i32){
-        assert!(false,"removing item fail");
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
         let item_slot = slots.find(|x| x.map(|obj,_| obj.is_type(typ)).unwrap());
         item_slot.map(|slot| slot.map_mut(|obj,_| {
@@ -798,7 +797,7 @@ impl Pocket{
     fn fill_slot(&mut self,#[base] _owner:TRef<Control>, typ:u8,amount:i32){
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
         let empty_slot = slots.find(|x| x.map(|obj,_| obj.is_empty() || obj.typ == AbilityType::from(typ)).unwrap());
-        empty_slot.map(|slot| {
+        let _ = empty_slot.map(|slot| {
             let _ = slot.map_mut(|obj,_| obj.set_type(typ));
             let _ = slot.map_mut(|obj,_| obj.add_amount(amount));
         });
@@ -811,7 +810,7 @@ impl Pocket{
     fn remove_item(&mut self,#[base] _owner:TRef<Control>, typ:u8,amount:i32){
         let mut slots = unsafe{self.slots.clone().into_iter().map(|x| x.assume_safe())};
         let item_slot = slots.find(|x| x.map(|obj,_| obj.is_type(typ)).unwrap());
-        item_slot.map(|slot| slot.map_mut(|obj,_| {
+        let _ = item_slot.map(|slot| slot.map_mut(|obj,_| {
                     let new_amount = obj.amount - amount;
                     match new_amount{
                         x if x <= 0 => obj.set_type(AbilityType::empty.into()),

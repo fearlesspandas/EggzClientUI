@@ -11,6 +11,21 @@ pub trait ToMesh{
 impl ToMesh for AbilityType{
     fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial> {
         match self{
+            AbilityType::occupied => {
+                let spatial = Spatial::new();
+                let mesh = MeshInstance::new().into_shared();
+                let mesh_obj = unsafe{mesh.assume_safe()};
+                let box_mesh = CubeMesh::new().into_shared();
+                let box_mesh = unsafe{box_mesh.assume_safe()};
+                box_mesh.set_size(Vector3{x:length,y:radius,z:radius});
+                let box_material = SpatialMaterial::new();
+                box_material.set_albedo(Color{r:255.0,g:0.0,b:0.0,a:1.0});
+                box_mesh.set_material(box_material);
+                mesh_obj.set_mesh(box_mesh);
+                spatial.add_child(mesh.clone(),true);
+                //mesh
+                spatial.into_shared()
+            }
             AbilityType::empty => {
                 let spatial = Spatial::new();
                 let mesh = MeshInstance::new().into_shared();

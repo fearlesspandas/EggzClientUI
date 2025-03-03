@@ -14,6 +14,9 @@ impl ToCollider for AbilityType{
             AbilityType::empty => {
                 None
             }
+            AbilityType::occupied => {
+                None
+            }
             AbilityType::smack => {
                 None
             }

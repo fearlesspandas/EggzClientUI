@@ -23,6 +23,7 @@ impl ToDescription for AbilityType{
     fn to_description(&self) -> String{
         match self{
             AbilityType::empty => "Placeholder item slot".to_string(),
+            AbilityType::occupied => {assert!(false,"to_description in ShopMenu called for occupied");todo!()}
             AbilityType::smack => "small explosion that does 10 damage".to_string(),
             AbilityType::globular_teleport => "creates polygon that teleports entities to an anchor point".to_string(),
             AbilityType::slizzard => "spawns a slizzard that will perform a large attack a set number of times".to_string(),

@@ -14,6 +14,7 @@ impl ToAction for AbilityType{
     fn to_action(&self,tx:Sender<FieldCommand>,location:&Location,field_state:&HashMap<Location,Instance<FieldZone>>){
         match self{
             AbilityType::empty => { }
+            AbilityType::occupied => { }
             AbilityType::smack => { 
                 let _ = tx.send(FieldCommand::DoAbility(*location,AbilityType::smack));
             }
