@@ -227,15 +227,15 @@ func handle_json(json) -> bool:
 			DataCache.add_data(id,'max_speed',max_speed)
 			DataCache.add_data(id,'speed',speed)
 			return false
-		{'AbilityAdded':{'ability_id':var ability_id,'entity_id':var id,'location':[var x , var y]}}:
+		{'AbilityAdded':{'ability_id':var ability_id,'entity_id':var id,'location':[var x , var y],'occupied':var occupied}}:
 			var entity = server_entities[id]
 			if entity is PlayerServerEntity:
-				entity.field.add_field_ability(int(ability_id),[int(x),int(y)])
+				entity.field.add_field_ability(int(ability_id),Vector2(int(x),int(y)),occupied)
 			return false
-		{'AbilityRemoved':{'ability_id':var ability_id,'entity_id':var id}}:
+		{'AbilityRemoved':{'ability_id':var ability_id,'entity_id':var id,'freed':var freed}}:
 			var entity = server_entities[id]
 			if entity is PlayerServerEntity:
-				entity.field.remove_field_ability(int(ability_id))
+				entity.field.remove_field_ability(int(ability_id),freed)
 			return false
 		{'DoAbility':{'ability_id':var ability_id,'entity_id':var entity_id,'location':[var x , var y] ,'args': var args}}:
 			if !server_entities.has(entity_id):

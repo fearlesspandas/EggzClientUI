@@ -19,6 +19,8 @@ const COLLISION_LAYER:i64 = 20;
 pub enum FieldZoneCommand{
     Selected(AbilityType),
     Proc(bool),
+    RemoveAbility(AbilityType),
+    PlaceAbility(AbilityType),
 
 }
 #[derive(Copy,Clone,Eq,Hash,PartialEq,Debug)]
@@ -29,6 +31,11 @@ pub struct Location{
 impl Defaulted for Location{
     fn default() -> Self{
         Location{x:0,y:0}
+    }
+}
+impl Location{
+    fn new(x:i64,y:i64) -> Self{
+        Location{x:x,y:y}
     }
 }
 #[derive(NativeClass)]
@@ -122,7 +129,7 @@ impl FieldZone{
         
     }
     #[method]
-    fn _process(&mut self,#[base] _owner:TRef<StaticBody>,_delta:f64){
+    fn _process(&mut self,#[base] owner:TRef<StaticBody>,_delta:f64){
         match self.zone_rx.try_recv() {
             Ok(FieldZoneCommand::Selected(typ)) => {
                 let _ = self.field_tx
@@ -139,6 +146,13 @@ impl FieldZone{
                     mesh.set_visible(false);
                 }
             }
+            Ok(FieldZoneCommand::RemoveAbility(typ)) => {
+                self.remove_ability(owner,typ);
+            }
+            Ok(FieldZoneCommand::PlaceAbility(typ)) => {
+                self.place_ability(owner,typ);
+            }
+            
             Err(_) => {}
         }
     }
@@ -183,7 +197,6 @@ impl FieldZone{
     }
     #[method]
     pub fn remove_ability(&mut self,#[base] owner:TRef<StaticBody>, typ:AbilityType){
-        let typ = AbilityType::from(typ);
         if self.abilities.contains_key(&typ){
             let ability = self.abilities.get(&typ).unwrap();
             owner.remove_child(ability);
@@ -191,6 +204,13 @@ impl FieldZone{
             let _ = ability.map(|_,mesh| mesh.queue_free());
             self.abilities.remove(&typ);
         }
+    }
+    #[method]
+    pub fn swap_ability(&mut self,#[base] owner:TRef<StaticBody>, typ:AbilityType){
+        for ability_id in self.abilities.keys(){
+            let _ = self.zone_tx.send(FieldZoneCommand::RemoveAbility(*ability_id));
+        }
+        let _ = self.zone_tx.send(FieldZoneCommand::PlaceAbility(typ));
     }
     #[method]
     fn entered(&self,#[base] _owner:TRef<StaticBody>){
@@ -362,6 +382,33 @@ impl Field{
             spatial.set_transform(transform);
         });
         
+    }
+    #[method]
+    fn change_zone_type(&self, #[base] owner:TRef<Spatial>,location:(i64,i64), typ:AbilityType) -> Result<(),String>{
+        let (x,y) = location;
+        let location = Location::new(x,y);
+        if !self.zones.contains_key(&location){return Err("No Zone Found".to_string());}
+        let zone = self.zones.get(&location).unwrap();
+        let zone = unsafe{zone.assume_safe()};
+        
+        let _ = zone.map_mut(|obj,body| {
+            obj.swap_ability(body,typ)
+        } );
+
+        Ok(())
+    }
+    #[method]
+    fn remove_ability_at(&self, #[base] owner:TRef<Spatial>,location:(i64,i64), typ:AbilityType) -> Result<(),String>{
+        let (x,y) = location;
+        let location = Location::new(x,y);
+        if !self.zones.contains_key(&location){return Err("No Zone Found".to_string());}
+        let zone = self.zones.get(&location).unwrap();
+        let zone = unsafe{zone.assume_safe()};
+        let _ = zone.map_mut(|obj,body| {
+            obj.remove_ability(body,typ)
+        } );
+
+        Ok(())
     }
     #[method]
     fn add_op_to_menus(&self,ability_id:AbilityType,amount:i64){

@@ -67,12 +67,20 @@ func refresh_field(id:String,contents:Dictionary):
 			var coords:
 				assert(false,"Misformatted Contents for field " + str(coords))
 				
-func add_field_ability(ability_id:int,location:Vector2): 
+func add_field_ability(ability_id:int,location:Vector2,occupied:Array): 
 	ref.add_field_ability(ability_id,[int(location.x),int(location.y)])
+	for zone in occupied:
+		ref.add_field_ability(-1,[int(zone[0]),int(zone[1])])
 
-func remove_field_ability(entity_id:String,ability_id:int): 
+func remove_field_ability(entity_id:String,ability_id:int,freed:Array): 
 	if entity_id == client_id:
 		ref.remove_field_ability(ability_id)
+	for zone in freed:
+		match zone:
+			[var x, var y]:
+				ref.remove_ability_at([int(x),int(y)],254)
+			_: 
+				assert(false,"malformed free zones")
 
 func change_ability_state(_location,op_id:int):
 	match op_id: 

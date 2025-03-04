@@ -80,8 +80,7 @@ impl FieldZoneServer{
         let _ = entity_id.map(|id| self.typ.server_body_entered(field_tx,&self.location,id));
     }
     #[method]
-    fn place_ability(&mut self,#[base] owner:TRef<Area>,typ:u8){
-        let typ = AbilityType::from(typ);
+    fn place_ability(&mut self,#[base] owner:TRef<Area>,typ:AbilityType){
         let collider = typ.to_collider(Vector3{x:ZONE_WIDTH/2.0,y:ZONE_WIDTH/2.0,z:ZONE_WIDTH/2.0});
         collider.map(|area| {
             let area = unsafe{area.assume_safe()};
@@ -92,8 +91,7 @@ impl FieldZoneServer{
         self.typ = typ;
     }
     #[method]
-    fn remove_ability(&mut self,#[base] owner:TRef<Area>,typ:u8){
-        let typ = AbilityType::from(typ);
+    fn remove_ability(&mut self,#[base] owner:TRef<Area>,typ:AbilityType){
         let collider = self.abilities;
         collider.map(|area| {
             let area = unsafe{area.assume_safe()};
@@ -176,7 +174,7 @@ impl FieldServer{
         });
     }
     #[method]
-    fn add_field_ability(&self,#[base] _owner:TRef<Spatial>,ability_id:u8,location:(i64,i64)){
+    fn add_field_ability(&self,#[base] _owner:TRef<Spatial>,ability_id:AbilityType,location:(i64,i64)){
         let (x,y) = location;
         let location = Location{x:x,y:y};
         if !self.zones.contains_key(&location){return ;}
@@ -187,8 +185,7 @@ impl FieldServer{
         });
     }
     #[method]
-    fn remove_field_ability(&self,#[base] _owner:TRef<Spatial>,ability_id:u8){
-        let ability_id = AbilityType::from(ability_id);
+    fn remove_field_ability(&self,#[base] _owner:TRef<Spatial>,ability_id:AbilityType){
         for zone in self.zones.values(){
             let zone = unsafe{zone.assume_safe()};
             let _ = zone.map_mut(|obj,body|{

@@ -70,9 +70,15 @@ pub trait Windowed<T:From<Action>>{
     fn input(&self,owner:TRef<Control>,event:Ref<InputEvent>){
         if let Ok(event) = event.try_cast::<InputEventMouseButton>(){
             let event = unsafe{event.assume_safe()};
+            if event.is_action_pressed("left_click",false,true) && self.hovering(){
+                let main_rect = unsafe{self.main_rect().assume_safe()};
+                main_rect.set_frame_color(Self::BG_COLOR);
+            }
             if event.is_action_released("left_click",true) && self.hovering(){
                 owner.emit_signal("clicked",&[]);
                 let _ = self.tx().send(self.from_command(Action::clicked));
+                let main_rect = unsafe{self.main_rect().assume_safe()};
+                main_rect.set_frame_color(Self::MAIN_COLOR);
             }
         }
     }

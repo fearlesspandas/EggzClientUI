@@ -14,6 +14,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://entity/client/AbilityField.gd"
 }, {
+"base": "Node",
+"class": "AbilityFieldServer",
+"language": "GDScript",
+"path": "res://entity/server/AbilityFieldServer.gd"
+}, {
 "base": "Spatial",
 "class": "AbilityOptionCreator",
 "language": "GDScript",
@@ -516,6 +521,7 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "AbilityField": "",
+"AbilityFieldServer": "",
 "AbilityOptionCreator": "",
 "AuthenticatedControl": "",
 "AuthenticationRequest": "",
