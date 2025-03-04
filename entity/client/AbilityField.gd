@@ -35,24 +35,29 @@ func _ready():
 	self.add_child(init_timer)
 	init_timer.start(3.76)
 
-func initialize_field():
-	socket.get_field(client_id)
-	init_timer.stop()
-	
+######FIELD OPERATIONS######################################################
 func add_abilities_to_menu(client_id:String,item:int,amount:int):
+	if client_id != self.client_id:
+		return
 	ref.add_op_to_menus(item,amount)
 	
 func remove_abilities_from_menu(client_id:String,item:int,amount:int):
+	if client_id != self.client_id:
+		return
 	ref.remove_op_from_menus(item,amount)
 	
 func refresh_abilities(id:String,contents:Dictionary):
+	if id != client_id:
+		return
 	ref.clear_all_operations()
 	for item in contents:
 		if !((contents[item] is float or contents[item] is int) and (item is float or item is int or item is String)):
 			assert(false, "Malformed contents for abilities " + str(contents))
 		ref.add_op_to_menus(int(item),int(contents[item]))
 
-func refresh_field(id:String,contents:Dictionary):
+func refresh_field(id:String,contents:Dictionary,occupied:Array):
+	if id != client_id:
+		return
 	for item in contents:
 		var item_location = contents[item]
 		#assert(false,str(item_location))
@@ -66,6 +71,12 @@ func refresh_field(id:String,contents:Dictionary):
 							assert(false,"Misformatted Contents for field zone" + str(coord))
 			var coords:
 				assert(false,"Misformatted Contents for field " + str(coords))
+	for pair in occupied:
+		match pair:
+			[[var x,var y],var _count]:
+				ref.add_field_ability(-1,[int(x),int(y)])
+			_:
+				assert(false,"Malformatted contents for occupied")
 				
 func add_field_ability(ability_id:int,location:Vector2,occupied:Array): 
 	ref.add_field_ability(ability_id,[int(location.x),int(location.y)])
@@ -73,15 +84,21 @@ func add_field_ability(ability_id:int,location:Vector2,occupied:Array):
 		ref.add_field_ability(-1,[int(zone[0]),int(zone[1])])
 
 func remove_field_ability(entity_id:String,ability_id:int,freed:Array): 
-	if entity_id == client_id:
-		ref.remove_field_ability(ability_id)
+	if entity_id != client_id:
+		return
+	ref.remove_field_ability(ability_id)
 	for zone in freed:
 		match zone:
 			[var x, var y]:
+				#254 is the field ability id for occupied/restricted
 				ref.remove_ability_at([int(x),int(y)],254)
 			_: 
 				assert(false,"malformed free zones")
-
+#######NETWORK OPERATIONS#########################################################
+func initialize_field():
+	socket.get_field(client_id)
+	init_timer.stop()
+	
 func change_ability_state(_location,op_id:int):
 	match op_id: 
 		0:

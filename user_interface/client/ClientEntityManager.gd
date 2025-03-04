@@ -297,8 +297,8 @@ func handle_json(json) -> bool:
 		{'AbilityUnpocketed':{'entity_id':var id, 'ability_id':var item,'amount':var amount}}:
 			GlobalSignalsClient.unpocketed_item(id,item,amount)
 			return false
-		{'Field': {'id':var id,'items':var items}}:
-			GlobalSignalsClient.field(id,items)	
+		{'Field': {'id':var id,'items':var items,'occupied':var occupied}}:
+			GlobalSignalsClient.field(id,items,occupied)	
 			return false
 		{'ItemAdded':{'id':var id, 'item':var item}}:
 			print_debug("Item added for ", id)

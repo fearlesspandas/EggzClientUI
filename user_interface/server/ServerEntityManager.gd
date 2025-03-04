@@ -248,7 +248,7 @@ func handle_json(json) -> bool:
 				loc += entity.field.get_point_from_location(int(x),int(y))
 			AbilityManager.ability_server(int(ability_id),loc,args,entity.is_npc)	
 			return false
-		{'Field': {'id':var id,'items':var items}}:
+		{'Field': {'id':var id,'items':var items,'occupied':var _occupied}}:
 			GlobalSignalsServer.field(id,items)	
 			return false
 		{'ProgressUpdate':{'id':var id,'args':var args}}:
