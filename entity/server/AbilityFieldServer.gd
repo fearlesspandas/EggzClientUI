@@ -29,6 +29,7 @@ func refresh_field(id:String,contents:Dictionary):
 							assert(false,"Misformatted Contents for field zone" + str(coord))
 			var coords:
 				assert(false,"Misformatted Contents for field " + str(coords))
+
 func add_field_ability(ability_id:int,location:Vector2,occupied:Array):
 	ref.add_field_ability(ability_id,[int(location.x),int(location.y)])
 	for zone in occupied:

@@ -60,13 +60,17 @@ pub struct Slizzard{
     length:f32,
     height:f64,
     body_pieces:Vec<Instance<BodyPiece>>,
+    looking:Option<Vector3>,
+    tick:i64,
 }
 impl Instanced<Area> for Slizzard{
     fn make() -> Self{
         Slizzard{
             length:30.0,
             height:100.0,
-            body_pieces:Vec::new()
+            body_pieces:Vec::new(),
+            looking:None,
+            tick:0,
         }
     }
 }
@@ -85,17 +89,23 @@ impl Slizzard{
         let collider = unsafe{collider.assume_safe()};
         let shape = BoxShape::new().into_shared();
         let shape = unsafe{shape.assume_safe()};
-        shape.set_extents(Vector3{x:self.length,y:self.height as f32,z:self.length});
+        shape.set_extents(Vector3{x:self.length/2.0,y:(self.height as f32)/2.0,z:self.length/2.0});
         collider.set_shape(shape);
         owner.add_child(collider,true);
         let _ = owner.connect("body_entered",owner,"attack_entity",VariantArray::new_shared(),0);
+        owner.set_collision_layer_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
+        owner.set_collision_mask_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
+        owner.set_collision_layer_bit(collision_layer::CLIENT_NPC_COLLISION_LAYER.into(),false);
+        owner.set_collision_mask_bit(collision_layer::CLIENT_NPC_COLLISION_LAYER.into(),true);
     }
 
     #[method]
-    fn attack_entity(&self,#[base] owner:TRef<Area>,body:Ref<Node,Shared>){
+    fn attack_entity(&mut self,#[base] owner:TRef<Area>,body:Ref<Node,Shared>){
         let body = unsafe{body.assume_safe()};
+        let name = body.name();
         let position = body.cast::<KinematicBody>().map(|kinematic_body| kinematic_body.global_translation());
-        let _ = position.map(|pos| owner.look_at(pos,Vector3{x:0.0,y:1.0,z:0.0}));
+        //let _ = position.map(|pos| owner.look_at(pos,Vector3{x:0.0,y:1.0,z:0.0}));
+        let _ = position.map(|pos| self.looking = Some(pos));
     }
 
     #[method]
@@ -121,6 +131,13 @@ impl Slizzard{
                 mesh.set_transform(transform);
                 idx += 1.0;
             });
+        }
+        self.tick += 1;
+        if self.tick > 30{
+            self.looking.map(|pos| {
+                owner.look_at(pos,Vector3{x:0.0,y:1.0,z:0.0});
+            });
+            self.tick = 0;
         }
     }
     #[method]
@@ -165,13 +182,14 @@ impl SlizzardServer{
         let _ = owner.connect("body_entered",owner,"attack_entity",VariantArray::new_shared(),0);
         owner.set_collision_layer_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
         owner.set_collision_mask_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
-        owner.set_collision_layer_bit(collision_layer::CLIENT_NPC_COLLISION_LAYER.into(),false);
-        owner.set_collision_mask_bit(collision_layer::CLIENT_NPC_COLLISION_LAYER.into(),true);
+        owner.set_collision_layer_bit(collision_layer::SERVER_NPC_COLLISION_LAYER.into(),false);
+        owner.set_collision_mask_bit(collision_layer::SERVER_NPC_COLLISION_LAYER.into(),true);
     }
 
     #[method]
     fn attack_entity(&self,#[base] owner:TRef<Area>,body:Ref<Node,Shared>){
         let body = unsafe{body.assume_safe()};
+        let name = body.name();
         let entity_id = body.get("id");
         if entity_id.is_nil(){
             assert!(false,"Body id is null");
