@@ -13,6 +13,10 @@ signal axis_spider_created(id,axis_spider)
 func axis_spider_created(id,axis_spider):
 	emit_signal("axis_spider_created",id,axis_spider)
 
+signal player_created(id,player)
+func player_created(id,player):
+	emit_signal("player_created",id,player)
+
 #emits field signal
 signal field(client_id,contents)
 func field(client_id:String,contents:Dictionary):

@@ -1,0 +1,9 @@
+[gd_resource type="NativeScript" load_steps=2 format=2]
+
+[ext_resource path="res://native_tools.gdnlib" type="GDNativeLibrary" id=1]
+
+[resource]
+resource_name = "ServerConsole"
+class_name = "ServerConsole"
+
+library = ExtResource( 1 )

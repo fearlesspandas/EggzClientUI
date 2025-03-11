@@ -7,6 +7,8 @@ onready var connection_indicator:ConnectionIndicator = ConnectionIndicator.new()
 onready var entity_management:ServerEntityManager = ServerEntityManager.new()
 onready var auth_request:AuthenticationRequest = AuthenticationRequest.new()
 onready var client_terminal = load("res://native_lib/ClientTerminal.gdns").new()
+onready var server_console = ServerConsoleEnv.new()
+
 var profile_id:String
 var connection_ind_size = 30
 
@@ -17,7 +19,7 @@ func _ready():
 	auth_request._initiate_auth_request(profile_id)
 	
 func load_scene(id,secret:String):
-	print_debug("entering control")
+	print_debug("Loading scene...")
 	var profile = ProfileManager.get_profile(profile_id)
 	#profile.set_secret_from_encrypted(secret)
 	print_debug("profile secret: ", profile.secret)
@@ -34,6 +36,9 @@ func load_scene(id,secret:String):
 	
 	entity_management.spawn_server_world(self,Vector3(0,-10,0))
 
+	print_debug("------ADDING SERVER_CONSOLE-------------------")
+	self.add_child(server_console)
+
 	#client_terminal.custom_viewport = viewport
 	self.connect("is_active",client_terminal,"set_active")
 	self.add_child(client_terminal)
@@ -41,7 +46,9 @@ func load_scene(id,secret:String):
 	client_terminal.set_active(true)
 	ServerTerminalGlobalSignals.register_terminal(client_terminal)
 
+
 	GlobalSignalsServer.client_id_verified(profile.id)
+
 
 
 func set_active(active:bool):

@@ -1,10 +1,16 @@
 
 use gdnative::prelude::*;
+use gdnative::api::*;
+use crate::traits::{Instanced};
 
 
 
-trait ClientEntity{
-    fn body(&self) -> &KinematicBody;
-    fn default_physics_process(_delta:f64){
-    }
+trait Entity where Self:Instanced<KinematicBody>{
+    fn id(&self) -> String;
+    fn mesh(&self) -> &Option<Ref<MeshInstance>>;
+    fn move_body(&self,location:Vector3);
+}
+
+trait ClientPlayerEntity where Self:Entity{
+    
 }

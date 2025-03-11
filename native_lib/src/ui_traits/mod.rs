@@ -56,7 +56,11 @@ pub trait Windowed<T:From<Action>>{
     fn from_command(&self,cmd:Action) -> T{
         T::from(cmd)
     }
-
+    fn register_window_signals(builder:&ClassBuilder<Self>) where Self:Sized , Self:NativeClass{
+        builder.signal("clicked").done();
+        builder.signal("hovered").done();
+        builder.signal("unhovered").done();
+    }
     fn ready(&self,owner:TRef<Control>){
         let bg_rect = unsafe{self.bg_rect().assume_safe()};
         let main_rect = unsafe{self.main_rect().assume_safe()};

@@ -429,6 +429,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://entity/server/ServerEntityRigidBody.gd"
 }, {
+"base": "Node",
+"class": "ServerConsoleEnv",
+"language": "GDScript",
+"path": "res://user_interface/server/ServerConsoleEnv.gd"
+}, {
 "base": "Control",
 "class": "ServerControl",
 "language": "GDScript",
@@ -604,6 +609,7 @@ _global_script_class_icons={
 "RustSocket": "",
 "ServerBase": "",
 "ServerBody": "",
+"ServerConsoleEnv": "",
 "ServerControl": "",
 "ServerEntity": "",
 "ServerEntityKinematicBody": "",

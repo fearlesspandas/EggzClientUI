@@ -13,6 +13,7 @@ pub struct BodyPiece{
     radius:f32,
     color:Color,
     mesh:Ref<MeshInstance>,
+    rotate_speed:f64,
 }
 impl Instanced<Spatial> for BodyPiece{
     fn make() -> Self{
@@ -20,6 +21,7 @@ impl Instanced<Spatial> for BodyPiece{
             radius:1.0,
             color:Color{r:0.0,g:70.0,b:100.0,a:1.0},
             mesh:MeshInstance::new().into_shared(),
+            rotate_speed:1.0,
         }
     }
 }
@@ -44,7 +46,7 @@ impl BodyPiece{
     }
     #[method]
     fn _process(&self,#[base] owner:TRef<Spatial>,delta:f64){
-        owner.rotate_z(delta);
+        owner.rotate_z(self.rotate_speed * delta);
     }
 
     #[method]
@@ -93,6 +95,7 @@ impl Slizzard{
         collider.set_shape(shape);
         owner.add_child(collider,true);
         let _ = owner.connect("body_entered",owner,"attack_entity",VariantArray::new_shared(),0);
+        let _ = owner.connect("body_exited",owner,"stop_attack",VariantArray::new_shared(),0);
         owner.set_collision_layer_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
         owner.set_collision_mask_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
         owner.set_collision_layer_bit(collision_layer::CLIENT_NPC_COLLISION_LAYER.into(),false);
@@ -105,7 +108,20 @@ impl Slizzard{
         let name = body.name();
         let position = body.cast::<KinematicBody>().map(|kinematic_body| kinematic_body.global_translation());
         //let _ = position.map(|pos| owner.look_at(pos,Vector3{x:0.0,y:1.0,z:0.0}));
+        
         let _ = position.map(|pos| self.looking = Some(pos));
+
+        for body_piece in &self.body_pieces{
+            let body_piece = unsafe{body_piece.assume_safe()};
+            let _ = body_piece.map_mut(|obj,_| obj.rotate_speed = 10.0);
+        }
+    }
+    #[method]
+    fn stop_attack(&mut self,#[base] owner:TRef<Area>,body:Ref<Node,Shared>){
+        for body_piece in &self.body_pieces{
+            let body_piece = unsafe{body_piece.assume_safe()};
+            let _ = body_piece.map_mut(|obj,_| obj.rotate_speed = 1.0);
+        }
     }
 
     #[method]

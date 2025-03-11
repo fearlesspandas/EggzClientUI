@@ -1,7 +1,9 @@
 extends EntityManagement
 
-signal player_created(player)
 signal npc_created(npc)
+#deprecated
+signal player_created(player)
+
 class_name ServerEntityManager
 
 export var serverSpawnWorld:Resource
@@ -95,6 +97,8 @@ func spawn_character_entity_server(id:String, location:Vector3) -> PlayerServerE
 		spawn.add_child(res)
 		res.global_transform.origin = location
 		res.body.global_transform.origin = location
+		GlobalSignalsServer.player_created(id,res)
+		#deprecated
 		emit_signal("player_created",res)
 		return res
 	else:
@@ -174,8 +178,6 @@ func handle_entity(entity):
 			if !server_entities.has(id):
 				socket.get_top_level_terrain_in_distance(1024,Vector3(x,y,z))
 				var spawned_character = spawn_character_entity_server(id,Vector3(x,y,z))
-				#temporary - adding basic ability to all players
-				#socket.add_item(id,0)	
 		{"ProwlerModel":{"id": var id, "location": [var x, var y, var z], "stats":{"energy":var energy, "health" : var health, "id": var discID}}}:
 			if server_entities.has(id):
 				despawn_prowler(id)
@@ -245,7 +247,7 @@ func handle_json(json) -> bool:
 				assert(false,"entity with id is null")
 			var loc = entity.body.global_transform.origin
 			if entity is PlayerServerEntity:
-				loc += entity.field.get_point_from_location(int(x),int(y))
+				loc += entity.field.ref.get_point_from_location(int(x),int(y))
 			AbilityManager.ability_server(int(ability_id),loc,args,entity.is_npc)	
 			return false
 		{'Field': {'id':var id,'items':var items,'occupied':var _occupied}}:
