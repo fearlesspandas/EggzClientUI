@@ -245,9 +245,9 @@ impl Instanced<Control> for ServerConsole{
 }
 impl Windowed<Action> for ServerConsole{
 
-    const BG_HIGHLIGHT_COLOR:Color = Color{r:100.0,g:0.0,b:0.0,a:1.0};
-    const BG_COLOR:Color   = Color{r:100.0,g:0.0,b:0.0,a:1.0};
-    const MAIN_COLOR:Color = Color{r:0.0,g:100.0,b:0.0,a:1.0};
+    const BG_HIGHLIGHT_COLOR:Color = Color{r:100.0,g:100.0,b:100.0,a:1.0};
+    const BG_COLOR:Color   = Color{r:0.0,g:100.0,b:0.0,a:1.0};
+    const MAIN_COLOR:Color = Color{r:100.0,g:0.0,b:0.0,a:1.0};
     const MARGIN_SIZE:f32  = 10.0;
     fn hovering(&self) -> bool{
         return self.hovered
@@ -280,13 +280,13 @@ impl ServerConsole{
         let _ = owner.connect("mouse_exited",owner,"exited",VariantArray::new_shared(),0);
         let _ = owner.connect("clicked",owner,"clicked",VariantArray::new_shared(),0);
 
-        let add_1 = self.add_player(owner,"Bananas1".to_string());
-        let add_2 = self.add_player(owner,"Bananas2".to_string());
-        let add_3 = self.add_player(owner,"Bananas3".to_string());
+        //let add_1 = self.add_player(owner,"Bananas1".to_string());
+        //let add_2 = self.add_player(owner,"Bananas2".to_string());
+        //let add_3 = self.add_player(owner,"Bananas3".to_string());
+        //godot_print!("{}",format!("Add 1 console success : {add_1:?}"));
+        //godot_print!("{}",format!("Add 2 console success : {add_2:?}"));
+        //godot_print!("{}",format!("Add 3 console success : {add_3:?}"));
         godot_print!("ServerConsole Readied");
-        godot_print!("{}",format!("Add 1 console success : {add_1:?}"));
-        godot_print!("{}",format!("Add 2 console success : {add_2:?}"));
-        godot_print!("{}",format!("Add 3 console success : {add_3:?}"));
     }
     #[method]
     fn _input(&self,#[base] owner:TRef<Control> , event:Ref<InputEvent>){
