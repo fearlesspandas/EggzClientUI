@@ -74,7 +74,8 @@ impl FieldZoneServer{
             let parent = unsafe{parent.assume_safe()};
             parent.get("id")
         }).unwrap();
-        if entity_id.is_nil(){assert!(false)}
+        //todo thrown
+        if entity_id.is_nil(){assert!(false,"entity id is nil")}
         let entity_id = entity_id.try_to::<String>();
         let field_tx = self.field_tx.clone().unwrap();
         let _ = entity_id.map(|id| self.typ.server_body_entered(field_tx,&self.location,id));

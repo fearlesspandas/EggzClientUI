@@ -6,6 +6,7 @@ use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_ability_mesh::{FieldAbilityMesh};
 use crate::field_ability_actions::ToAction;
 use crate::field_abilities::{AbilityType,SubAbilityType};
+use crate::collision_layer;
 use tokio::sync::mpsc;
 
 type Sender<T> = mpsc::UnboundedSender<T>;
@@ -14,7 +15,7 @@ type Receiver<T> = mpsc::UnboundedReceiver<T>;
 pub const ZONE_WIDTH:f32 = 20.0;
 pub const ZONE_HEIGHT:f32 = 1.0;
 
-const COLLISION_LAYER:i64 = 20;
+const COLLISION_LAYER:i64 = collision_layer::CLIENT_FIELD_COLLISION_LAYER as i64;
 
 pub enum FieldZoneCommand{
     Selected(AbilityType),

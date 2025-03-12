@@ -54,7 +54,7 @@ func _input(event):
 		var intersection = space_state.intersect_ray(ray_origin,ray_target)
 		if not intersection.empty():
 			if hovered_object == null || hovered_object != intersection.collider:
-				if hovered_object != null && hovered_object.has_method("exited"):
+				if hovered_object != null && weakref(hovered_object).get_ref() != null && hovered_object.has_method("exited"):
 					hovered_object.exited()
 				hovered_position = intersection.position
 				hovered_object = intersection.collider
@@ -72,7 +72,10 @@ func _input(event):
 	
 func _physics_process(delta):
 	pass
+
 func _ready():
+	self.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
+	self.set_collision_mask_bit(EntityConstants.CLIENT_FIELD_COLLISION_LAYER,true)
 	pass # Replace with function body.
 
 
