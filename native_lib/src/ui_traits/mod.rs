@@ -3,7 +3,12 @@ use gdnative::prelude::*;
 use gdnative::api::*;
 
 use crate::button_tiles::{Tile,TileType};
+use crate::traits::{Instanced};
 use tokio::sync::mpsc;
+use gdnative::object::bounds::AssumeSafeLifetime;
+use gdnative::object::bounds::LifetimeConstraint;
+
+
 
 type Sender<T> = mpsc::UnboundedSender<T>;
 pub enum Action{

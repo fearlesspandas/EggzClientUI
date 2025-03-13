@@ -4,10 +4,12 @@ extends Node
 onready var physics_native_shared_socket = load("res://native_lib/SharedRuntimeBytes.gdns").new()
 
 func _ready():
+	ClientTerminalGlobalSignals.connect("request_data",self,"send_requested_data")
+
+func initialize_sockets():
 	var url = NetworkConfig.physics_host
 	physics_native_shared_socket.set_url(url)
 	self.add_child(physics_native_shared_socket)
-	ClientTerminalGlobalSignals.connect("request_data",self,"send_requested_data")
 
 func send_requested_data(data_type):
 	match data_type:

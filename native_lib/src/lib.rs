@@ -23,6 +23,7 @@ pub mod item_menu;
 pub mod button_tiles;
 pub mod damage_indicator;
 pub mod server_console;
+pub mod socket_stats;
 mod client_terminal;
 
 #[allow(non_snake_case)]
@@ -64,6 +65,7 @@ fn init(handle:InitHandle){
     handle.add_class::<server_console::ServerConsole>();
     handle.add_class::<server_console::PlayerLocation>();
     handle.add_class::<server_console::PlayerChart>();
+    handle.add_class::<socket_stats::ServerStats>();
     //handle.add_class::<item_menu::ControlBox<item_menu::ItemSlotCommand>>();
 }
 godot_init!(init);

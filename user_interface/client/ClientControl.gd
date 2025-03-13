@@ -29,6 +29,7 @@ func _ready():
 	auth_request._initiate_auth_request(profile_id)
 	
 func load_scene(id,secret):
+	SharedRuntimeEnv.initialize_sockets()
 	var profile = ProfileManager.get_profile(profile_id)
 	#profile.set_secret_from_encrypted(secret)
 	viewport_container.set_size(self.rect_size)
