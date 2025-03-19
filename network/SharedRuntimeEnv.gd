@@ -1,5 +1,7 @@
 extends Node
 
+signal connected(socket_id,entities)
+signal disconnected(socket_id,entities)
 #onready var physics_native_shared_socket = load("res://native_lib/SharedRuntime.gdns").new()
 onready var physics_native_shared_socket = load("res://native_lib/SharedRuntimeBytes.gdns").new()
 
@@ -22,7 +24,8 @@ func send_requested_data(data_type):
 
 func socket_connected(socket_id,entities):
 	print_debug("Socket Connected ", socket_id, " for ", str(entities))
+	emit_signal("connected",socket_id,entities)
 
 func socket_disconnected(socket_id,entities):
-	assert(false)
+	emit_signal("disconnected",socket_id,entities)
 

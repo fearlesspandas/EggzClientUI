@@ -3,7 +3,7 @@ use gdnative::prelude::*;
 use gdnative::api::*;
 
 use crate::button_tiles::{Tile,TileType};
-use crate::traits::{Instanced};
+use crate::traits::{Instanced,Defaulted,InstancedDefault};
 use tokio::sync::mpsc;
 use gdnative::object::bounds::AssumeSafeLifetime;
 use gdnative::object::bounds::LifetimeConstraint;
@@ -75,6 +75,7 @@ pub trait Windowed<T:From<Action>>{
         main_rect.set_mouse_filter(control::MouseFilter::IGNORE.into());
         owner.add_child(bg_rect,true);
         owner.add_child(main_rect,true);
+        //assert!(owner.has_method("hovered"),"No hovered method found at Windowed::ready");
     }
     fn input(&self,owner:TRef<Control>,event:Ref<InputEvent>){
         if let Ok(event) = event.try_cast::<InputEventMouseButton>(){
@@ -144,11 +145,25 @@ pub trait Windowed<T:From<Action>>{
 }
 pub trait LabelButton<T:From<Action>> where Self:Windowed<T>{
     fn label(&self) -> &Ref<Label>;
+    fn base_font() -> Option<Ref<DynamicFont>>{
+        None
+    }
+    fn font(&self) -> Option<Ref<DynamicFont>>{
+        None
+    }
+
     fn ready(&self,owner:TRef<Control>){
         <Self as Windowed<T>>::ready(self,owner);
         let label = unsafe{self.label().assume_safe()};
         owner.add_child(self.label(),true);
         label.set_mouse_filter(control::MouseFilter::IGNORE.into());
+        match Self::base_font(){
+            Some(font_ref) => {
+                label.add_font_override("font",font_ref);
+            }
+            None => {}
+        }
+
     }
     fn process(&self,owner:TRef<Control>,delta:f64){
         <Self as Windowed<T>>::process(self,owner,delta);
@@ -161,6 +176,21 @@ pub trait LabelButton<T:From<Action>> where Self:Windowed<T>{
     fn set_text(&self,text:String){
         let label = unsafe{self.label().assume_safe()};
         label.set_text(text);
+    }
+    fn set_font_outline(&self,color:Color,size:i64){
+        let label = unsafe{self.label().assume_safe()};
+        let font = self.font().unwrap();
+        let font = unsafe{font.assume_safe()};
+        font.set_outline_color(color);
+        font.set_outline_size(size);
+        label.add_font_override("font",font);
+    }
+    fn set_font_size(&self,size:i64){
+        let label = unsafe{self.label().assume_safe()};
+        let font = self.font().unwrap();
+        let font = unsafe{font.assume_safe()};
+        font.set_size(size);
+        label.add_font_override("font",font);
     }
 }
 pub trait TileButton<T:From<Action>> where Self:Windowed<T>{
@@ -197,6 +227,7 @@ pub trait TileButton<T:From<Action>> where Self:Windowed<T>{
         let _ = tile.map_mut(|obj,_|obj.set_color(Self::SYMBOL_COLOR));
     }
 }
+
 pub trait AnimationWindow<T:From<Action>> where Self:Windowed<T>{
     fn animation(start:Vector2,delta:f64) -> Vector2;
     fn shapes(&self) -> Vec<Ref<Control>>;

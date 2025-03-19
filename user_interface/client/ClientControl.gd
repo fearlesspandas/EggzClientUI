@@ -17,6 +17,8 @@ onready var destination_type_indicator:DestinationTypeIndicator = DestinationTyp
 onready var command_menu : CommandMenu = CommandMenu.new()
 onready var client_terminal = load("res://native_lib/ClientTerminal.gdns").new()
 onready var inventory_menu_rust = Inventory.new()
+onready var server_stats = ServerStats.new()
+
 
 var profile_id:String
 var connection_ind_size = 30
@@ -102,6 +104,8 @@ func load_scene(id,secret):
 
 	inventory_menu_rust.client_id = profile.id
 	self.add_child(inventory_menu_rust)
+
+	self.add_child(server_stats)
 
 	#ServerTerminalGlobalSignals.connect_terminal(client_terminal)
 	#OS.window_fullscreen = true

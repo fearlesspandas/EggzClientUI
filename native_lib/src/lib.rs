@@ -66,6 +66,10 @@ fn init(handle:InitHandle){
     handle.add_class::<server_console::PlayerLocation>();
     handle.add_class::<server_console::PlayerChart>();
     handle.add_class::<socket_stats::ServerStats>();
+    handle.add_class::<socket_stats::ServerPanel>();
+    handle.add_class::<socket_stats::EntityList>();
+    handle.add_class::<socket_stats::EntityId>();
+
     //handle.add_class::<item_menu::ControlBox<item_menu::ItemSlotCommand>>();
 }
 godot_init!(init);
