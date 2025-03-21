@@ -24,6 +24,7 @@ pub mod button_tiles;
 pub mod damage_indicator;
 pub mod server_console;
 pub mod socket_stats;
+pub mod notifications;
 mod client_terminal;
 
 #[allow(non_snake_case)]
@@ -69,6 +70,10 @@ fn init(handle:InitHandle){
     handle.add_class::<socket_stats::ServerPanel>();
     handle.add_class::<socket_stats::EntityList>();
     handle.add_class::<socket_stats::EntityId>();
+    handle.add_class::<notifications::Notifications>();
+    handle.add_class::<notifications::Notification>();
+    handle.add_class::<notifications::Details>();
+    handle.add_class::<notifications::TextPanel>();
 
     //handle.add_class::<item_menu::ControlBox<item_menu::ItemSlotCommand>>();
 }

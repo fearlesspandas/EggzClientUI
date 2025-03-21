@@ -78,6 +78,13 @@ pub trait Windowed<T:From<Action>>{
         //assert!(owner.has_method("hovered"),"No hovered method found at Windowed::ready");
     }
     fn input(&self,owner:TRef<Control>,event:Ref<InputEvent>){
+        if !owner.is_visible() || owner.get_parent().map(|parent| {
+            let parent = unsafe{parent.assume_safe()};
+            let parent = parent.cast::<Control>();
+            parent.map(|p| !p.is_visible()).unwrap()
+        }).unwrap_or(false){
+            return ;
+        }
         if let Ok(event) = event.try_cast::<InputEventMouseButton>(){
             let event = unsafe{event.assume_safe()};
             if event.is_action_pressed("left_click",false,true) && self.hovering(){
