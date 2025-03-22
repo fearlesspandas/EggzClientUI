@@ -1,6 +1,7 @@
 [entry]
 
 X11.64="res://native_lib/target/debug/libNativeTools.so"
+Server="res://native_lib/target/debug/libNativeTools.so"
 
 [dependencies]
 

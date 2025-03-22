@@ -19,7 +19,10 @@ func load_profiles():
 				print_debug("Found directory: " + file_name)
 			else:
 				var k = CryptoKey.new()
-				assert(k.load(profiles_dir + file_name,false) == 0)
+				var err = k.load(profiles_dir + file_name,false) 
+				assert(err == 0)
+				if err != 0:
+					print_debug("Error while loading key: ",err)
 				if k.is_public_only():
 					print_debug("Error: Key loaded that is public only: ",file_name)
 					assert(false)

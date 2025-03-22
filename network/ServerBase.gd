@@ -21,6 +21,7 @@ func _ready():
 	auth_request._initiate_auth_request(profile_id)
 
 func load_scene(id,secret:String):
+	SharedRuntimeEnv.initialize_sockets()
 	print_debug("Starting Eggz Server with profile:",profile_id)
 	var profile = ProfileManager.get_profile(profile_id)
 	print_debug("profile secret: ", profile.secret)
@@ -29,4 +30,5 @@ func load_scene(id,secret:String):
 	ServerNetwork.init_physics(profile.id,profile.secret,entity_management,"_on_physics_data",false)
 	self.add_child(entity_management)
 	entity_management.spawn_server_world(self,Vector3(0,-10,0))
+	GlobalSignalsServer.client_id_verified(profile.id)
 	print_debug("Successfully started Eggz Server")

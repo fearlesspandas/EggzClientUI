@@ -1,6 +1,7 @@
 [entry]
 
 X11.64="res://bin/libClientPhysicsSocket.so"
+Server="res://bin/libClientPhysicsSocket.so"
 
 [dependencies]
 
