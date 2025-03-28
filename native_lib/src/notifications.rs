@@ -75,17 +75,28 @@ impl TextPanel{
         <Self as Windowed<NotificationAction>>::unhover(self);
     }
 }
+#[derive(Clone)]
+pub struct DetailsConfig{
+    detail_messages:Vec<String>
+}
+impl Defaulted for DetailsConfig{
+    fn default() -> Self{
+        DetailsConfig{
+            detail_messages:Vec::new(),
+        }
+    }
+}
 #[derive(NativeClass)]
 #[inherit(Control)]
 pub struct Details{
     tx:Sender<NotificationAction>,
-    entities:Vec<Instance<TextPanel>>,
+    details:Vec<Instance<TextPanel>>,
 }
 impl InstancedDefault<Control,Sender<NotificationAction>> for Details{
     fn make(args:&Sender<NotificationAction>) -> Self{
         Details{
             tx:args.clone(),
-            entities:Vec::new(),
+            details:Vec::new(),
         }
     }
 }
@@ -97,45 +108,48 @@ impl Details{
     #[method]
     fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
         let owner_size = owner.size();
-        let num_elements = std::cmp::max(self.entities.len(),1) as f32;
+        let num_elements = std::cmp::max(self.details.len(),1) as f32;
         let element_size = Vector2::new(owner_size.x,owner_size.y/num_elements);
         let mut idx = 0.0;
-        for entity in &self.entities{
-            let entity = unsafe{entity.assume_safe()};
-            let _ = entity.map(|_,control| control.set_size(element_size,false));
-            let _ = entity.map(|_,control| control.set_position(Vector2::new(0.0,element_size.y * idx),false));
+        for detail in &self.details{
+            let detail = unsafe{detail.assume_safe()};
+            let _ = detail.map(|_,control| control.set_size(element_size,false));
+            let _ = detail.map(|_,control| control.set_position(Vector2::new(0.0,element_size.y * idx),false));
             idx += 1.0;
         }
     }
     #[method]
-    fn add(&mut self,#[base] owner:TRef<Control>, id:String){
+    fn add(&mut self,#[base] owner:TRef<Control>, message:String){
         let list_element = TextPanel::make_instance(&self.tx).into_shared();
-        self.entities.push(list_element.clone());
+        self.details.push(list_element.clone());
         let list_element = unsafe{list_element.assume_safe()};
-        let _ = list_element.map(|obj,_| obj.set_text(id));
+        let _ = list_element.map(|obj,_| obj.set_text(message));
         //let _ = list_element.map(|_,control| control.set_mouse_filter(Control::MOUSE_FILTER_PASS));
         owner.add_child(list_element,true);
     }
 }
 pub struct NotificationConfig{
     id:Option<i64>,
-    entity_ids:Vec<String>,
+    text:Option<String>,
+    detail_messages:Vec<String>,
     tx:Option<Sender<NotificationAction>>
 }
 impl Defaulted for NotificationConfig{
     fn default() -> Self{
         NotificationConfig{
             id:None,
-            entity_ids:Vec::new(),
+            text:None,
+            detail_messages:Vec::new(),
             tx:None,
         }
     }
 }
 impl NotificationConfig{
-    fn new(id:i64,entity_ids:&Vec<String>,tx:Option<Sender<NotificationAction>>) -> Self{
+    fn new(id:i64,text:String,detail_messages:&Vec<String>,tx:Option<Sender<NotificationAction>>) -> Self{
         NotificationConfig{
             id:Some(id),
-            entity_ids:entity_ids.clone(),
+            text:Some(text),
+            detail_messages:detail_messages.clone(),
             tx:tx,
         }
     }
@@ -146,8 +160,8 @@ impl NotificationConfig{
 #[register_with(Self::register_window_signals)]
 pub struct Notification{
     id:i64,
-    entity_ids:Vec<String>,
-    entity_list:Instance<Details>,
+    detail_messages:Vec<String>,
+    details:Instance<Details>,
     tx:Sender<NotificationAction>,
     bg_rect:Ref<ColorRect>,
     main_rect:Ref<ColorRect>,
@@ -160,8 +174,8 @@ impl InstancedDefault<Control,NotificationConfig> for Notification{
     fn make(args:&NotificationConfig) -> Self{
         Notification{
             id:args.id.unwrap(),
-            entity_ids:args.entity_ids.clone(),
-            entity_list:Details::make_instance(&args.tx.clone().unwrap()).into_shared(),
+            detail_messages:args.detail_messages.clone(),
+            details:Details::make_instance(&args.tx.clone().unwrap()).into_shared(),
             tx:args.tx.clone().unwrap(),
             bg_rect:ColorRect::new().into_shared(),
             main_rect:ColorRect::new().into_shared(),
@@ -217,14 +231,14 @@ impl Notification{
         <Self as LabelButton<NotificationAction>>::ready(self,owner);
         self.set_text(self.id.to_string());
 
-        let entity_list = unsafe{self.entity_list.assume_safe()};
-        for id in &self.entity_ids{
-            let _ = entity_list.map_mut(|obj,control| obj.add(control,id.clone()));
+        let details = unsafe{self.details.assume_safe()};
+        for message in &self.detail_messages{
+            let _ = details.map_mut(|obj,control| obj.add(control,message.clone()));
         }
-        let _ = entity_list.map_mut(|_,control| control.set_visible(false));
-        //let _ = entity_list.map(|_,control| control.set_mouse_filter(Control::MOUSE_FILTER_PASS));
+        let _ = details.map_mut(|_,control| control.set_visible(false));
+        //let _ = details.map(|_,control| control.set_mouse_filter(Control::MOUSE_FILTER_PASS));
 
-        owner.add_child(entity_list,true);
+        owner.add_child(details,true);
 
         let timer = unsafe{self.timer.assume_safe()};
         let _ = timer.connect("timeout",owner,"display_timeout",VariantArray::new_shared(),0);
@@ -242,9 +256,9 @@ impl Notification{
         
         let main_size = main_rect.size();
         let owner_size = owner.size();
-        let entity_list = unsafe{self.entity_list.assume_safe()};
-        let _ = entity_list.map(|_,control|control.set_size(main_size,false));
-        let _ = entity_list.map(|_,control|control.set_position(main_rect.position(),false));
+        let details = unsafe{self.details.assume_safe()};
+        let _ = details.map(|_,control|control.set_size(main_size,false));
+        let _ = details.map(|_,control|control.set_position(main_rect.position(),false));
         self.set_font_size((main_size.y/2.0).round() as i64);
     }
     #[method]
@@ -261,8 +275,8 @@ impl Notification{
     }
     #[method]
     fn clicked(&self,#[base] owner:TRef<Control>){
-        let entity_list = unsafe{self.entity_list.assume_safe()};
-        let _ = entity_list.map_mut(|_,control| control.set_visible(!control.is_visible()));
+        let details = unsafe{self.details.assume_safe()};
+        let _ = details.map_mut(|_,control| control.set_visible(!control.is_visible()));
         let timer = unsafe{self.timer.assume_safe()};
         self.toggle_timer();
     }
@@ -278,13 +292,6 @@ impl Notification{
     #[method]
     fn display_timeout(&self){
         let _ = self.tx.send(NotificationAction::remove_displayed(self.id));
-    }
-    fn set_status(&self,value:bool){
-        if value{
-            self.set_font_outline(Color::from_rgba(0.0,255.0,0.0,1.0),Self::OUTLINE_SIZE);
-        }else{
-            self.set_font_outline(Color::from_rgba(255.0,0.0,0.0,1.0),Self::OUTLINE_SIZE);
-        }
     }
 }
 #[derive(NativeClass)]
@@ -422,21 +429,14 @@ impl Notifications{
         <Self as Windowed<NotificationAction>>::unhover(self);
     }
     #[method]
-    fn add_notification(&mut self,#[base] owner:TRef<Control>,entities:Vec<String>) -> Result<(),Error>{
+    fn add_notification(&mut self,#[base] owner:TRef<Control>,text:String,details:Vec<String>) -> Result<(),Error>{
         let id = self.notifications.len() as i64;
-        let config = NotificationConfig::new(id,&entities,Some(self.tx.clone()));
+        let config = NotificationConfig::new(id,text,&details,Some(self.tx.clone()));
         let notification = Notification::make_instance(&config).into_shared(); 
         self.notifications.push(notification.clone());
         self.displayed.insert(id);
         owner.add_child(notification,true);
         Ok(())
-    }
-
-    #[method]
-    fn set_status(&self,id:i64,value:bool){
-        let notification = &self.notifications[id as usize];
-        let notification = unsafe{notification.assume_safe()};
-        let _ = notification.map(|obj,_| obj.set_status(value));
     }
 
 }

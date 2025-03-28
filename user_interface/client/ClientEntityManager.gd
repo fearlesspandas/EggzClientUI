@@ -311,6 +311,8 @@ func handle_json(json) -> bool:
 		{'ProgressUpdate':{'id':var id,'args':var args}}:
 			ProgressHandlerClient.handle_message(id,args)
 			return false
+		{'Killed':{'id':var id,'cause':var cause}}:
+			return false
 		{'TerrainUnitm':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
 			if terrain.has(uuid):
 				return true
