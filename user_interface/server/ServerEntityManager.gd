@@ -248,7 +248,7 @@ func handle_json(json) -> bool:
 			var loc = entity.body.global_transform.origin
 			if entity is PlayerServerEntity:
 				loc += entity.field.ref.get_point_from_location(int(x),int(y))
-			AbilityManager.ability_server(int(ability_id),loc,args,entity.is_npc)	
+			AbilityManager.ability_server(int(ability_id),entity_id,loc,args,entity.is_npc)	
 			return false
 		{'Field': {'id':var id,'items':var items,'occupied':var _occupied}}:
 			GlobalSignalsServer.field(id,items)	

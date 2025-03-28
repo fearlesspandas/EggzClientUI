@@ -207,6 +207,16 @@ impl FieldZone{
         }
     }
     #[method]
+    pub fn clear_abilities(&mut self,#[base] owner:TRef<StaticBody>){
+        for typ in self.abilities.clone().keys(){
+            let ability = self.abilities.get(&typ).unwrap();
+            owner.remove_child(ability);
+            let ability = unsafe{ability.assume_safe()};
+            let _ = ability.map(|_,mesh| mesh.queue_free());
+            self.abilities.remove(&typ);
+        }
+    }
+    #[method]
     pub fn swap_ability(&mut self,#[base] owner:TRef<StaticBody>, typ:AbilityType){
         for ability_id in self.abilities.keys(){
             let _ = self.zone_tx.send(FieldZoneCommand::RemoveAbility(*ability_id));
@@ -453,6 +463,15 @@ impl Field{
                 if obj.abilities.contains_key(&ability_id){
                     obj.remove_ability(body,ability_id.into())
                 }
+            });
+        }
+    }
+    #[method]
+    fn clear_field_abilities(&self,#[base] _owner:TRef<Spatial>){
+        for zone in self.zones.values(){
+            let zone = unsafe{zone.assume_safe()};
+            let _ = zone.map_mut(|obj,body|{
+                obj.clear_abilities(body)
             });
         }
     }

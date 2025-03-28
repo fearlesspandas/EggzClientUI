@@ -18,7 +18,8 @@ onready var command_menu : CommandMenu = CommandMenu.new()
 onready var client_terminal = load("res://native_lib/ClientTerminal.gdns").new()
 onready var inventory_menu_rust = Inventory.new()
 onready var server_stats = ServerStats.new()
-#onready var notifications = Notifications.new()
+onready var notifications = Notifications.new()
+
 
 
 var profile_id:String
@@ -108,7 +109,7 @@ func load_scene(id,secret):
 
 	self.add_child(server_stats)
 
-	#self.add_child(notifications)
+	self.add_child(notifications)
 
 	#ServerTerminalGlobalSignals.connect_terminal(client_terminal)
 	#OS.window_fullscreen = true

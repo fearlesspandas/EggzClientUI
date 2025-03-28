@@ -5,6 +5,7 @@ class_name SmackServer
 onready var collision_shape:CollisionShape = CollisionShape.new()
 onready var despawn_timer:Timer = Timer.new()
 
+var entity_owner_id:String = ""
 func _ready():
 	var shape:SphereShape = SphereShape.new()
 	shape.radius = 10
@@ -35,7 +36,7 @@ func _ready():
 func body_entered(body):
 	if body is ServerEntityKinematicBody:
 		if body.has_method("handle_ability_collision"):
-			body.handle_ability_collision(0)
+			body.handle_ability_collision(0,entity_owner_id)
 
 func despawn():
 	get_parent().remove_child(self)

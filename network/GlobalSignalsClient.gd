@@ -92,6 +92,11 @@ signal activate_ability(client_id,slot_id)
 func activate_ability(client_id,slot_id):
 	emit_signal("activate_ability",client_id,slot_id)
 
+#COMBAT SIGNALS
+#emits killed signal
+signal killed(entity_id)
+func killed(entity_id):
+	emit_signal("killed",entity_id)
 	
 
 #TERRAIN SIGNALS

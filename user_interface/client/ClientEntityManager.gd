@@ -312,6 +312,7 @@ func handle_json(json) -> bool:
 			ProgressHandlerClient.handle_message(id,args)
 			return false
 		{'Killed':{'id':var id,'cause':var cause}}:
+			GlobalSignalsClient.killed(id)
 			return false
 		{'TerrainUnitm':{'entities':var entity_map,'location':var location,'uuid':var uuid}}:
 			if terrain.has(uuid):

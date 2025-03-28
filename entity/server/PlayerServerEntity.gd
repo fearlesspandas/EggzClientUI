@@ -27,7 +27,7 @@ func init_requests():
 	init_timer.stop()
 
 func do_damage(id:String,amount:float):
-	socket.remove_health(id,amount)
+	socket.remove_health(id,amount,self.id)
 
 func timer_polling():
 	self.socket.set_lv(self.id,get_lv())

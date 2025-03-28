@@ -68,7 +68,7 @@ func set_socket_mode(mode):
 
 func terminal_set_health(id,health):
 	if id == self.id:
-		socket.remove_health(self.id,health)
+		socket.remove_health(self.id,health,self.client_id)
 
 func terminal_give_ability(id,health):
 	if id == self.id:

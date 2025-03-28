@@ -1,15 +1,19 @@
-[entry]
-
-X11.64="res://bin/libClientPhysicsSocket.so"
-Server="res://bin/libClientPhysicsSocket.so"
-
-[dependencies]
-
-X11.64=[  ]
-
 [general]
 
 singleton=false
 load_once=true
 symbol_prefix="godot_"
 reloadable=true
+
+[entry]
+
+Windows.64="res://bin/ClientPhysicsSocket.dll"
+X11.64="res://bin/libClientPhysicsSocket.so"
+X11.Server="res://bin/libClientPhysicsSocket.so"
+Server="res://bin/libClientPhysicsSocket.so"
+
+[dependencies]
+
+Windows.64=[  ]
+X11.64=[  ]
+X11.Server=[  ]

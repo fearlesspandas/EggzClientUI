@@ -7,5 +7,5 @@ func _ready():
 	pass
 
 #todo move to ServerEntity?
-func handle_ability_collision(ability_id:int):
-	AbilityManager.do_ability_server(ability_id,parent.id)
+func handle_ability_collision(ability_id:int,cause:String):
+	AbilityManager.do_ability_server(ability_id,parent.id,cause)

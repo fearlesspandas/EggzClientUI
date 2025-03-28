@@ -152,8 +152,11 @@ func set_terminal_active(active:bool):
 	self.terminal_active = active
 
 func _handle_message(msg,delta_accum):
-	#pass
-	self.default_handle_message(msg,delta_accum)
+	match msg:
+		{'FieldCleared':{'entity_id':var id}}:
+			field.ref.clear_field_abilities()
+		_:
+			self.default_handle_message(msg,delta_accum)
 
 func _physics_process(delta):
 	self.default_physics_process(delta)

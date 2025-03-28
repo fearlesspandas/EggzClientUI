@@ -77,26 +77,44 @@ impl TextPanel{
 }
 #[derive(Clone)]
 pub struct DetailsConfig{
+    tx:Option<Sender<NotificationAction>>,
     detail_messages:Vec<String>
 }
 impl Defaulted for DetailsConfig{
     fn default() -> Self{
         DetailsConfig{
+            tx:None,
             detail_messages:Vec::new(),
+        }
+    }
+}
+impl DetailsConfig{
+    fn make(tx:Sender<NotificationAction>,messages:&Vec<String>) -> Self{
+        DetailsConfig{
+            tx:Some(tx.clone()),
+            detail_messages:messages.clone(),
         }
     }
 }
 #[derive(NativeClass)]
 #[inherit(Control)]
 pub struct Details{
-    tx:Sender<NotificationAction>,
     details:Vec<Instance<TextPanel>>,
 }
-impl InstancedDefault<Control,Sender<NotificationAction>> for Details{
-    fn make(args:&Sender<NotificationAction>) -> Self{
+impl InstancedDefault<Control,DetailsConfig> for Details{
+    fn make(args:&DetailsConfig) -> Self{
+        let details = args
+            .detail_messages
+            .clone()
+            .into_iter()
+            .map(|dtl| {
+                let res = TextPanel::make_instance(&args.tx.clone().unwrap()).into_shared();
+                let panel = unsafe{res.assume_safe()};
+                let _ = panel.map(|obj,_| obj.set_text(dtl));
+                res
+            }).collect();
         Details{
-            tx:args.clone(),
-            details:Vec::new(),
+            details:details,
         }
     }
 }
@@ -104,6 +122,9 @@ impl InstancedDefault<Control,Sender<NotificationAction>> for Details{
 impl Details{
     #[method]
     fn _ready(&self,#[base] owner:TRef<Control>){
+        for dtl in &self.details{
+            owner.add_child(dtl,true);
+        }
     }
     #[method]
     fn _process(&self,#[base] owner:TRef<Control>,delta:f64){
@@ -117,15 +138,6 @@ impl Details{
             let _ = detail.map(|_,control| control.set_position(Vector2::new(0.0,element_size.y * idx),false));
             idx += 1.0;
         }
-    }
-    #[method]
-    fn add(&mut self,#[base] owner:TRef<Control>, message:String){
-        let list_element = TextPanel::make_instance(&self.tx).into_shared();
-        self.details.push(list_element.clone());
-        let list_element = unsafe{list_element.assume_safe()};
-        let _ = list_element.map(|obj,_| obj.set_text(message));
-        //let _ = list_element.map(|_,control| control.set_mouse_filter(Control::MOUSE_FILTER_PASS));
-        owner.add_child(list_element,true);
     }
 }
 pub struct NotificationConfig{
@@ -175,7 +187,7 @@ impl InstancedDefault<Control,NotificationConfig> for Notification{
         Notification{
             id:args.id.unwrap(),
             detail_messages:args.detail_messages.clone(),
-            details:Details::make_instance(&args.tx.clone().unwrap()).into_shared(),
+            details:Details::make_instance( &DetailsConfig::make(args.tx.clone().unwrap(),&args.detail_messages)).into_shared(),
             tx:args.tx.clone().unwrap(),
             bg_rect:ColorRect::new().into_shared(),
             main_rect:ColorRect::new().into_shared(),
@@ -232,9 +244,6 @@ impl Notification{
         self.set_text(self.id.to_string());
 
         let details = unsafe{self.details.assume_safe()};
-        for message in &self.detail_messages{
-            let _ = details.map_mut(|obj,control| obj.add(control,message.clone()));
-        }
         let _ = details.map_mut(|_,control| control.set_visible(false));
         //let _ = details.map(|_,control| control.set_mouse_filter(Control::MOUSE_FILTER_PASS));
 
@@ -325,9 +334,9 @@ impl Instanced<Control> for Notifications{
     }
 }
 impl Windowed<NotificationAction> for Notifications{
-    const BG_HIGHLIGHT_COLOR:Color = Color{r:255.0,g:255.0,b:255.0,a:1.0};
-    const BG_COLOR:Color = Color{r:0.0,g:0.0,b:0.0,a:1.0};
-    const MAIN_COLOR:Color = Color{r:255.0,g:0.0,b:0.0,a:1.0};
+    const BG_HIGHLIGHT_COLOR:Color = Color{r:255.0,g:255.0,b:255.0,a:0.0};
+    const BG_COLOR:Color = Color{r:0.0,g:0.0,b:0.0,a:0.0};
+    const MAIN_COLOR:Color = Color{r:255.0,g:0.0,b:0.0,a:0.0};
     const MARGIN_SIZE:f32 = 5.0;
     fn hovering(&self) -> bool {self.hovering}
     fn set_hovering(&mut self,value:bool){self.hovering = value}
@@ -360,15 +369,27 @@ impl Notifications{
         }
     }
     fn handle_sizing(&self,owner:TRef<Control>){
-        let owner_size = owner.size();
-        let num_connections = std::cmp::max(self.displayed.len(),1) as f32;
-        let panel_size = Vector2::new(owner_size.x,owner_size.y/num_connections);
+        let num_notifications = self.displayed.len();
+        let window_size = OS::godot_singleton().window_size();
+
+        let notification_size = Vector2::new(
+            window_size.x/3.0,
+            window_size.y/(std::cmp::max(10,num_notifications) as f32),
+        );
+
+        let owner_size = Vector2::new(
+            notification_size.x,
+            notification_size.y * (num_notifications as f32)
+        );
+
+        owner.set_size(owner_size,false);
+
         let mut idx = 0.0;
         for id in &self.displayed{
             let notification = &self.notifications[*id as usize];
             let notification = unsafe{notification.assume_safe()};
-            let _ = notification.map(|_,control| control.set_size(panel_size,false));
-            let _ = notification.map(|_,control| control.set_position(Vector2::new(0.0,panel_size.y * idx),false));
+            let _ = notification.map(|_,control| control.set_size(notification_size,false));
+            let _ = notification.map(|_,control| control.set_position(Vector2::new(0.0,notification_size.y * idx),false));
             idx += 1.0;
         }
 
@@ -431,11 +452,13 @@ impl Notifications{
     #[method]
     fn add_notification(&mut self,#[base] owner:TRef<Control>,text:String,details:Vec<String>) -> Result<(),Error>{
         let id = self.notifications.len() as i64;
-        let config = NotificationConfig::new(id,text,&details,Some(self.tx.clone()));
+        let config = NotificationConfig::new(id,text.clone(),&details,Some(self.tx.clone()));
         let notification = Notification::make_instance(&config).into_shared(); 
         self.notifications.push(notification.clone());
         self.displayed.insert(id);
-        owner.add_child(notification,true);
+        owner.add_child(notification.clone(),true);
+        let notification = unsafe{notification.assume_safe()};
+        let _ = notification.map(|obj,_| obj.set_text(text));
         Ok(())
     }
 
