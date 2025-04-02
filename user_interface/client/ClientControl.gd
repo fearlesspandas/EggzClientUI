@@ -34,6 +34,8 @@ func _ready():
 	
 func load_scene(id,secret):
 	SharedRuntimeEnv.initialize_sockets()
+	ScheduledTransforms.initialize_socket()
+
 	var profile = ProfileManager.get_profile(profile_id)
 	#profile.set_secret_from_encrypted(secret)
 	viewport_container.set_size(self.rect_size)

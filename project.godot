@@ -680,6 +680,7 @@ SharedRuntimeEnv="*res://network/SharedRuntimeEnv.gd"
 FpsStats="*res://user_interface/client/FPSStats.gd"
 ShopMenuEnv="*res://user_interface/client/ShopMenuEnv.gd"
 InventoryDataCache="*res://user_interface/client/InventoryDataCache.gd"
+ScheduledTransforms="*res://network/ScheduledTransforms.gd"
 
 [display]
 

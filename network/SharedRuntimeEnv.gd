@@ -5,15 +5,18 @@ signal disconnected(socket_id,entities)
 #onready var physics_native_shared_socket = load("res://native_lib/SharedRuntime.gdns").new()
 onready var physics_native_shared_socket = load("res://native_lib/SharedRuntimeBytes.gdns").new()
 
+var initialized = false
 func _ready():
 	ClientTerminalGlobalSignals.connect("request_data",self,"send_requested_data")
 	physics_native_shared_socket.connect("connected",self,"socket_connected")
 	physics_native_shared_socket.connect("disconnected",self,"socket_disconnected")
 
 func initialize_sockets():
-	var url = NetworkConfig.physics_host
-	physics_native_shared_socket.set_url(url)
-	self.add_child(physics_native_shared_socket)
+	if not initialized:
+		var url = NetworkConfig.physics_host
+		physics_native_shared_socket.set_url(url)
+		self.add_child(physics_native_shared_socket)
+		self.initialized = true
 
 func send_requested_data(data_type):
 	match data_type:
