@@ -249,6 +249,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://entity/client/tutorial/GoalBlob.gd"
 }, {
+"base": "Node",
+"class": "GravityBox",
+"language": "GDScript",
+"path": "res://world/GravityBox.gd"
+}, {
 "base": "MeshInstance",
 "class": "HealthDisplay",
 "language": "GDScript",
@@ -583,6 +588,7 @@ _global_script_class_icons={
 "GlobularTeleportClient": "",
 "GlobularTeleportServer": "",
 "GoalBlob": "",
+"GravityBox": "",
 "HealthDisplay": "",
 "HealthStars": "",
 "Inventory": "",
@@ -681,6 +687,7 @@ FpsStats="*res://user_interface/client/FPSStats.gd"
 ShopMenuEnv="*res://user_interface/client/ShopMenuEnv.gd"
 InventoryDataCache="*res://user_interface/client/InventoryDataCache.gd"
 ScheduledTransforms="*res://network/ScheduledTransforms.gd"
+GlobalNetworkSignals="*res://network/GlobalNetworkSignals.gd"
 
 [display]
 

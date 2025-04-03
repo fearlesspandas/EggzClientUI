@@ -14,8 +14,8 @@ func _ready():
 				print_debug("Error: No EGGZ_HOST environment variable set; using default ", NetworkConfig.host,NetworkConfig.physics_host)
 			else:
 				print_debug("Found EGGZ_HOST, using:" , host)
-				NetworkConfig.host = host + ":8080"
-				NetworkConfig.physics_host = host + ":8081"
+				NetworkConfig.set_host(host + ":8080")
+				NetworkConfig.set_physics_host(host + ":8081")
 			self.add_child(ServerBase.new())
 		_:
 			#EGGZ_HOST is not checked because it is input by the gui start screen

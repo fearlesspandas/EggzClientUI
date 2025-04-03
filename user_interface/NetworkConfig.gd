@@ -1,8 +1,28 @@
 extends Node
 
+signal url_set(url)
+func url_set(url:String):
+	emit_signal("url_set",url)
+
+signal physics_url_set(url)
+func physics_url_set(url:String):
+	emit_signal("physics_url_set",url)
+
 
 var host = "localhost:8080"
 var physics_host = "localhost:8081"
+
+
+func _ready():
+	pass
+
+func set_host(url:String):
+	self.host = url
+	emit_signal("url_set",url)
+
+func set_physics_host(url:String):
+	self.physics_host = url
+	emit_signal("physics_url_set",url)
 
 func get_websocket_url(client_id):
 	if client_id == null:

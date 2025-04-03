@@ -17,8 +17,8 @@ func find_origin_from_center_and_rectsize(center:Vector2,rect_size:Vector2):
 	return Vector2(center.x - rect_size.x/2,center.y - rect_size.y/2)
 
 func set_network_ip_address():
-	NetworkConfig.host = address_box.text + ":8080"
-	NetworkConfig.physics_host = address_box.text + ":8081"
+	NetworkConfig.set_host(address_box.text + ":8080")
+	NetworkConfig.set_physics_host(address_box.text + ":8081")
 	print_debug("Set network host to " + address_box.text)
 
 func _ready():

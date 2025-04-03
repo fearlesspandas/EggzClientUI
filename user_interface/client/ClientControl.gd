@@ -33,8 +33,6 @@ func _ready():
 	auth_request._initiate_auth_request(profile_id)
 	
 func load_scene(id,secret):
-	SharedRuntimeEnv.initialize_sockets()
-	ScheduledTransforms.initialize_socket()
 
 	var profile = ProfileManager.get_profile(profile_id)
 	#profile.set_secret_from_encrypted(secret)

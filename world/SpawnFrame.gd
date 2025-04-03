@@ -2,8 +2,11 @@ extends StaticBody
 class_name SpawnFrame
 
 onready var setup_timer:Timer = Timer.new()
+onready var gravity_box:GravityBox = GravityBox.new()
 
 onready var socket:ClientWebSocket
+
+var id = "SpawnFrame"
 # Called when the node enters the scene tree for the first time.
 var npc_ids = ["Doxier"] #["Doxier","Heisenfire","Convvay","Neumenimum"]
 func _ready():
@@ -17,6 +20,20 @@ func _ready():
 		setup_timer.connect("timeout",self,"setup")
 		self.add_child(setup_timer)
 		setup_timer.start()
+	
+	self.add_child(gravity_box)
+	var size = 512 * 16
+	gravity_box.ref.set_extents(Vector3(size,size,size))
+	self.add_child(gravity_box.ref)
+	gravity_box.ref.set_id(self.id)
+	gravity_box.ref.set_mass(100.0)
+	gravity_box.ref.connect("body_entered",self,"confirm_entered")
+	ScheduledTransforms.ref.set_mass(self.id,100.0)
+
+
+func confirm_entered(body):
+	print_debug("GravityBoxEntered: ", str(body))
+
 
 
 

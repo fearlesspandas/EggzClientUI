@@ -10,10 +10,10 @@ func _ready():
 	ClientTerminalGlobalSignals.connect("request_data",self,"send_requested_data")
 	physics_native_shared_socket.connect("connected",self,"socket_connected")
 	physics_native_shared_socket.connect("disconnected",self,"socket_disconnected")
+	NetworkConfig.connect("physics_url_set",self,"start_socket")
 
-func initialize_sockets():
+func start_socket(url:String):
 	if not initialized:
-		var url = NetworkConfig.physics_host
 		physics_native_shared_socket.set_url(url)
 		self.add_child(physics_native_shared_socket)
 		self.initialized = true
