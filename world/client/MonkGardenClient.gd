@@ -20,6 +20,7 @@ var player_active = false
 var initialized = false
 var items = []
 
+var loaded:bool = false
 
 func _ready():
 	assert(client_id != null and client_id.length() > 0)
@@ -36,6 +37,17 @@ func _ready():
 	self.add_child(init_timer)
 	init_timer.start(rand_range(1,3))
 	#socket.get_blob(id)
+	GlobalSignalsClient.connect("player_position",self,"update_mesh_from_position")
+
+func update_mesh_from_position(location:Vector3):
+	if (self.global_transform.origin - location).length() > ClientSettings.CAMERA_RENDER_DISTANCE :
+		TerrainSignalsClient.add_to_navigation_mesh(id,self.global_transform.origin, Color.deeppink,3)
+		loaded = false
+	else:
+		TerrainSignalsClient.remove_from_navigation_mesh(id)
+		loaded = true
+	self.visible = loaded
+
 
 
 func request_data():

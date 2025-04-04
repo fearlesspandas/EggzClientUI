@@ -15,7 +15,7 @@ func _ready():
 func update_mesh_from_position(location:Vector3):
 	var distance = (self.global_transform.origin - location).length()
 	if  distance > ClientSettings.CAMERA_RENDER_DISTANCE/2 and distance <= 2*ClientSettings.CAMERA_RENDER_DISTANCE:
-		TerrainSignalsClient.add_to_navigation_mesh(uuid,self.global_transform.origin, Color.blue,10)
+		TerrainSignalsClient.add_to_navigation_mesh(uuid,self.global_transform.origin, Color.aqua,2)
 		self.visible = false
 	elif distance > 2*ClientSettings.CAMERA_RENDER_DISTANCE:
 		TerrainSignalsClient.remove_from_navigation_mesh(uuid)
