@@ -29,17 +29,14 @@ material/0 = SubResource( 2 )
 [node name="electron" type="MeshInstance" parent="orbitals"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0 )
 mesh = SubResource( 4 )
-material/0 = null
 
 [node name="Belt" type="Spatial" parent="."]
 
 [node name="BeltbandH" type="MeshInstance" parent="Belt"]
 mesh = SubResource( 3 )
 skeleton = NodePath("")
-material/0 = null
 
 [node name="BeltBandV" type="MeshInstance" parent="Belt"]
 transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0 )
 mesh = SubResource( 5 )
 skeleton = NodePath("../../orbitals")
-material/0 = null

@@ -34,13 +34,13 @@ var assets = {
 var client_assets = {
 	16:"res://world/client/ProwlerAnchorMesh.tscn",
 	24 : "res://world/client/MonkGardenMesh.tscn",
-	25 : "res://world/client/PlanetA.tscn"
+	25 : "res://entity/client/PlanetAEntity.tscn",
 }
 #server specific assets
 var server_assets = {
 	16:"res://world/ProwlerAnchorServer.tscn",
 	24 : "res://world/MonkGardenServer.tscn",
-	25 : "res://world/PlanetA.tscn"
+	25: "res://entity/server/PlanetAServerEntity.tscn",
 }
 var asset_resources = {}
 var client_asset_resources = {}
