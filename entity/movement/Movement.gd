@@ -4,6 +4,7 @@ class_name Movement
 
 onready var this = self
 var physics_socket:RustSocket
+var physics_shared_native_socket
 
 	
 func entity_teleport(location:Vector3,body):

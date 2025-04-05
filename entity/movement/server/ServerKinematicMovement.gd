@@ -24,7 +24,8 @@ func move_by_gravity2(delta,location:Vector3,body:KinematicBody):
 
 func move_by_gravity(id,delta,location:Vector3,body:KinematicBody):
 	var diff:Vector3 = (body.global_transform.origin - location).normalized() * speed * delta
-	physics_socket.send_input(id,-diff * 0.05 * 10)
+	diff = -diff * 0.05 * 10
+	SharedRuntimeEnv.physics_native_shared_socket.send_input(id,diff.x,diff.y,diff.z)
 	
 func apply_vector(delta,vector:Vector3,body:KinematicBody):
 	#body.global_transform.origin += vector.normalized() * speed * delta * 0.1

@@ -355,6 +355,16 @@ _global_script_classes=[ {
 "path": "res://user_interface/client/PhysicsDataStats.gd"
 }, {
 "base": "ClientPlayerEntity",
+"class": "PlanetAEntity",
+"language": "GDScript",
+"path": "res://entity/client/PlanetAEntity.gd"
+}, {
+"base": "ServerEntity",
+"class": "PlanetAServerEntity",
+"language": "GDScript",
+"path": "res://entity/server/PlanetAServerEntity.gd"
+}, {
+"base": "ClientPlayerEntity",
 "class": "Player",
 "language": "GDScript",
 "path": "res://entity/Player.gd"
@@ -609,6 +619,8 @@ _global_script_class_icons={
 "PhysicalPlayerEntity": "",
 "PhysicalStatsDisplay": "",
 "PhysicsDataStats": "",
+"PlanetAEntity": "",
+"PlanetAServerEntity": "",
 "Player": "",
 "PlayerPathPointer": "",
 "PlayerProfile": "",

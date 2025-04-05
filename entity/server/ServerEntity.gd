@@ -215,7 +215,8 @@ func default_physics_process_native(delta):
 		var dir = (t - body.global_transform.origin)
 		body.translate(dir * int(should_tele))
 	if !destinations_active or destination.is_empty:
-		physics_socket.set_location_physics(id,body.global_transform.origin)
+		#physics_socket.set_location_physics(id,body.global_transform.origin)
+		physics_native_shared_socket.send_location(id,body.global_transform.origin.x,body.global_transform.origin.y,body.global_transform.origin.z)
 		return
 
 	if !gravity_active:
