@@ -18,6 +18,7 @@ pub struct GravityBox{
     affected_shape:Ref<SphereShape>,
     unaffected_area:Ref<Area>,
     unaffected_shape:Ref<SphereShape>,
+    unaffected_radius:f32,
     timer:Ref<Timer>,
 }
 impl Instanced<Spatial> for GravityBox{
@@ -31,6 +32,7 @@ impl Instanced<Spatial> for GravityBox{
             affected_shape:SphereShape::new().into_shared(),
             unaffected_area:Area::new().into_shared(),
             unaffected_shape:SphereShape::new().into_shared(),
+            unaffected_radius:0.0,
             timer:Timer::new().into_shared(),
         }
     }
@@ -43,7 +45,23 @@ impl GravityBox{
             .with_param("terrain_id",VariantType::GodotString)
             .with_param("entity_id",VariantType::GodotString)
             .with_param("vec",VariantType::Float32Array)
-            .done()
+            .done();
+        builder
+            .signal("entered_affected")
+            .with_param("entity_id",VariantType::GodotString)
+            .done();
+        builder
+            .signal("exited_affected")
+            .with_param("entity_id",VariantType::GodotString)
+            .done();
+        builder
+            .signal("entered_unaffected")
+            .with_param("entity_id",VariantType::GodotString)
+            .done();
+        builder
+            .signal("exited_unaffected")
+            .with_param("entity_id",VariantType::GodotString)
+            .done();
     }
     #[method]
     fn _ready(&self,#[base] owner:TRef<Spatial>){
@@ -55,12 +73,14 @@ impl GravityBox{
 
         let affected_collision_obj = CollisionShape::new().into_shared();
         let affected_collision_obj = unsafe{affected_collision_obj.assume_safe()};
-
         affected_collision_obj.set_shape(affected_shape);
         affected_area.add_child(affected_collision_obj,true);
+
         affected_area.set_collision_layer_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
         affected_area.set_collision_mask_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
         affected_area.set_collision_mask_bit(collision_layer::SERVER_PLAYER_COLLISION_LAYER.into(),true);
+        affected_area.set_collision_mask_bit(collision_layer::SERVER_GRAVITY_COLLISION_LAYER.into(),true);
+
         let _ = affected_area.connect("body_entered",owner,"start_tracking",VariantArray::new_shared(),0);
         let _ = affected_area.connect("body_exited",owner,"stop_tracking",VariantArray::new_shared(),0);
 
@@ -68,9 +88,12 @@ impl GravityBox{
         let unaffected_collision_obj = unsafe{unaffected_collision_obj.assume_safe()};
         unaffected_collision_obj.set_shape(unaffected_shape);
         unaffected_area.add_child(unaffected_collision_obj,true);
+
         unaffected_area.set_collision_layer_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
         unaffected_area.set_collision_mask_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
         unaffected_area.set_collision_mask_bit(collision_layer::SERVER_PLAYER_COLLISION_LAYER.into(),true);
+        unaffected_area.set_collision_mask_bit(collision_layer::SERVER_GRAVITY_COLLISION_LAYER.into(),true);
+
         let _ = unaffected_area.connect("body_entered",owner,"add_unaffected",VariantArray::new_shared(),0);
         let _ = unaffected_area.connect("body_exited",owner,"remove_unaffected",VariantArray::new_shared(),0);
 
@@ -81,14 +104,28 @@ impl GravityBox{
         timer.start(0.05);
     }
     #[method]
+    fn _physics_process(&self,#[base] owner:TRef<Spatial>,delta:f32){
+        return ;
+        for id in &self.untracked_bodies{
+            let body = self.tracked_bodies.get(id).expect("Could not find tracked body in process");
+            let body = unsafe{body.assume_safe()};
+            let owner_transform = owner.global_transform();
+            let mut body_transform = body.global_transform();
+            body_transform.origin = self.unaffected_radius * ((body_transform.origin - owner_transform.origin ).normalized());
+            body.set_transform(body_transform);
+        }
+
+    }
+    #[method]
     fn set_affected_radius(&self,radius:f64){
         let affected_shape = unsafe{self.affected_shape.assume_safe()};
         affected_shape.set_radius(radius);
     }
     #[method]
-    fn set_unaffected_radius(&self,radius:f64){
+    fn set_unaffected_radius(&mut self,radius:f64){
         let unaffected_shape = unsafe{self.unaffected_shape.assume_safe()};
         unaffected_shape.set_radius(radius);
+        self.unaffected_radius = radius as f32;
     }
     #[method]
     fn set_id(&mut self,id:String){
@@ -116,7 +153,7 @@ impl GravityBox{
         }
     }
     #[method]
-    fn start_tracking(&mut self,body:Ref<Node,Shared>){
+    fn start_tracking(&mut self,#[base] owner:TRef<Spatial>,body:Ref<Node,Shared>){
         let body = unsafe{body.assume_safe()};
         let body = body.cast::<KinematicBody>().expect("GravityBoxErr:Entered Body is not Kinematic Body");
         let parent = body.get_parent().map(|parent| {
@@ -129,13 +166,15 @@ impl GravityBox{
         }else{
             let _ = entity_id.try_to::<String>()
                 .map(|id| {
-                    self.tracked_bodies.insert(id,body.claim());
+                    godot_print!("{}",format!("Body tracked:{id:?}"));
+                    self.tracked_bodies.insert(id.clone(),body.claim());
+                    owner.emit_signal( "entered_affected", &[ Variant::new(id) ]); 
                 })
                 .map_err(|_err| assert!(false,"Incorrect type for id"));
         }
     }
     #[method]
-    fn stop_tracking(&mut self,body:Ref<Node,Shared>){
+    fn stop_tracking(&mut self,#[base] owner:TRef<Spatial>,body:Ref<Node,Shared>){
         let body = unsafe{body.assume_safe()};
         let parent = body.get_parent().map(|parent| {
             let parent = unsafe{parent.assume_safe()};
@@ -148,13 +187,15 @@ impl GravityBox{
             let _ = entity_id.try_to::<String>()
                 .map(|id| {
                     self.tracked_bodies.remove(&id);
+                    owner.emit_signal( "exited_affected", &[ Variant::new(id) ]);
                 })
                 .map_err(|_err| assert!(false,"Incorrect type for id"));
         }
     }
     #[method]
-    fn add_unaffected(&mut self,body:Ref<Node,Shared>){
+    fn add_unaffected(&mut self,#[base] owner:TRef<Spatial>,body:Ref<Node,Shared>){
         let body = unsafe{body.assume_safe()};
+        let body = body.cast::<KinematicBody>().expect("GravityBoxErr:Entered Body is not Kinematic Body");
         let parent = body.get_parent().map(|parent| {
             let parent = unsafe{parent.assume_safe()};
             parent.cast::<Spatial>().expect("GravityBoxErr:Parent is not spatial")
@@ -165,13 +206,14 @@ impl GravityBox{
         }else{
             let _ = entity_id.try_to::<String>()
                 .map(|id| {
-                    self.untracked_bodies.insert(id);
+                    self.untracked_bodies.insert(id.clone());
+                    owner.emit_signal( "entered_unaffected", &[ Variant::new(id) ]);
                 })
                 .map_err(|_err| assert!(false,"Incorrect type for id"));
         }
     }
     #[method]
-    fn remove_unaffected(&mut self,body:Ref<Node,Shared>){
+    fn remove_unaffected(&mut self,#[base] owner:TRef<Spatial>,body:Ref<Node,Shared>){
         let body = unsafe{body.assume_safe()};
         let parent = body.get_parent().map(|parent| {
             let parent = unsafe{parent.assume_safe()};
@@ -184,6 +226,7 @@ impl GravityBox{
             let _ = entity_id.try_to::<String>()
                 .map(|id| {
                     self.untracked_bodies.remove(&id);
+                    owner.emit_signal( "exited_unaffected", &[ Variant::new(id) ]); 
                 })
                 .map_err(|_err| assert!(false,"Incorrect type for id"));
         }
