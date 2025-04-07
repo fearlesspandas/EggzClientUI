@@ -62,7 +62,7 @@ func _input(event):
 				if hovered_object.has_method("entered"):
 					hovered_object.entered()
 		else:
-			if hovered_object != null and hovered_object.has_method("exited"):
+			if hovered_object != null && weakref(hovered_object).get_ref() != null and hovered_object.has_method("exited"):
 				hovered_object.exited()
 			hovered_object = null
 			hovered_position = null

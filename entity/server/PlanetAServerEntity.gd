@@ -14,7 +14,7 @@ func _ready():
 	var size = 512.0 * 64.0
 	gravity_box.ref.set_unaffected_radius(1024 * 1.2)
 	gravity_box.ref.set_affected_radius(size)
-	gravity_box.ref.set_id(self.id)
+	gravity_box.set_id(self.id)
 
 	gravity_box.ref.connect("entered_affected",self,"add_affected")
 	gravity_box.ref.connect("exited_affected",self,"remove_affected")
@@ -41,10 +41,10 @@ func add_affected(entity_id):
 	pass
 func remove_affected(entity_id):
 	pass
-func add_unaffected(entity_id):
+func add_unaffected(entity_id,terrain_id):
 	pass
 	#self.body.get_node("CollisionShape").disabled = false
-func remove_unaffected(entity_id):
+func remove_unaffected(entity_id,terrain_id):
 	pass
 	#self.body.get_node("CollisionShape").disabled = true
 

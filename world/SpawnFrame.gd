@@ -26,7 +26,7 @@ func _ready():
 	var size = 512.0 * 16.0
 	gravity_box.ref.set_unaffected_radius(512.0 * 1.5)
 	gravity_box.ref.set_affected_radius(size)
-	gravity_box.ref.set_id(self.id)
+	gravity_box.set_id(self.id)
 
 
 func setup_path(id):
@@ -50,3 +50,9 @@ func setup():
 func spider_created(id,spider):
 	pass
 	#setup_path(id)
+
+func init_with_id(id,client_id):
+	id.erase(16,64)
+	self.id = id
+	self.client_id = client_id
+

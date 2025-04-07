@@ -9,5 +9,5 @@ func _ready():
 	var size = 512.0 * 64.0
 	gravity_box.ref.set_unaffected_radius(1024 * 1.2)
 	gravity_box.ref.set_affected_radius(size)
-	gravity_box.ref.set_id(self.id)
+	gravity_box.set_id(self.id)
 

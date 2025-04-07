@@ -13,6 +13,7 @@ pub struct GravityBox{
     mass:f64,
     tracked_bodies:HashMap<String,Ref<KinematicBody>>,
     untracked_bodies:HashSet<String>,
+    captured_bodies:HashSet<String>,
     affected_area:Ref<Area>,
     affected_shape:Ref<SphereShape>,
     unaffected_area:Ref<Area>,
@@ -27,6 +28,7 @@ impl Instanced<Spatial> for GravityBox{
             mass:0.0,
             tracked_bodies:HashMap::new(),
             untracked_bodies:HashSet::new(),
+            captured_bodies:HashSet::new(),
             affected_area:Area::new().into_shared(),
             affected_shape:SphereShape::new().into_shared(),
             unaffected_area:Area::new().into_shared(),
@@ -56,10 +58,12 @@ impl GravityBox{
         builder
             .signal("entered_unaffected")
             .with_param("entity_id",VariantType::GodotString)
+            .with_param("terrain_id",VariantType::GodotString)
             .done();
         builder
             .signal("exited_unaffected")
             .with_param("entity_id",VariantType::GodotString)
+            .with_param("terrain_id",VariantType::GodotString)
             .done();
     }
     #[method]
@@ -124,7 +128,7 @@ impl GravityBox{
     #[method]
     fn add_gravity_to_tracked(&self,#[base] owner:TRef<Spatial>){
         for (id,body) in &self.tracked_bodies{
-            if !&self.untracked_bodies.contains(id){
+            if !&self.untracked_bodies.contains(id) && !&self.captured_bodies.contains(id){
                 let body = unsafe{body.assume_safe()};
                 let vec =  owner.global_translation() - body.global_translation();
                 owner.emit_signal(
@@ -192,7 +196,7 @@ impl GravityBox{
             let _ = entity_id.try_to::<String>()
                 .map(|id| {
                     self.untracked_bodies.insert(id.clone());
-                    owner.emit_signal( "entered_unaffected", &[ Variant::new(id) ]);
+                    owner.emit_signal( "entered_unaffected", &[ Variant::new(id),Variant::new(self.terrain_id.clone().unwrap()) ]);
                 })
                 .map_err(|_err| assert!(false,"Incorrect type for id"));
         }
@@ -211,9 +215,17 @@ impl GravityBox{
             let _ = entity_id.try_to::<String>()
                 .map(|id| {
                     self.untracked_bodies.remove(&id);
-                    owner.emit_signal( "exited_unaffected", &[ Variant::new(id) ]); 
+                    owner.emit_signal( "exited_unaffected", &[ Variant::new(id),Variant::new(self.terrain_id.clone().unwrap()) ]); 
                 })
                 .map_err(|_err| assert!(false,"Incorrect type for id"));
         }
+    }
+    #[method]
+    fn add_captured(&mut self,id:String){
+        self.captured_bodies.insert(id);
+    }
+    #[method]
+    fn remove_captured(&mut self,id:String){
+        self.captured_bodies.remove(&id);
     }
 }
