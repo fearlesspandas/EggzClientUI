@@ -7,7 +7,7 @@ onready var collision_box:CollisionBox = CollisionBox.new()
 
 onready var gravity_center = KinematicBody.new()
 func _ready():
-	DataCache.add_data(self.id,'speed',50.0)
+	DataCache.add_data(self.id,'speed',75.0)
 	self.movement.physics_shared_native_socket = self.physics_native_shared_socket
 	ScheduledTransforms.ref.set_mass(self.id,3000000.0)
 	self.body.add_child(gravity_box)
