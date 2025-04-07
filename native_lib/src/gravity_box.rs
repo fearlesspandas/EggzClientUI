@@ -5,7 +5,6 @@ use crate::traits::{Instanced};
 use crate::collision_layer;
 use std::collections::{HashSet,HashMap};
 
-
 #[derive(NativeClass)]
 #[inherit(Spatial)]
 #[register_with(Self::register_signals)]
@@ -104,19 +103,6 @@ impl GravityBox{
         timer.start(0.05);
     }
     #[method]
-    fn _physics_process(&self,#[base] owner:TRef<Spatial>,delta:f32){
-        return ;
-        for id in &self.untracked_bodies{
-            let body = self.tracked_bodies.get(id).expect("Could not find tracked body in process");
-            let body = unsafe{body.assume_safe()};
-            let owner_transform = owner.global_transform();
-            let mut body_transform = body.global_transform();
-            body_transform.origin = self.unaffected_radius * ((body_transform.origin - owner_transform.origin ).normalized());
-            body.set_transform(body_transform);
-        }
-
-    }
-    #[method]
     fn set_affected_radius(&self,radius:f64){
         let affected_shape = unsafe{self.affected_shape.assume_safe()};
         affected_shape.set_radius(radius);
@@ -195,7 +181,6 @@ impl GravityBox{
     #[method]
     fn add_unaffected(&mut self,#[base] owner:TRef<Spatial>,body:Ref<Node,Shared>){
         let body = unsafe{body.assume_safe()};
-        let body = body.cast::<KinematicBody>().expect("GravityBoxErr:Entered Body is not Kinematic Body");
         let parent = body.get_parent().map(|parent| {
             let parent = unsafe{parent.assume_safe()};
             parent.cast::<Spatial>().expect("GravityBoxErr:Parent is not spatial")

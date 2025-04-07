@@ -26,6 +26,7 @@ pub mod server_console;
 pub mod socket_stats;
 pub mod notifications;
 pub mod gravity_box;
+pub mod collision_box;
 mod client_terminal;
 
 #[allow(non_snake_case)]
@@ -76,6 +77,7 @@ fn init(handle:InitHandle){
     handle.add_class::<notifications::Details>();
     handle.add_class::<notifications::TextPanel>();
     handle.add_class::<gravity_box::GravityBox>();
+    handle.add_class::<collision_box::CollisionBox>();
 
     //handle.add_class::<item_menu::ControlBox<item_menu::ItemSlotCommand>>();
 }

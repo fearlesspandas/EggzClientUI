@@ -129,6 +129,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://network/ClientWebsocket.gd"
 }, {
+"base": "Node",
+"class": "CollisionBox",
+"language": "GDScript",
+"path": "res://world/CollisionBox.gd"
+}, {
 "base": "Control",
 "class": "Command",
 "language": "GDScript",
@@ -574,6 +579,7 @@ _global_script_class_icons={
 "ClientKinematicMovement": "",
 "ClientPlayerEntity": "",
 "ClientWebSocket": "",
+"CollisionBox": "",
 "Command": "",
 "CommandArgument": "",
 "CommandMenu": "",

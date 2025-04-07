@@ -3,6 +3,7 @@ extends ServerEntity
 class_name PlanetAServerEntity
 
 onready var gravity_box:GravityBox = GravityBox.new()
+onready var collision_box:CollisionBox = CollisionBox.new()
 
 onready var gravity_center = KinematicBody.new()
 func _ready():
@@ -30,6 +31,9 @@ func _ready():
 	gravity_collider.shape = collider_shape
 	gravity_center.add_child(gravity_collider)
 	gravity_center.set_collision_layer_bit(EntityConstants.SERVER_GRAVITY_COLLISION_LAYER,true)
+
+	self.body.add_child(collision_box)
+	collision_box.ref.set_radius(1024.0)
 
 	self.add_child(gravity_center)
 
