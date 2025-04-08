@@ -7,12 +7,12 @@ onready var collision_box:CollisionBox = CollisionBox.new()
 
 onready var gravity_center = KinematicBody.new()
 func _ready():
-	DataCache.add_data(self.id,'speed',75.0)
+	DataCache.add_data(self.id,'speed',150.0)
 	self.movement.physics_shared_native_socket = self.physics_native_shared_socket
 	ScheduledTransforms.ref.set_mass(self.id,3000000.0)
 	self.body.add_child(gravity_box)
 	var size = 512.0 * 64.0
-	gravity_box.ref.set_unaffected_radius(1024 * 1.2)
+	gravity_box.ref.set_unaffected_radius(2048 * 1.2)
 	gravity_box.ref.set_affected_radius(size)
 	gravity_box.set_id(self.id)
 
@@ -31,11 +31,12 @@ func _ready():
 	gravity_collider.shape = collider_shape
 	gravity_center.add_child(gravity_collider)
 	gravity_center.set_collision_layer_bit(EntityConstants.SERVER_GRAVITY_COLLISION_LAYER,true)
+	self.add_child(gravity_center)
 
 	self.body.add_child(collision_box)
-	collision_box.ref.set_radius(1024.0)
+	collision_box.ref.set_radius(2048.0)
+	collision_box.ref.set_movement_body(self.body)
 
-	self.add_child(gravity_center)
 
 func add_affected(entity_id):
 	pass

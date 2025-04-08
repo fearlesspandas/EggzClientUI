@@ -13,6 +13,8 @@ pub struct CollisionBox{
     tracked_bodies:HashMap<String,Ref<KinematicBody>>,
     tracked_areas:HashSet<Ref<Area>>,
     affected_shape:Ref<SphereShape>,
+    movement_body:Option<Ref<KinematicBody>>,
+    static_body:Option<Ref<StaticBody>>,
 }
 impl Instanced<Area> for CollisionBox{
     fn make() -> Self{
@@ -21,6 +23,8 @@ impl Instanced<Area> for CollisionBox{
             tracked_bodies:HashMap::new(),
             tracked_areas:HashSet::new(),
             affected_shape:SphereShape::new().into_shared(),
+            movement_body:None,
+            static_body:None,
         }
     }
 }
@@ -71,28 +75,38 @@ impl CollisionBox{
         for area in &self.tracked_areas{
             let area = unsafe{area.assume_safe()};
             if !area.has_method("radius"){assert!(false,"No radius");}
-            if !area.has_method("body"){assert!(false,"No body");}
+            if !area.has_method("movement_body"){assert!(false,"No body");}
             let radius = unsafe{area.call("radius",&[]).try_to::<f32>().expect("Body without radius entered collision")};
-            let movement_body = unsafe{area.call("body",&[]).to_object::<KinematicBody>().expect("Area without movement body entered collision")};
-            let movement_body = unsafe{movement_body.assume_safe()};
-            let owner_origin = owner.global_transform().origin;
-            let area_origin = area.global_transform().origin;
-            let diff_vec = area_origin - owner_origin;
-            let new_loc = owner_origin +  (self.radius + radius) * (diff_vec.normalized());
-            let trans = new_loc - area_origin;
-            movement_body.translate(trans);
-            //let post_set = body.global_transform().origin;
-            //let radius = self.radius;
-            //godot_print!("{}",format!("Collision Handled:{id:?},radius:{radius:?} self:{owner_origin:?},body:{body_origin:?}, diff:{diff_vec:?}, new_loc:{new_loc:?},set_loc:{post_set:?}"));
+            let movement_body_resource = unsafe{area.call("movement_body",&[]).to_object::<KinematicBody>()};
+            let static_body_resource = unsafe{area.call("static_body",&[]).to_object::<StaticBody>()};
+            // if movement body push away
+            if movement_body_resource.is_some(){
+                let movement_body = movement_body_resource.expect("Corrupted movement body for collision area");
+                let movement_body = unsafe{movement_body.assume_safe()};
+                let owner_origin = owner.global_transform().origin;
+                let area_origin = area.global_transform().origin;
+                let diff_vec = area_origin - owner_origin;
+                let new_loc = owner_origin +  (self.radius + radius) * (diff_vec.normalized());
+                let trans = new_loc - area_origin;
+                movement_body.translate(trans);
+            }
         }
     }
     #[method]
-    fn body(&self,#[base] owner:TRef<Area>)->Ref<KinematicBody>{
-        owner.get_parent().map(|parent| {
-            let parent = unsafe{parent.assume_safe()};
-            parent.cast::<KinematicBody>().expect("Parent is not KinematicBody").claim()
-        })
-        .expect("Parent not found for collision area")
+    fn set_movement_body(&mut self,body:Ref<KinematicBody>){
+        self.movement_body = Some(body);
+    }
+    #[method]
+    fn set_static_body(&mut self,body:Ref<StaticBody>){
+        self.static_body = Some(body);
+    }
+    #[method]
+    fn movement_body(&self) -> Option<Ref<KinematicBody>>{
+        self.movement_body//.expect(format!("Movement Body Not Set {id:?}").as_str())
+    }
+    #[method]
+    fn static_body(&self) -> Option<Ref<StaticBody>>{
+        self.static_body//.expect("Static Body Not set")
     }
     #[method]
     fn radius(&self) -> f32{

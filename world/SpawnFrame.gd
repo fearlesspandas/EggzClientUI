@@ -3,6 +3,7 @@ class_name SpawnFrame
 
 onready var setup_timer:Timer = Timer.new()
 onready var gravity_box:GravityBox = GravityBox.new()
+onready var collision_box:CollisionBox = CollisionBox.new()
 
 onready var socket:ClientWebSocket
 
@@ -27,6 +28,11 @@ func _ready():
 	gravity_box.ref.set_unaffected_radius(512.0 * 1.5)
 	gravity_box.ref.set_affected_radius(size)
 	gravity_box.set_id(self.id)
+
+	self.add_child(collision_box)
+	collision_box.ref.set_radius(512 * 1.5)
+	collision_box.ref.set_static_body(self)
+	collision_box.ref.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
 
 
 func setup_path(id):
