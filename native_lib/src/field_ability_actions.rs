@@ -58,6 +58,7 @@ impl ToAction for AbilityType{
                 }
             }
             AbilityType::slizzard => { }
+            AbilityType::anti_gravity_tank => {}
         }
     }
 }

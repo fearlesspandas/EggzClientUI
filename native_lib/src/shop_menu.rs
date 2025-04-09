@@ -27,6 +27,7 @@ impl ToDescription for AbilityType{
             AbilityType::smack => "small explosion that does 10 damage".to_string(),
             AbilityType::globular_teleport => "creates polygon that teleports entities to an anchor point".to_string(),
             AbilityType::slizzard => "spawns a slizzard that will perform a large attack a set number of times".to_string(),
+            AbilityType::anti_gravity_tank => "makes you unaffected by all gravity below a certain threshold".to_string(),
         }
     }
 }

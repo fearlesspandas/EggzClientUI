@@ -47,11 +47,22 @@ func init_entity(entity:NPCServerEntity):
 	socket.set_destination_active(entity.id,true)
 	socket.set_gravitate(entity.id,true)
 
+var terrain_mode = "Native"
 func spawn_empty_terrain_from_queue():
 	if !empty_terrain_queue.empty():
 		match empty_terrain_queue.pop_front():
 			{'EmptyChunk':{'uuid':var uuid, 'location': [var x ,var y ,var z], 'radius': var radius}}:
-				if true:
+				if terrain_mode == "Native":
+					var chunk = terrain[uuid]
+					chunk.client_id = client_id
+					chunk.ref.set_id(uuid)
+					chunk.ref.set_empty(true)
+					chunk.ref.set_radius(radius)
+					chunk.ref.set_server(true)
+					chunk.add_parent(spawn)
+					chunk.ref.global_transform.origin = Vector3(x,y,z)
+					chunk.ref.set_initialized()
+				else:
 					var chunk = terrain[uuid]
 					chunk.client_id = client_id
 					chunk.uuid = uuid
@@ -71,6 +82,7 @@ func scan_initial_terrain():
 	socket.getAllGlobs()
 	
 func inspect_terrain(player:ServerEntity):
+	assert(false)
 	for t in terrain.values():
 		if t is Chunk and t.is_within_distance(player.body.global_transform.origin,2*t.radius):
 			t.load_terrain()
@@ -285,22 +297,39 @@ func handle_json(json) -> bool:
 			return true
 		{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
 			if !terrain.has(uuid):
-				var chunk = Chunk.new()
-				chunk.client_id = client_id
-				chunk.uuid = uuid
-				chunk.spawn = spawn
-				chunk.center = Vector3(x,y,z)
-				chunk.radius = radius
-				chunk.is_empty = false
-				chunk.is_server = true
-				terrain[uuid] = chunk
-				spawn.add_child(chunk)
+				if terrain_mode == "Native":
+					var chunk = NativeChunk.new()
+					chunk.client_id = client_id
+					chunk.ref.set_id(uuid)
+					chunk.ref.set_radius(radius)
+					chunk.ref.set_empty(false)
+					chunk.ref.set_server(true)
+					chunk.add_parent(spawn)
+					chunk.ref.global_transform.origin = Vector3(x,y,z)
+					chunk.ref.set_initialized()
+					terrain[uuid] = chunk.ref
+
+				else:
+					var chunk = Chunk.new()
+					chunk.client_id = client_id
+					chunk.uuid = uuid
+					chunk.spawn = spawn
+					chunk.center = Vector3(x,y,z)
+					chunk.radius = radius
+					chunk.is_empty = false
+					chunk.is_server = true
+					terrain[uuid] = chunk
+					spawn.add_child(chunk)
 			return true
 		{'EmptyChunk':{'uuid':var uuid, 'location': [var x ,var y ,var z], 'radius': var radius}}:
 			if !terrain.has(uuid):
 				empty_terrain_queue.push_front(json)
-				var chunk = Chunk.new()
-				terrain[uuid] = chunk
+				if terrain_mode == "Native":
+					var chunk = NativeChunk.new()
+					terrain[uuid] = chunk
+				else:
+					var chunk = Chunk.new()
+					terrain[uuid] = chunk
 			return false
 		_:
 			print_debug("No handler found for command " , json)

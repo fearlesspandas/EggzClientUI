@@ -39,6 +39,9 @@ impl ToCollider for AbilityType{
                 area.set_collision_mask_bit(collision_layer::SERVER_NPC_COLLISION_LAYER.into(),true);
                 Some(area_ref)
             }
+            AbilityType::anti_gravity_tank => {
+                None
+            }
             
         }
     }

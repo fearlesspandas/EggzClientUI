@@ -41,12 +41,23 @@ func _ready():
 	self.add_child(startup_timer)
 	startup_timer.start()
 
+var terrain_mode = "Native"
 func spawn_empty_terrain_from_queue():
 	#print_debug("empty terrain count : ",empty_terrain_queue.size())
 	if !empty_terrain_queue.empty():
 		match empty_terrain_queue.pop_front():
 			{'EmptyChunk':{'uuid':var uuid, 'location': [var x ,var y ,var z], 'radius': var radius}}:
-				if true:
+				if terrain_mode == "Native":
+					var chunk = terrain[uuid]
+					chunk.client_id = client_id
+					chunk.ref.set_id(uuid)
+					chunk.ref.set_empty(true)
+					chunk.ref.set_radius(radius)
+					chunk.ref.set_server(false)
+					chunk.add_parent(spawn)
+					chunk.ref.global_transform.origin = Vector3(x,y,z)
+					chunk.ref.set_initialized()
+				else:
 					var chunk = terrain[uuid]
 					chunk.client_id = client_id
 					chunk.uuid = uuid
@@ -344,35 +355,75 @@ func handle_json(json) -> bool:
 								#collider_terrain.add_child(mesh_terrain)
 			return true
 		{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
-			if !terrain.has(uuid):
-				var chunk = Chunk.new()
-				if ClientReferences.command_menu != null:
-					ClientReferences.command_menu.toggle_chunk_visibility.connect("toggle_chunks_visible",chunk,"toggle_chunk_visibility")
-				chunk.client_id = client_id
-				chunk.uuid = uuid
-				chunk.spawn = spawn
-				chunk.center = Vector3(x,y,z)
-				chunk.radius = radius
-				spawn.add_child(chunk)
-				terrain[uuid] = chunk
-				if chunk.is_within_chunk(player.body.global_transform.origin) or chunk.is_within_distance(player.body.global_transform.origin,ClientSettings.LOAD_RECEIVED_CHUNK_IF_WITHIN):
-					chunk.load_terrain()
+			if terrain_mode == "Native":
+				spawn_native_chunk(uuid,radius,x,y,z)
 			else:
-				#else case mainly handles when we run client and server in same game instancea
-				var chunk = terrain[uuid]
-				if chunk.is_within_chunk(player.body.global_transform.origin) or chunk.is_within_distance(player.body.global_transform.origin,ClientSettings.LOAD_RECEIVED_CHUNK_IF_WITHIN):
-					chunk.load_terrain()
+				spawn_chunk(uuid,radius,x,y,z)
+			#print("terrain size:",terrain.size())
 			return true
 		{'EmptyChunk':{'uuid':var uuid, 'location': [var x ,var y ,var z], 'radius': var radius}}:
 			if !terrain.has(uuid):
 				empty_terrain_queue.push_front(json)
-				var chunk = Chunk.new()
-				terrain[uuid] = chunk
+				if terrain_mode == "Native":
+					var chunk = NativeChunk.new()
+					terrain[uuid] = chunk
+				else:
+					var chunk = Chunk.new()
+					terrain[uuid] = chunk
 			return false
 		_:						
 			print_debug("no handler found for msg:", json)
 			return false
 			
+
+func spawn_native_chunk(uuid,radius,x,y,z):
+	if !terrain.has(uuid):
+		var chunk = NativeChunk.new()
+		chunk.client_id = client_id
+		#spawn.add_child(chunk)
+		chunk.ref.set_id(uuid)
+		chunk.ref.set_radius(float(radius))
+		chunk.ref.set_server(false);
+		chunk.add_parent(spawn)
+		chunk.ref.global_transform.origin = Vector3(x,y,z)
+		chunk.ref.set_initialized()
+		terrain[uuid] = chunk.ref
+		var is_within_chunk = chunk.ref.is_within_chunk(player.body.global_transform.origin) 
+		var is_within_distance = chunk.ref.is_within_distance(player.body.global_transform.origin,float(ClientSettings.LOAD_RECEIVED_CHUNK_IF_WITHIN)) 
+		if  is_within_chunk or is_within_distance :
+			chunk.ref.load_terrain()
+	else:
+		#else case mainly handles when we run client and server in same game instancea
+		var chunk = terrain[uuid]
+		var is_within_chunk = chunk.is_within_chunk(player.body.global_transform.origin) 
+		var is_within_distance = chunk.is_within_distance(player.body.global_transform.origin,float(ClientSettings.LOAD_RECEIVED_CHUNK_IF_WITHIN)) 
+		if is_within_chunk or is_within_distance:
+			chunk.load_terrain()
+
+func spawn_chunk(uuid,radius,x,y,z):
+	if !terrain.has(uuid):
+		var chunk = Chunk.new()
+		if ClientReferences.command_menu != null:
+			ClientReferences.command_menu.toggle_chunk_visibility.connect("toggle_chunks_visible",chunk,"toggle_chunk_visibility")
+		chunk.client_id = client_id
+		chunk.uuid = uuid
+		chunk.spawn = spawn
+		chunk.center = Vector3(x,y,z)
+		chunk.radius = radius
+		spawn.add_child(chunk)
+		terrain[uuid] = chunk
+		var is_within_chunk = chunk.is_within_chunk(player.body.global_transform.origin) 
+		var is_within_distance = chunk.is_within_distance(player.body.global_transform.origin,float(ClientSettings.LOAD_RECEIVED_CHUNK_IF_WITHIN)) 
+		if  is_within_chunk or is_within_distance :
+			chunk.load_terrain()
+	else:
+		#else case mainly handles when we run client and server in same game instancea
+		var chunk = terrain[uuid]
+		var is_within_chunk = chunk.is_within_chunk(player.body.global_transform.origin) 
+		var is_within_distance = chunk.is_within_distance(player.body.global_transform.origin,float(ClientSettings.LOAD_RECEIVED_CHUNK_IF_WITHIN)) 
+		if is_within_chunk or is_within_distance:
+			chunk.load_terrain()
+
 func parseJsonCmd(cmd,delta):
 	var parsed = JSON.parse(cmd)
 	if parsed.result != null:

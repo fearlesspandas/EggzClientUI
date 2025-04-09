@@ -4,6 +4,7 @@ use gdnative::api::*;
 use crate::traits::{Instanced,InstancedDefault};
 use crate::field_abilities::{AbilityType};
 use crate::slizzard::Slizzard;
+use crate::anti_gravity_tank::{AntiGravityTank};
 
 pub trait ToMesh{
     fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial>;
@@ -125,6 +126,16 @@ impl ToMesh for AbilityType{
                 spatial.add_child(slizzard,true);
                 spatial.into_shared()
             }
+            AbilityType::anti_gravity_tank => {
+                let anti_gravity_tank = AntiGravityTank::make_instance().into_shared();
+                let anti_gravity_tank = unsafe{anti_gravity_tank.assume_safe()};
+                let _ = anti_gravity_tank.map(|obj,_| obj.set_top_radius(radius/4.0));
+                let _ = anti_gravity_tank.map(|obj,_| obj.set_bottom_radius(radius/2.0));
+                let _ = anti_gravity_tank.map(|obj,_| obj.set_height(radius));
+                let spatial = Spatial::new();
+                spatial.add_child(anti_gravity_tank,true);
+                spatial.into_shared()
+            },
             
         }
     }

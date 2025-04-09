@@ -17,7 +17,7 @@ var is_empty = false
 var collision_shape:CollisionShape = CollisionShape.new()
 var shape:BoxShape = BoxShape.new()
 var terrain_uuids = []
-var should_spawn_texture:bool = true
+var should_spawn_texture:bool = false
 func _ready():
 	self.input_ray_pickable = false
 	shape.extents = Vector3(radius,radius,radius)
@@ -50,8 +50,7 @@ func _ready():
 	self.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
 	self.set_collision_layer_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
 	self.set_collision_mask_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,true)
-	self.set_collision_layer_bit(EntityConstants.SERVER_PLAYER_COLLISION_LAYER,false)
-	self.set_collision_layer_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,true)
+	#self.set_collision_layer_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,true)
 	self.set_collision_mask_bit(EntityConstants.CLIENT_PLAYER_COLLISION_LAYER,true)
 	self.set_collision_layer_bit(EntityConstants.SERVER_NPC_COLLISION_LAYER,false)
 	self.set_collision_mask_bit(EntityConstants.SERVER_NPC_COLLISION_LAYER,false)
@@ -60,19 +59,18 @@ func _ready():
 	#if self.is_empty:
 		#print_debug("creating chunk ",center , " ", radius , " ", uuid)
 	self.connect("body_entered",self,"body_entered_print")
-	pass
-	
+
 
 func toggle_chunk_visibility(is_visible):
 	if self.mesh_instance !=null and !has_loaded:
 		self.mesh_instance.visible = is_visible
 
 func body_entered_print(body):
+	print("body entered " + uuid+ " : " + str(body.get_parent().id))
 	if body is KinematicBody:
 		mesh_instance.visible = false
 		if self.is_empty and self.is_server:
 			if body is ServerEntityKinematicBody:
-				print("body entered " + uuid+ " : " + str(body.parent.id))
 				fill_empty_terrain(body.parent.id)
 		else:
 			load_terrain()
@@ -99,6 +97,7 @@ func load_terrain():
 		ServerNetwork.get(client_id).get_top_level_terrain_in_distance(distance,center)
 		#if is_empty:
 		mesh_instance.visible = false
+		print_debug("Loaded with radius:",str(radius))
 		#timer.stop()
 		
 func check_load():

@@ -9,6 +9,7 @@ pub enum AbilityType{
     smack,
     globular_teleport,
     slizzard,
+    anti_gravity_tank,
 }
 impl Defaulted for AbilityType{
     fn default() -> Self{
@@ -23,6 +24,7 @@ impl From<u8> for AbilityType{
             0 => AbilityType::smack,
             1 => AbilityType::globular_teleport,
             2 => AbilityType::slizzard,
+            3 => AbilityType::anti_gravity_tank,
             _ => todo!(),
         }
     }
@@ -35,6 +37,7 @@ impl Into<u8> for AbilityType{
             AbilityType::smack => 0,
             AbilityType::globular_teleport => 1,
             AbilityType::slizzard => 2,
+            AbilityType::anti_gravity_tank => 3,
         }
     }
 }
@@ -65,6 +68,7 @@ impl ToString for AbilityType{
             AbilityType::smack => "Smack".to_string(),
             AbilityType::globular_teleport => "Globular Teleport".to_string(),
             AbilityType::slizzard => "Slizzard".to_string(),
+            AbilityType::anti_gravity_tank => "AntiGravityTank".to_string(),
         }
     }
 }
