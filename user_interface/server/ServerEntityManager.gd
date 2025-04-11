@@ -283,7 +283,7 @@ func handle_json(json) -> bool:
 						socket.get_top_level_terrain_in_distance(1024 * 5,loc)
 				terrain[uuid] = true
 			return true
-		{'TerrainRegionm':{'terrain':var innerterain}}:
+		{'TerrainRegionm':{'region_uuid':var region_uuid,'terrain':var innerterain}}:
 			for it in innerterain:
 				match it:
 					[var location,var entity_map, var uuid]:

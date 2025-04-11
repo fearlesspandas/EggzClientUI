@@ -339,7 +339,10 @@ func handle_json(json) -> bool:
 					spawn_terrain(str(uuid),loc,spawn,asset,false)
 					socket.get_top_level_terrain_in_distance(1024 * 5,loc)
 			return true
-		{'TerrainRegionm':{'terrain':var innerterain}}:
+		{'TerrainRegionm':{'region_uuid':var region_uuid,'terrain':var innerterain}}:
+			print_debug("Resources received:",str(innerterain))
+			var region = terrain[region_uuid]
+			var should_bake = false
 			for it in innerterain:
 				match it:
 					[var location,var entity_map, var uuid]:
@@ -347,12 +350,18 @@ func handle_json(json) -> bool:
 						var loc = Vector3(location[0],location[1],location[2])
 						for k in keys:
 							var resource_id = int(k)
-							var asset = AssetMapper.matchClientAsset(resource_id)
-							var mesh = AssetMapper.matchMesh(resource_id)
-							for _i in range(0,entity_map[k]):
-								var collider_terrain = spawn_terrain(str(uuid),loc,spawn,asset,false)
-								var mesh_terrain = spawn_terrain(str(uuid),loc,collider_terrain,mesh,false)
-								#collider_terrain.add_child(mesh_terrain)
+							if AssetMapper.use_native(resource_id):
+								region.add_terrain_mesh(resource_id,loc);
+								should_bake = true
+							else:
+								var asset = AssetMapper.matchClientAsset(resource_id)
+								var mesh = AssetMapper.matchMesh(resource_id)
+
+								for _i in range(0,entity_map[k]):
+									var collider_terrain = spawn_terrain(str(uuid),loc,spawn,asset,false)
+									var mesh_terrain = spawn_terrain(str(uuid),loc,collider_terrain,mesh,false)
+			if should_bake:
+				region.bake()
 			return true
 		{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
 			if terrain_mode == "Native":

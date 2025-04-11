@@ -289,11 +289,6 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://user_interface/client/LinearVelocityIndicator.gd"
 }, {
-"base": "Area",
-"class": "MapChunk",
-"language": "GDScript",
-"path": "res://world/MapChunk.gd"
-}, {
 "base": "Control",
 "class": "MaxSpeedSlider",
 "language": "GDScript",
@@ -621,7 +616,6 @@ _global_script_class_icons={
 "InventoryMenu": "",
 "ItemSlot": "",
 "LinearVelocityIndicator": "",
-"MapChunk": "",
 "MaxSpeedSlider": "",
 "MessageController": "",
 "Movement": "",

@@ -4,10 +4,91 @@ use gdnative::api::*;
 use gdnative::export::StaticallyNamed;
 use crate::traits::{Instanced};
 use crate::collision_layer;
+use crate::assets::{Assets};
 use std::collections::{HashSet,HashMap};
 
 
 type TerrainId = Box<[u8]>;
+type TerrainKey = i64;
+
+#[derive(Hash,Eq,PartialEq,Clone)]
+pub struct Location{
+    x:u32,
+    y:u32,
+    z:u32
+}
+impl Location{
+    fn new(x:f32,y:f32,z:f32) -> Self {
+        Location{x:x.to_bits(),y:y.to_bits(),z:z.to_bits()}
+    }
+}
+impl From<Vector3> for Location{
+    fn from(vec:Vector3) -> Self{
+        Location{x:vec.x.to_bits(),y:vec.y.to_bits(),z:vec.z.to_bits()}
+    }
+}
+#[derive(NativeClass)]
+#[inherit(MultiMesh)]
+pub struct ChunkMesh{
+    terrain_type:Option<TerrainKey>,
+    locations:HashSet<Location>,
+    locations_vec:Vec<Vector3>,
+}
+const TOTAL_TERRAIN_TYPES:usize = 128;
+const MINIMUM_TERRAIN_IN_CHUNKS:usize = 512;
+impl Instanced<MultiMesh> for ChunkMesh{
+    fn make() -> Self{
+        //256 is currently more than the number of meshes we have; size accordingly
+        //let mut terrain = Vec::with_capacity(TOTAL_TERRAIN_TYPES);
+        //for _ in 0..terrain.capacity(){
+        //    terrain.push(HashSet::with_capacity(MINIMUM_TERRAIN_IN_CHUNKS));
+        //}
+        ChunkMesh{
+            terrain_type:None,
+            locations:HashSet::with_capacity(MINIMUM_TERRAIN_IN_CHUNKS),
+            locations_vec:Vec::with_capacity(MINIMUM_TERRAIN_IN_CHUNKS),
+        }
+    }
+}
+#[methods]
+impl ChunkMesh{
+    #[method]
+    fn add_terrain(&mut self,location:Vector3){
+        //self.locations.insert(location.into());
+        self.locations_vec.push(location);
+    }
+    #[method]
+    fn set_terrain_type(&mut self,terrain_type:TerrainKey){
+        self.terrain_type = Some(terrain_type);
+    }
+    #[method]
+    fn bake_at(&self,#[base] owner:TRef<MultiMesh>){
+        //terrain_type is equivalent to index
+        //let terrain_locations = &self.locations;
+        let terrain_locations = &self.locations_vec;
+        let location_size = &self.locations_vec.len();
+        let terrain_type = Assets::from(self.terrain_type.expect("ChunkMeshErr:Terrain Type Not Set"));
+        let mesh = terrain_type.to_mesh_resource().expect("ChunkMeshErr:Resource not found for type");
+        let mesh = unsafe{mesh.assume_safe()};
+        for i in 0..mesh.get_surface_count(){
+            let material = terrain_type.to_material_resource(i).expect("ChunkMeshErr:Material Not found for type");
+            mesh.surface_set_material(i,material);
+        }
+        //godot_print!("{}",format!("Resource loaded:{mesh:?},locations:{terrain_locations:?}"));
+        owner.set_instance_count(0);
+        owner.set_transform_format(MultiMesh::TRANSFORM_3D);
+        owner.set_mesh(mesh);
+        owner.set_instance_count(terrain_locations.len().try_into().expect("ChunkMeshErr:Inappropriate length for terrain"));
+        for i in 0..owner.instance_count(){
+            let loc = terrain_locations[i as usize];
+            //let (x,y,z) = (f32::from_bits(loc.x),f32::from_bits(loc.y),f32::from_bits(loc.z));
+            let (x,y,z) = (loc.x,loc.y,loc.z);
+            let mut transform = owner.get_instance_transform(i);
+            transform.origin = Vector3::new(x,y,z);
+            owner.set_instance_transform(i,transform);
+        }
+    }
+}
 #[derive(NativeClass)]
 #[inherit(Area)]
 #[register_with(Self::register_signals)]
@@ -18,8 +99,7 @@ pub struct Chunk{
     has_loaded:bool,
     initialized:bool,
     radius:f32,
-    terrain_map:HashMap<TerrainId,Vector3>,
-    mesh_map:HashMap<TerrainId,MultiMeshInstance>,
+    mesh_map:HashMap<TerrainKey,Instance<ChunkMesh>>,
     shape:Ref<BoxShape>,
 }
 
@@ -32,8 +112,7 @@ impl Instanced<Area> for Chunk{
             has_loaded:false,
             initialized:false,
             radius:0.0,
-            terrain_map:HashMap::new(),
-            mesh_map:HashMap::new(),
+            mesh_map:HashMap::with_capacity(8),
             shape:BoxShape::new().into_shared(),
         }
     }
@@ -65,7 +144,55 @@ impl Chunk{
         let _ = owner.connect("body_entered" , owner, "body_entered",VariantArray::new_shared(),0);
         //owner.set_process(false);
     }
+    #[method]
+    fn add_terrain_mesh(&mut self,#[base] owner:TRef<Area>,terrain_type:TerrainKey,location:Vector3){
+        //let location = location - owner.global_transform().origin;
+        let location = owner.to_local(location);
+        let mesh_for_type = self.mesh_map.get(&terrain_type).map_or_else(||{
+            let id = self.id.clone();
+            //godot_print!("{}",format!("Creating new Mesh Chunk for {terrain_type:?}, for chunk:{id:?}"));
+            let mesh = ChunkMesh::make_instance().into_shared();
 
+            let mesh_obj = unsafe{mesh.assume_safe()};
+            let _ = mesh_obj.map_mut(|obj,_| {
+                obj.set_terrain_type(terrain_type);
+            });
+            //let _  = mesh_obj.map(|_,multimesh| multimesh.set_physics_interpolation_quality(1));
+            mesh
+        },
+        |x|{
+            //let id = self.id.clone();
+            //godot_print!("{}",format!("Found mesh chunk for {terrain_type:?}, for chunk:{id:?}"));
+            x.clone()
+        });
+        let mesh_for_type = unsafe{mesh_for_type.assume_safe()};
+        let _ = mesh_for_type.map_mut(|obj,_|obj.add_terrain(location));
+        self.mesh_map.insert(terrain_type,mesh_for_type.claim());
+    }
+    #[method]
+    fn bake(&self,#[base] owner:TRef<Area>){
+        for mesh in self.mesh_map.values(){
+            let mesh = unsafe{mesh.assume_safe()};
+            let mesh_instance = MultiMeshInstance::new().into_shared();
+            let mesh_instance = unsafe{mesh_instance.assume_safe()};
+            let _ = mesh.map(|_,msh| {
+                mesh_instance.set_multimesh(msh);
+            });
+            owner.add_child(mesh_instance,true);
+            let _ = mesh.map(|obj,msh| obj.bake_at(msh));
+            //let origin = owner.global_transform().origin;
+            //let mesh_origin = mesh_instance.global_transform().origin;
+            //godot_print!("{}",format!("Baking at {origin:?}"));
+            //godot_print!("{}",format!("Mesh at {mesh_origin:?}"));
+
+            //let _ = mesh.map(|obj,msh|{
+            //    for i in 0..msh.instance_count(){
+            //        let instance_origin = owner.to_global(msh.get_instance_transform(i).origin);
+            //        godot_print!("{}",format!("MeshInstance Origin: {instance_origin:?}"));
+            //    }
+            //});
+        }
+    }
     #[method]
     fn set_initialized(&mut self){
         self.initialized = true;

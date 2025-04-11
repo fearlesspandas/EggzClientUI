@@ -114,3 +114,13 @@ func matchServerAsset(id:int) -> Resource:
 		return server_asset_resources[id]
 	else:
 		return matchAsset(id)
+
+func use_native(id:int) -> bool:
+	match id:
+		6:
+			return true
+		11:
+			return true
+		_:
+			return false
+
