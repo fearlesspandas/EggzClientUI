@@ -30,6 +30,7 @@ pub mod collision_box;
 pub mod anti_gravity_tank;
 pub mod chunk;
 pub mod assets;
+pub mod navigation_point_mesh;
 mod client_terminal;
 
 #[allow(non_snake_case)]
@@ -84,9 +85,7 @@ fn init(handle:InitHandle){
     handle.add_class::<anti_gravity_tank::AntiGravityTank>();
     handle.add_class::<chunk::Chunk>();
     handle.add_class::<chunk::ChunkMesh>();
-
-
-
-    //handle.add_class::<item_menu::ControlBox<item_menu::ItemSlotCommand>>();
+    handle.add_class::<navigation_point_mesh::NavigationPoints>();
+    handle.add_class::<navigation_point_mesh::Waypoints>();
 }
 godot_init!(init);

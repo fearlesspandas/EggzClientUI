@@ -32,8 +32,7 @@ impl From<Vector3> for Location{
 pub struct ChunkMesh{
     is_point_mesh:bool,
     terrain_type:Option<TerrainKey>,
-    locations:HashSet<Location>,
-    locations_vec:Vec<Vector3>,
+    locations:Vec<Vector3>,
     mesh:Option<Ref<Mesh>>,
     point_mesh:Option<Ref<Mesh>>,
 }
@@ -49,8 +48,7 @@ impl Instanced<MultiMesh> for ChunkMesh{
         ChunkMesh{
             is_point_mesh:false,
             terrain_type:None,
-            locations:HashSet::with_capacity(MINIMUM_TERRAIN_IN_CHUNKS),
-            locations_vec:Vec::with_capacity(MINIMUM_TERRAIN_IN_CHUNKS),
+            locations:Vec::with_capacity(MINIMUM_TERRAIN_IN_CHUNKS),
             mesh:None,
             point_mesh:None,
         }
@@ -60,28 +58,20 @@ impl Instanced<MultiMesh> for ChunkMesh{
 impl ChunkMesh{
     #[method]
     fn add_terrain(&mut self,location:Vector3){
-        //self.locations.insert(location.into());
-        self.locations_vec.push(location);
+        self.locations.push(location);
     }
     #[method]
     fn set_terrain_type(&mut self,terrain_type:TerrainKey){
-        self.terrain_type = Some(terrain_type);
-    }
-    #[method]
-    fn bake_at(&mut self,#[base] owner:TRef<MultiMesh>){
-        //terrain_type is equivalent to index
-        //let terrain_locations = &self.locations;
-        let terrain_locations = &self.locations_vec;
-        let location_size = &self.locations_vec.len();
-        let terrain_type = Assets::from(self.terrain_type.expect("ChunkMeshErr:Terrain Type Not Set"));
+        self.terrain_type = Some(terrain_type.clone());
+        let terrain_type = Assets::from(terrain_type);
         let mesh = terrain_type.to_mesh_resource().expect("ChunkMeshErr:Resource not found for type");
         let point_mesh = terrain_type.to_point_mesh_resource().expect("ChunkMeshErr:Resource not found for type");
-        self.mesh = Some(mesh.clone());
-        self.point_mesh = Some(point_mesh.clone());
-        let mesh = unsafe{mesh.assume_safe()};
-        owner.set_instance_count(0);
-        owner.set_transform_format(MultiMesh::TRANSFORM_3D);
-        owner.set_instance_count(terrain_locations.len().try_into().expect("ChunkMeshErr:Inappropriate length for terrain"));
+        self.mesh = Some(mesh);
+        self.point_mesh = Some(point_mesh);
+    }
+    #[method]
+    fn move_mesh_locations(&self,#[base] owner:TRef<MultiMesh>){
+        let terrain_locations = &self.locations;
         for i in 0..owner.instance_count(){
             let idx:usize = i.try_into().expect("ChunkMeshErr:Failed to Index locations array");
             let loc = terrain_locations[idx];
@@ -90,12 +80,22 @@ impl ChunkMesh{
             transform.origin = Vector3::new(x,y,z);
             owner.set_instance_transform(i,transform);
         }
+    }
+    #[method]
+    fn bake_at(&self,#[base] owner:TRef<MultiMesh>){
+        let mesh = self.mesh.clone().expect("ChunkMeshErr:bake called without mesh set; set terrain_type using set_terrain_type");
+        let point_mesh = self.point_mesh.clone().expect("ChunkMeshErr:bake called without mesh set; set terrain_type using set_terrain_type");
+        owner.set_instance_count(0);
+        owner.set_transform_format(MultiMesh::TRANSFORM_3D);
+        owner.set_instance_count(self.locations.len().try_into().expect("ChunkMeshErr:Inappropriate length for terrain"));
+        self.move_mesh_locations(owner);
         if self.is_point_mesh{
             owner.set_mesh(point_mesh);
         }else{
             owner.set_mesh(mesh);
         }
     }
+    //must be used BEFORE bake or commit to take affect
     #[method]
     fn set_point_mesh(&mut self,is_point_mesh:bool){
         self.is_point_mesh = is_point_mesh;
@@ -150,6 +150,13 @@ impl Chunk{
             .with_param("terrain_uuid",VariantType::GodotString)
             .with_param("radius",VariantType::F64)
             .done();
+        builder
+            .signal("location")
+            .with_param("region_id",VariantType::GodotString)
+            .with_param("terrain_type",VariantType::I64)
+            .with_param("location",VariantType::Vector3)
+            .done();
+            
     }
     #[method]
     fn _ready(&self,#[base] owner:TRef<Area>){
@@ -190,6 +197,20 @@ impl Chunk{
         self.mesh_map.insert(terrain_type,mesh_for_type.claim());
     }
     #[method]
+    fn send_locations(&self,#[base] owner:TRef<Area>){
+        for (terrain_type,mesh) in &self.mesh_map{
+            let mesh = unsafe{mesh.assume_safe()};
+            let locations = mesh.map(|obj,_| obj.locations.clone()).expect("ChunkErr:could not retrieve locations");
+            for loc in locations{
+                let id = &self.id.clone().expect("ChunkErr:ID not set for chunk");
+                let id = std::str::from_utf8(id)
+                    .expect("ChunkErr:Could not format ID")
+                    .to_string();
+                owner.emit_signal("location",&[Variant::new(id),Variant::new(terrain_type),Variant::new(loc)]);
+            }
+        }
+    }
+    #[method]
     fn bake(&self,#[base] owner:TRef<Area>){
         for mesh in self.mesh_map.values(){
             let mesh = unsafe{mesh.assume_safe()};
@@ -199,7 +220,7 @@ impl Chunk{
                 mesh_instance.set_multimesh(msh);
             });
             owner.add_child(mesh_instance,true);
-            let _ = mesh.map_mut(|obj,msh| obj.bake_at(msh));
+            let _ = mesh.map(|obj,msh| obj.bake_at(msh));
             //let origin = owner.global_transform().origin;
             //let mesh_origin = mesh_instance.global_transform().origin;
             //godot_print!("{}",format!("Baking at {origin:?}"));
@@ -221,7 +242,7 @@ impl Chunk{
         }
     }
     #[method]
-    fn commit_point_mesh(&self,#[base] owner:TRef<Area>,is_point_mesh:bool){
+    fn commit_point_mesh(&self,#[base] owner:TRef<Area>){
         for mesh in self.mesh_map.values(){
             let mesh = unsafe{mesh.assume_safe()};
             let _ = mesh.map(|obj,msh| obj.commit_point_mesh(msh));

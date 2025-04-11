@@ -2,9 +2,11 @@
 
 use gdnative::prelude::*;
 use gdnative::api::*;
+use gdnative::api::spatial_material::TextureParam;
 use gdnative::export::StaticallyNamed;
 use crate::traits::{Instanced};
 use crate::collision_layer;
+use crate::collision_box::{CollisionBox};
 use std::collections::{HashSet,HashMap};
 
 pub enum Assets{
@@ -94,6 +96,25 @@ impl Assets{
              Assets::planet_a => Some(""),
         }
     }
+    pub fn to_server_collider_resource(&self) -> Option<Ref<CollisionObject>>{
+        match self{
+             Assets::player => None,
+             Assets::server_entity => None,
+             Assets::block_terrain => {
+                let collision_box = CollisionBox::make_instance().into_shared();
+                let collision_box = unsafe{collision_box.assume_safe()};
+                let _ = collision_box.map_mut(|obj,_| obj.set_radius(10.0));
+                Some(collision_box.base().upcast::<CollisionObject>().claim())
+             },
+             Assets::spawn_frame => None,
+             Assets::health_star => {
+                 None
+             }, 
+             Assets::prowler_anchor => None,
+             Assets::monk_garden => None,
+             Assets::planet_a => None,
+        }
+    }
     const HEALTH_STAR_RADIUS:f32 = 10.0;
     pub fn to_mesh_resource(&self) -> Option<Ref<Mesh>>{
         let res = match self{
@@ -123,7 +144,7 @@ impl Assets{
 
                  let mesh = ArrayMesh::new().into_shared();
                  let mesh = unsafe{mesh.assume_safe()};
-                 let mut arrays = VariantArray::new();
+                 let arrays = VariantArray::new();
                  arrays.resize(ArrayMesh::ARRAY_MAX as i32);
                  arrays.set(ArrayMesh::ARRAY_VERTEX as i32,vertices);
                  mesh.add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES,arrays.into_shared(),VariantArray::new_shared(),2194432);
@@ -149,11 +170,14 @@ impl Assets{
              Assets::block_terrain => {
                  let material = SpatialMaterial::new().into_shared();
                  let material = unsafe{material.assume_safe()};
-                 if false{
-                     material.set_albedo(Color::from_rgba(0.0,10.0,256.0,1.0));
-                 }else{
-                     material.set_albedo(Color::from_rgba(0.0,256.0,0.0,1.0));
-                 }
+                 material.set_albedo(Color::from_rgba(0.0,10.0,256.0,1.0));
+                 let path = "res://textures/vortex.png";
+                 let texture = ResourceLoader::godot_singleton().load(path,"",false).expect("").cast::<StreamTexture>().expect("");
+                 //let texture = StreamTexture::new().into_shared();
+                 let texture = unsafe{texture.assume_safe()};
+                 //let _ = texture.load();
+                 texture.set_flags(7);
+                 material.set_texture(TextureParam::ALBEDO.into(),texture);
                  Some(material.claim().upcast::<Material>())
              },
              Assets::spawn_frame => None,
@@ -197,21 +221,11 @@ impl Assets{
              Assets::player => None,
              Assets::server_entity => None,
              Assets::block_terrain => {
-                 let material = SpatialMaterial::new().into_shared();
-                 let material = unsafe{material.assume_safe()};
-                 material.set_flag(SpatialMaterial::FLAG_USE_POINT_SIZE,true);
-                 material.set_point_size(4.0);
-                 material.set_billboard_mode(1);
-                 Some(material.claim().upcast::<Material>())
+                 Some(point_material(20.0,Color::from_rgba(0.0,10.0,255.0,1.0)))
              },
              Assets::spawn_frame => None,
              Assets::health_star => {
-                 let material = SpatialMaterial::new().into_shared();
-                 let material = unsafe{material.assume_safe()};
-                 material.set_flag(SpatialMaterial::FLAG_USE_POINT_SIZE,true);
-                 material.set_point_size(4.0);
-                 material.set_billboard_mode(1);
-                 Some(material.claim().upcast::<Material>())
+                 Some(point_material(4.0,Color::from_rgba(0.0,255.0,10.0,1.0)))
              }, 
              Assets::prowler_anchor => None,
              Assets::monk_garden => None,
@@ -223,10 +237,26 @@ impl Assets{
             ResourceLoader::godot_singleton().load(path,"",false)
         })
     }
-    pub fn to_server_collider_resource(&self) -> Option<Ref<Resource>>{
-        self.to_server_collider_resource_path().and_then(|path|{
-            ResourceLoader::godot_singleton().load(path,"",false)
-        })
-    }
+    //pub fn to_server_collider_resource(&self) -> Option<Ref<Resource>>{
+    //    self.to_server_collider_resource_path().and_then(|path|{
+    //        ResourceLoader::godot_singleton().load(path,"",false)
+    //    })
+    //}
 }
 
+fn point_material(size:f64,color:Color) -> Ref<Material>{
+    let material = SpatialMaterial::new().into_shared();
+    let material = unsafe{material.assume_safe()};
+    let path = "res://textures/vortex.png";
+    let texture = ResourceLoader::godot_singleton().load(path,"",false).expect("").cast::<StreamTexture>().expect("");
+    //let texture = StreamTexture::new().into_shared();
+    let texture = unsafe{texture.assume_safe()};
+    //let _ = texture.load();
+    texture.set_flags(7);
+    material.set_texture(TextureParam::ALBEDO.into(),texture);
+    material.set_flag(SpatialMaterial::FLAG_USE_POINT_SIZE,true);
+    material.set_point_size(size);
+    material.set_billboard_mode(1);
+    material.set_albedo(color);
+    material.claim().upcast::<Material>()
+}

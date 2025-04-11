@@ -353,6 +353,8 @@ func handle_json(json) -> bool:
 							if AssetMapper.use_native(resource_id):
 								region.add_terrain_mesh(resource_id,loc);
 								should_bake = true
+								var asset = AssetMapper.matchClientAsset(resource_id)
+								var collider_terrain = spawn_terrain(str(uuid),loc,spawn,asset,false)
 							else:
 								var asset = AssetMapper.matchClientAsset(resource_id)
 								var mesh = AssetMapper.matchMesh(resource_id)
@@ -361,7 +363,6 @@ func handle_json(json) -> bool:
 									var collider_terrain = spawn_terrain(str(uuid),loc,spawn,asset,false)
 									var mesh_terrain = spawn_terrain(str(uuid),loc,collider_terrain,mesh,false)
 			if should_bake:
-				region.set_point_mesh(true)
 				region.bake()
 			return true
 		{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:

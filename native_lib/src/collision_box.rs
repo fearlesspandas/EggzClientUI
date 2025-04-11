@@ -78,7 +78,7 @@ impl CollisionBox{
             if !area.has_method("movement_body"){assert!(false,"No body");}
             let radius = unsafe{area.call("radius",&[]).try_to::<f32>().expect("Body without radius entered collision")};
             let movement_body_resource = unsafe{area.call("movement_body",&[]).to_object::<KinematicBody>()};
-            let static_body_resource = unsafe{area.call("static_body",&[]).to_object::<StaticBody>()};
+            //let static_body_resource = unsafe{area.call("static_body",&[]).to_object::<StaticBody>()};
             // if movement body push away
             if movement_body_resource.is_some(){
                 let movement_body = movement_body_resource.expect("Corrupted movement body for collision area");
@@ -113,7 +113,7 @@ impl CollisionBox{
         self.radius
     }
     #[method]
-    fn set_radius(&mut self,radius:f32){
+    pub fn set_radius(&mut self,radius:f32){
         self.radius = radius;
         let affected_shape = unsafe{self.affected_shape.assume_safe()};
         affected_shape.set_radius(radius.into());

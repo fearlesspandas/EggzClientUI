@@ -1,3 +1,4 @@
+#deprecated
 extends Area
 
 class_name Chunk
