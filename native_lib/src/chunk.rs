@@ -30,9 +30,12 @@ impl From<Vector3> for Location{
 #[derive(NativeClass)]
 #[inherit(MultiMesh)]
 pub struct ChunkMesh{
+    is_point_mesh:bool,
     terrain_type:Option<TerrainKey>,
     locations:HashSet<Location>,
     locations_vec:Vec<Vector3>,
+    mesh:Option<Ref<Mesh>>,
+    point_mesh:Option<Ref<Mesh>>,
 }
 const TOTAL_TERRAIN_TYPES:usize = 128;
 const MINIMUM_TERRAIN_IN_CHUNKS:usize = 512;
@@ -44,9 +47,12 @@ impl Instanced<MultiMesh> for ChunkMesh{
         //    terrain.push(HashSet::with_capacity(MINIMUM_TERRAIN_IN_CHUNKS));
         //}
         ChunkMesh{
+            is_point_mesh:false,
             terrain_type:None,
             locations:HashSet::with_capacity(MINIMUM_TERRAIN_IN_CHUNKS),
             locations_vec:Vec::with_capacity(MINIMUM_TERRAIN_IN_CHUNKS),
+            mesh:None,
+            point_mesh:None,
         }
     }
 }
@@ -62,30 +68,44 @@ impl ChunkMesh{
         self.terrain_type = Some(terrain_type);
     }
     #[method]
-    fn bake_at(&self,#[base] owner:TRef<MultiMesh>){
+    fn bake_at(&mut self,#[base] owner:TRef<MultiMesh>){
         //terrain_type is equivalent to index
         //let terrain_locations = &self.locations;
         let terrain_locations = &self.locations_vec;
         let location_size = &self.locations_vec.len();
         let terrain_type = Assets::from(self.terrain_type.expect("ChunkMeshErr:Terrain Type Not Set"));
         let mesh = terrain_type.to_mesh_resource().expect("ChunkMeshErr:Resource not found for type");
+        let point_mesh = terrain_type.to_point_mesh_resource().expect("ChunkMeshErr:Resource not found for type");
+        self.mesh = Some(mesh.clone());
+        self.point_mesh = Some(point_mesh.clone());
         let mesh = unsafe{mesh.assume_safe()};
-        for i in 0..mesh.get_surface_count(){
-            let material = terrain_type.to_material_resource(i).expect("ChunkMeshErr:Material Not found for type");
-            mesh.surface_set_material(i,material);
-        }
-        //godot_print!("{}",format!("Resource loaded:{mesh:?},locations:{terrain_locations:?}"));
         owner.set_instance_count(0);
         owner.set_transform_format(MultiMesh::TRANSFORM_3D);
-        owner.set_mesh(mesh);
         owner.set_instance_count(terrain_locations.len().try_into().expect("ChunkMeshErr:Inappropriate length for terrain"));
         for i in 0..owner.instance_count(){
-            let loc = terrain_locations[i as usize];
-            //let (x,y,z) = (f32::from_bits(loc.x),f32::from_bits(loc.y),f32::from_bits(loc.z));
+            let idx:usize = i.try_into().expect("ChunkMeshErr:Failed to Index locations array");
+            let loc = terrain_locations[idx];
             let (x,y,z) = (loc.x,loc.y,loc.z);
             let mut transform = owner.get_instance_transform(i);
             transform.origin = Vector3::new(x,y,z);
             owner.set_instance_transform(i,transform);
+        }
+        if self.is_point_mesh{
+            owner.set_mesh(point_mesh);
+        }else{
+            owner.set_mesh(mesh);
+        }
+    }
+    #[method]
+    fn set_point_mesh(&mut self,is_point_mesh:bool){
+        self.is_point_mesh = is_point_mesh;
+    }
+    #[method]
+    fn commit_point_mesh(&self,#[base] owner:TRef<MultiMesh>){
+        if self.is_point_mesh{
+            owner.set_mesh(self.point_mesh.clone().expect("ChunkMeshErr:Point Mesh Not found"));
+        }else{
+            owner.set_mesh(self.mesh.clone().expect("ChunkMeshErr:Mesh Not found"));
         }
     }
 }
@@ -179,7 +199,7 @@ impl Chunk{
                 mesh_instance.set_multimesh(msh);
             });
             owner.add_child(mesh_instance,true);
-            let _ = mesh.map(|obj,msh| obj.bake_at(msh));
+            let _ = mesh.map_mut(|obj,msh| obj.bake_at(msh));
             //let origin = owner.global_transform().origin;
             //let mesh_origin = mesh_instance.global_transform().origin;
             //godot_print!("{}",format!("Baking at {origin:?}"));
@@ -191,6 +211,20 @@ impl Chunk{
             //        godot_print!("{}",format!("MeshInstance Origin: {instance_origin:?}"));
             //    }
             //});
+        }
+    }
+    #[method]
+    fn set_point_mesh(&self,#[base] owner:TRef<Area>,is_point_mesh:bool){
+        for mesh in self.mesh_map.values(){
+            let mesh = unsafe{mesh.assume_safe()};
+            let _ = mesh.map_mut(|obj,_| obj.set_point_mesh(is_point_mesh));
+        }
+    }
+    #[method]
+    fn commit_point_mesh(&self,#[base] owner:TRef<Area>,is_point_mesh:bool){
+        for mesh in self.mesh_map.values(){
+            let mesh = unsafe{mesh.assume_safe()};
+            let _ = mesh.map(|obj,msh| obj.commit_point_mesh(msh));
         }
     }
     #[method]

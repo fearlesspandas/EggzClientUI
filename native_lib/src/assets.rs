@@ -96,7 +96,7 @@ impl Assets{
     }
     const HEALTH_STAR_RADIUS:f32 = 10.0;
     pub fn to_mesh_resource(&self) -> Option<Ref<Mesh>>{
-        match self{
+        let res = match self{
              Assets::player => None,
              Assets::server_entity => None,
              Assets::block_terrain => {
@@ -132,7 +132,15 @@ impl Assets{
              Assets::prowler_anchor => None,
              Assets::monk_garden => None,
              Assets::planet_a => None,
-        }
+        };
+        res.map(|mesh|{
+            let mesh = unsafe{mesh.assume_safe()};
+            for i in 0..mesh.get_surface_count(){
+                let material = self.to_material_resource(i).expect("ChunkMeshErr:Material Not found for type");
+                mesh.surface_set_material(i,material);
+            }
+            mesh.claim()
+        })
     }
     pub fn to_material_resource(&self,surface_idx:i64) -> Option<Ref<Material>>{
         match self{
@@ -153,6 +161,56 @@ impl Assets{
                  let material = SpatialMaterial::new().into_shared();
                  let material = unsafe{material.assume_safe()};
                  material.set_albedo(Color::from_rgba(0.0,256.0,10.0,1.0));
+                 Some(material.claim().upcast::<Material>())
+             }, 
+             Assets::prowler_anchor => None,
+             Assets::monk_garden => None,
+             Assets::planet_a => None,
+        }
+    }
+    pub fn to_point_mesh_resource(&self) -> Option<Ref<Mesh>>{
+        let res = match self{
+             Assets::player => None,
+             Assets::server_entity => None,
+             Assets::block_terrain => {
+                 Some(PointMesh::new().into_shared().upcast::<Mesh>())
+             },
+             Assets::spawn_frame => None,
+             Assets::health_star => {
+                 Some(PointMesh::new().into_shared().upcast::<Mesh>())
+             }, 
+             Assets::prowler_anchor => None,
+             Assets::monk_garden => None,
+             Assets::planet_a => None,
+        };
+        res.map(|mesh|{
+            let mesh = unsafe{mesh.assume_safe()};
+            for i in 0..mesh.get_surface_count(){
+                let material = self.to_point_material_resource().expect("ChunkMeshErr:Material Not found for type");
+                mesh.surface_set_material(i,material);
+            }
+            mesh.claim()
+        })
+    }
+    pub fn to_point_material_resource(&self) -> Option<Ref<Material>>{
+        match self{
+             Assets::player => None,
+             Assets::server_entity => None,
+             Assets::block_terrain => {
+                 let material = SpatialMaterial::new().into_shared();
+                 let material = unsafe{material.assume_safe()};
+                 material.set_flag(SpatialMaterial::FLAG_USE_POINT_SIZE,true);
+                 material.set_point_size(4.0);
+                 material.set_billboard_mode(1);
+                 Some(material.claim().upcast::<Material>())
+             },
+             Assets::spawn_frame => None,
+             Assets::health_star => {
+                 let material = SpatialMaterial::new().into_shared();
+                 let material = unsafe{material.assume_safe()};
+                 material.set_flag(SpatialMaterial::FLAG_USE_POINT_SIZE,true);
+                 material.set_point_size(4.0);
+                 material.set_billboard_mode(1);
                  Some(material.claim().upcast::<Material>())
              }, 
              Assets::prowler_anchor => None,

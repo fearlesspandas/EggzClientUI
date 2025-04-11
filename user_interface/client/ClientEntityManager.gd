@@ -361,6 +361,7 @@ func handle_json(json) -> bool:
 									var collider_terrain = spawn_terrain(str(uuid),loc,spawn,asset,false)
 									var mesh_terrain = spawn_terrain(str(uuid),loc,collider_terrain,mesh,false)
 			if should_bake:
+				region.set_point_mesh(true)
 				region.bake()
 			return true
 		{'TerrainChunkm': {'uuid':var uuid,'location':[var x, var y, var z], 'radius':var radius}}:
