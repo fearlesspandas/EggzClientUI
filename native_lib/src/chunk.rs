@@ -120,6 +120,7 @@ pub struct Chunk{
     initialized:bool,
     radius:f32,
     mesh_map:HashMap<TerrainKey,Instance<ChunkMesh>>,
+    terrain_map:HashMap<String,(TerrainKey,Vector3)>,
     shape:Ref<BoxShape>,
 }
 
@@ -133,6 +134,7 @@ impl Instanced<Area> for Chunk{
             initialized:false,
             radius:0.0,
             mesh_map:HashMap::with_capacity(8),
+            terrain_map:HashMap::with_capacity(MINIMUM_TERRAIN_IN_CHUNKS),
             shape:BoxShape::new().into_shared(),
         }
     }
@@ -172,7 +174,9 @@ impl Chunk{
         //owner.set_process(false);
     }
     #[method]
-    fn add_terrain_mesh(&mut self,#[base] owner:TRef<Area>,terrain_type:TerrainKey,location:Vector3){
+    fn add_terrain_mesh(&mut self,#[base] owner:TRef<Area>,terrain_id:String,terrain_type:TerrainKey,location:Vector3){
+        if self.terrain_map.contains_key(&terrain_id){return ;}
+        self.terrain_map.insert(terrain_id,(terrain_type.clone(),location.clone()));
         //let location = location - owner.global_transform().origin;
         let location = owner.to_local(location);
         let mesh_for_type = self.mesh_map.get(&terrain_type).map_or_else(||{
@@ -197,18 +201,15 @@ impl Chunk{
         self.mesh_map.insert(terrain_type,mesh_for_type.claim());
     }
     #[method]
-    fn send_locations(&self,#[base] owner:TRef<Area>){
-        for (terrain_type,mesh) in &self.mesh_map{
-            let mesh = unsafe{mesh.assume_safe()};
-            let locations = mesh.map(|obj,_| obj.locations.clone()).expect("ChunkErr:could not retrieve locations");
-            for loc in locations{
-                let id = &self.id.clone().expect("ChunkErr:ID not set for chunk");
-                let id = std::str::from_utf8(id)
-                    .expect("ChunkErr:Could not format ID")
-                    .to_string();
-                owner.emit_signal("location",&[Variant::new(id),Variant::new(terrain_type),Variant::new(loc)]);
-            }
-        }
+    fn send_locations(&self,#[base] owner:TRef<Area>) -> (String,Vec<(String,TerrainKey,Vector3)>){
+        let v = self.terrain_map.clone().into_iter().map(|(k,v)|{
+            let (tk,loc) = v;
+            (k,tk,loc)
+        }).collect::<Vec<(String,TerrainKey,Vector3)>>(); 
+        let num = v.len();
+        let id = self.id.as_ref().map(|id|std::str::from_utf8(id).expect("uhoh2")).clone().expect("Uhoh");
+        godot_print!("{}",format!("Sending {num:?} locations from chunk:{id:?}"));
+        (id.to_string(),v)
     }
     #[method]
     fn bake(&self,#[base] owner:TRef<Area>){
@@ -259,6 +260,10 @@ impl Chunk{
     #[method]
     fn set_empty(&mut self,value:bool){
         self.is_empty = value;
+    }
+    #[method]
+    fn server(&self) -> bool{
+        self.is_server
     }
     #[method]
     fn set_server(&mut self,#[base] owner:TRef<Area>,value:bool){

@@ -221,11 +221,11 @@ impl Assets{
              Assets::player => None,
              Assets::server_entity => None,
              Assets::block_terrain => {
-                 Some(point_material(20.0,Color::from_rgba(0.0,10.0,255.0,1.0)))
+                 Some(point_material(40.0,Color::from_rgba(0.0,10.0,255.0,1.0)))
              },
              Assets::spawn_frame => None,
              Assets::health_star => {
-                 Some(point_material(4.0,Color::from_rgba(0.0,255.0,10.0,1.0)))
+                 Some(point_material(40.0,Color::from_rgba(0.0,255.0,10.0,1.0)))
              }, 
              Assets::prowler_anchor => None,
              Assets::monk_garden => None,

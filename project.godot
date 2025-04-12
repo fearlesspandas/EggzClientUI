@@ -558,6 +558,11 @@ _global_script_classes=[ {
 "class": "WaypointCreator",
 "language": "GDScript",
 "path": "res://user_interface/client/interfaces/WaypointCreator.gd"
+}, {
+"base": "Node",
+"class": "Waypoints",
+"language": "GDScript",
+"path": "res://entity/client/navigation/Waypoints.gd"
 } ]
 _global_script_class_icons={
 "AbilityField": "",
@@ -669,7 +674,8 @@ _global_script_class_icons={
 "ToggleChunkVisibility": "",
 "TowerChunk": "",
 "Username": "",
-"WaypointCreator": ""
+"WaypointCreator": "",
+"Waypoints": ""
 }
 
 [application]

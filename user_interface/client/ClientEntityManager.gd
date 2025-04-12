@@ -351,7 +351,7 @@ func handle_json(json) -> bool:
 						for k in keys:
 							var resource_id = int(k)
 							if AssetMapper.use_native(resource_id):
-								region.add_terrain_mesh(resource_id,loc);
+								region.add_terrain_mesh(uuid,resource_id,loc);
 								should_bake = true
 								var asset = AssetMapper.matchClientAsset(resource_id)
 								var collider_terrain = spawn_terrain(str(uuid),loc,spawn,asset,false)

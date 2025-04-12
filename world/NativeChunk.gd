@@ -10,7 +10,7 @@ func add_parent(par):
 	par.add_child(ref)
 	ref.connect("load_terrain",self,"load_terrain")
 	ref.connect("fill_empty_terrain",self,"fill_empty_terrain")
-	ref.connect("location",self,"send_location")
+
 	GlobalSignalsClient.connect("player_position",self,"update_mesh_from_position")
 
 
@@ -25,10 +25,29 @@ func fill_empty_terrain(terrain_id,entity_id):
 	ServerNetwork.get(client_id).fill_empty_chunk(terrain_id,entity_id)
 
 func update_mesh_from_position(location:Vector3):
+	if ref.server():
+		return
 	var distance = (self.ref.global_transform.origin - location).length()
 	if  distance > ClientSettings.CAMERA_RENDER_DISTANCE/2 and distance <= 2*ClientSettings.CAMERA_RENDER_DISTANCE:
-		ref.set_point_mesh(true);
-		ref.commit_point_mesh();
+		var res = ref.send_locations();
+		var chunk_id = res[0]
+		var locations = res[1]
+		var should_bake = false
+		for data in locations:
+			match data:
+				[var terrain_id, var terrain_type,var location]:
+					if terrain_id is String and terrain_type is int and location is Vector3:
+						should_bake = true
+						TerrainSignalsClient.add_to_nav_mesh(chunk_id,terrain_id,terrain_type,location)
+					else:
+						assert(false)
+				_:
+					assert(false)
+		if should_bake:
+			TerrainSignalsClient.nav_mesh_bake(chunk_id)
+		#ref.set_point_mesh(true);
+		#ref.commit_point_mesh();
+
 	elif distance > 2*ClientSettings.CAMERA_RENDER_DISTANCE:
 		ref.set_point_mesh(false);
 		ref.commit_point_mesh();
@@ -36,9 +55,5 @@ func update_mesh_from_position(location:Vector3):
 		ref.set_point_mesh(false);
 		ref.commit_point_mesh();
 
-func send_location(region_id:String,terrain_type:int,location:Vector3):
-	TerrainSignalsClient.add_nav_to_mesh(region_id,terrain_type,location)
 	
-func remove_terrain_mesh(region_id):
-	TerrainSignalsClient.remove_from_nav_mesh(region_id)
 	
