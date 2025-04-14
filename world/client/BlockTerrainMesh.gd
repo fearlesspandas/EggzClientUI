@@ -10,18 +10,19 @@ extends MeshInstance
 #4. (stretch) diff tool to compare stats on data snapshots
 var uuid
 func _ready():
-	GlobalSignalsClient.connect("player_position",self,"update_mesh_from_position")
+	#GlobalSignalsClient.connect("player_position",self,"update_mesh_from_position")
+	self.set_process(false)
 
 func update_mesh_from_position(location:Vector3):
-	var distance = (self.global_transform.origin - location).length()
-	if  distance > ClientSettings.CAMERA_RENDER_DISTANCE/2 and distance <= 2*ClientSettings.CAMERA_RENDER_DISTANCE:
-		TerrainSignalsClient.add_to_navigation_mesh(uuid,self.global_transform.origin, Color.aqua,2)
+	var distance_squared = (self.global_transform.origin - location).length_squared()
+	if  distance_squared > ClientSettings.CAMERA_RENDER_DISTANCE*ClientSettings.CAMERA_RENDER_DISTANCE/4 and distance_squared <= 4*ClientSettings.CAMERA_RENDER_DISTANCE*ClientSettings.CAMERA_RENDER_DISTANCE:
+		#TerrainSignalsClient.add_to_navigation_mesh(uuid,self.global_transform.origin, Color.aqua,2)
 		self.visible = false
-	elif distance > 2*ClientSettings.CAMERA_RENDER_DISTANCE:
-		TerrainSignalsClient.remove_from_navigation_mesh(uuid)
+	#elif distance_squared > 4*ClientSettings.CAMERA_RENDER_DISTANCE*ClientSettings.CAMERA_RENDER_DISTANCE:
+	#	TerrainSignalsClient.remove_from_navigation_mesh(uuid)
 	else:
 		self.visible = true
-		TerrainSignalsClient.remove_from_navigation_mesh(uuid)
+	#	TerrainSignalsClient.remove_from_navigation_mesh(uuid)
 
 func init_with_id(id,client_id:String):
 	uuid = id

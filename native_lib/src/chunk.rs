@@ -121,7 +121,11 @@ pub struct Chunk{
     radius:f32,
     mesh_map:HashMap<TerrainKey,Instance<ChunkMesh>>,
     terrain_map:HashMap<String,(TerrainKey,Vector3)>,
+    instance_map:HashMap<TerrainKey,Ref<MultiMeshInstance>>,
+    //terrain that has already been sent to the waypoints mesh handler
+    sent_terrain:HashSet<String>,
     shape:Ref<BoxShape>,
+    sent_all_terrain:bool,
 }
 
 impl Instanced<Area> for Chunk{
@@ -135,7 +139,10 @@ impl Instanced<Area> for Chunk{
             radius:0.0,
             mesh_map:HashMap::with_capacity(8),
             terrain_map:HashMap::with_capacity(MINIMUM_TERRAIN_IN_CHUNKS),
+            instance_map:HashMap::with_capacity(8),
+            sent_terrain:HashSet::with_capacity(MINIMUM_TERRAIN_IN_CHUNKS),
             shape:BoxShape::new().into_shared(),
+            sent_all_terrain:true,
         }
     }
 }
@@ -176,24 +183,21 @@ impl Chunk{
     #[method]
     fn add_terrain_mesh(&mut self,#[base] owner:TRef<Area>,terrain_id:String,terrain_type:TerrainKey,location:Vector3){
         if self.terrain_map.contains_key(&terrain_id){return ;}
+        self.sent_all_terrain = false;
         self.terrain_map.insert(terrain_id,(terrain_type.clone(),location.clone()));
-        //let location = location - owner.global_transform().origin;
+
         let location = owner.to_local(location);
         let mesh_for_type = self.mesh_map.get(&terrain_type).map_or_else(||{
             let id = self.id.clone();
-            //godot_print!("{}",format!("Creating new Mesh Chunk for {terrain_type:?}, for chunk:{id:?}"));
             let mesh = ChunkMesh::make_instance().into_shared();
 
             let mesh_obj = unsafe{mesh.assume_safe()};
             let _ = mesh_obj.map_mut(|obj,_| {
                 obj.set_terrain_type(terrain_type);
             });
-            //let _  = mesh_obj.map(|_,multimesh| multimesh.set_physics_interpolation_quality(1));
             mesh
         },
         |x|{
-            //let id = self.id.clone();
-            //godot_print!("{}",format!("Found mesh chunk for {terrain_type:?}, for chunk:{id:?}"));
             x.clone()
         });
         let mesh_for_type = unsafe{mesh_for_type.assume_safe()};
@@ -202,20 +206,33 @@ impl Chunk{
     }
     #[method]
     fn send_locations(&self,#[base] owner:TRef<Area>) -> (String,Vec<(String,TerrainKey,Vector3)>){
-        let v = self.terrain_map.clone().into_iter().map(|(k,v)|{
-            let (tk,loc) = v;
+        let id = self.id.as_ref().map(|id|std::str::from_utf8(id).expect("uhoh2")).clone().expect("Uhoh");
+        if self.terrain_map.len() == self.sent_terrain.len(){
+            return (id.to_string(),Vec::new())
+        }
+        let v = self.terrain_map
+            .clone()
+            .into_iter()
+            .filter(|(k,_)| !self.sent_terrain.contains(k)).map(|(k,(tk,loc))|{
             (k,tk,loc)
         }).collect::<Vec<(String,TerrainKey,Vector3)>>(); 
         let num = v.len();
-        let id = self.id.as_ref().map(|id|std::str::from_utf8(id).expect("uhoh2")).clone().expect("Uhoh");
         godot_print!("{}",format!("Sending {num:?} locations from chunk:{id:?}"));
         (id.to_string(),v)
     }
     #[method]
-    fn bake(&self,#[base] owner:TRef<Area>){
-        for mesh in self.mesh_map.values(){
+    fn update_cached_send(&mut self,#[base] owner:TRef<Area>){
+        for terrain_id in self.terrain_map.keys(){
+            self.sent_terrain.insert(terrain_id.clone());
+        }
+        self.sent_all_terrain = true;
+    }
+    #[method]
+    fn bake(&mut self,#[base] owner:TRef<Area>){
+        for (terrain_type,mesh) in &self.mesh_map{
             let mesh = unsafe{mesh.assume_safe()};
             let mesh_instance = MultiMeshInstance::new().into_shared();
+            self.instance_map.insert(terrain_type.clone(),mesh_instance);
             let mesh_instance = unsafe{mesh_instance.assume_safe()};
             let _ = mesh.map(|_,msh| {
                 mesh_instance.set_multimesh(msh);
@@ -252,6 +269,25 @@ impl Chunk{
     #[method]
     fn set_initialized(&mut self){
         self.initialized = true;
+    }
+    #[method]
+    fn id(&self) -> String{
+        self
+            .id
+            .as_ref()
+            .map(|val| std::str::from_utf8(val).expect("ChunkErr:could not format chunk id").to_string())
+            .expect("ChunkErr:No id found for chunk")
+    }
+    #[method]
+    fn sent_all(&self) -> bool{
+        self.sent_all_terrain
+    }
+    #[method]
+    fn set_hidden(&self,value:bool){
+        for mesh_instance in self.instance_map.values(){
+            let mesh_instance = unsafe{mesh_instance.assume_safe()};
+            mesh_instance.set_visible(!value);
+        }
     }
     #[method]
     fn set_id(&mut self,id:String){

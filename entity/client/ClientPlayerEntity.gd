@@ -306,12 +306,12 @@ func default_handle_message(msg,delta_accum):
 func default_update_player_location(location):
 	assert(radius > 0)
 	#could microoptimize this further by just inlining and not creating any variables
-	var less_than_radius = 2 * int((location - self.body.global_transform.origin).length() < radius) 
-	var radius_2         = 4 * int((location - self.body.global_transform.origin).length() < 2 * radius)
-	var radius_4         = 8 * int((location - self.body.global_transform.origin).length() < 4 * radius)
-	var radius_8         = 16 * int((location - self.body.global_transform.origin).length() < 8 * radius)
-	var radius_16        = 32 * int((location - self.body.global_transform.origin).length() < 16 * radius)
-	var radius_max       = 64 * int((location - self.body.global_transform.origin).length() > 16 * radius) 
+	var less_than_radius = 2 * int((location - self.body.global_transform.origin).length_squared() < radius * radius) 
+	var radius_2         = 4 * int((location - self.body.global_transform.origin).length_squared() < 4 * radius * radius)
+	var radius_4         = 8 * int((location - self.body.global_transform.origin).length_squared() < 16 * radius * radius)
+	var radius_8         = 16 * int((location - self.body.global_transform.origin).length_squared() < 64 * radius * radius)
+	var radius_16        = 32 * int((location - self.body.global_transform.origin).length_squared() < 256 * radius * radius)
+	var radius_max       = 64 * int((location - self.body.global_transform.origin).length_squared() > 256 * radius * radius) 
 	var t_mod = (
 		2 * int(less_than_radius)
 		+ 4 * int(!less_than_radius and radius_2)

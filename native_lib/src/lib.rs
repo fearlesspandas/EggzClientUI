@@ -86,6 +86,7 @@ fn init(handle:InitHandle){
     handle.add_class::<chunk::Chunk>();
     handle.add_class::<chunk::ChunkMesh>();
     handle.add_class::<navigation_point_mesh::NavigationPoints>();
+    handle.add_class::<navigation_point_mesh::ChunkNavMesh>();
     handle.add_class::<navigation_point_mesh::Waypoints>();
 }
 godot_init!(init);

@@ -100,6 +100,17 @@ pub trait Windowed<T:From<Action>>{
         }
     }
     fn process(&self,owner:TRef<Control>,_delta:f64){
+        let owner_size = owner.size();
+        let parent_visible = owner.get_parent().map(|parent| {
+            let parent = unsafe{parent.assume_safe()};
+            let parent = parent.cast::<Control>();
+            parent.map(|p| p.is_visible()).unwrap()
+        }).unwrap_or(false);
+        let either_visible = owner.is_visible() && parent_visible; 
+        let non_zero_size = owner_size.x > 0.0 && owner_size.y > 0.0;
+        //if !(either_visible){
+        //    return ;
+        //}
         let bg_rect = unsafe{self.bg_rect().assume_safe()};
         let main_rect = unsafe{self.main_rect().assume_safe()};
         let mut size = owner.size();
