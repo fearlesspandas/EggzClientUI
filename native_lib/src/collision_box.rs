@@ -71,8 +71,6 @@ impl CollisionBox{
     #[method]
     fn clicked(&self,#[base] owner:TRef<Area>,event_position:Vector2,intersect_position:Vector3){
         owner.emit_signal("body_clicked",&[]);
-
-
     }
     #[method]
     fn _physics_process(&mut self,#[base] owner:TRef<Area>,delta:f64){

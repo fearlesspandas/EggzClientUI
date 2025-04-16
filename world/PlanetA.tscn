@@ -1,13 +1,27 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://world/PlanetAServer.gd" type="Script" id=1]
+[sub_resource type="GDScript" id=2]
+script/source = "extends StaticBody
+
+onready var gravity_box:GravityBox = GravityBox.new()
+
+var id = \"PlanetA\"
+func _ready():
+	ScheduledTransforms.ref.set_mass(self.id,3000000.0)
+	self.add_child(gravity_box)
+	var size = 512.0 * 64.0
+	gravity_box.ref.set_unaffected_radius(1024 * 1.2)
+	gravity_box.ref.set_affected_radius(size)
+	gravity_box.set_id(self.id)
+
+"
 
 [sub_resource type="SphereShape" id=1]
 margin = 8.0
 radius = 1024.0
 
 [node name="StaticBody" type="StaticBody"]
-script = ExtResource( 1 )
+script = SubResource( 2 )
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
 shape = SubResource( 1 )

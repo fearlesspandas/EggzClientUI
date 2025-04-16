@@ -16,8 +16,6 @@ func add_entity_data_to_terminal():
 	ClientTerminalGlobalSignals.add_input_data("global_position" , str(body.global_transform.origin))
 	ClientTerminalGlobalSignals.add_input_data("bytes_received_mb" ,str(float(physics_native_shared_socket.num_bytes_received(id))/1000000.0))
 	
-	
-
 func _physics_process(delta):
 	default_physics_process(delta,2)
 

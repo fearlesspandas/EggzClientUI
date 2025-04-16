@@ -59,7 +59,6 @@ func send_requested_data(data_type):
 		_:
 			pass
 
-	
 func set_socket_mode_if_entity(id,mode):
 	if id == self.id:
 		self.socket_mode = mode
