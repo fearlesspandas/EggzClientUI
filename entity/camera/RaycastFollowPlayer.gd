@@ -26,7 +26,7 @@ func _input(event):
 		var ray_origin = from
 		var ray_target = to
 		var space_state = get_world().direct_space_state
-		var intersection = space_state.intersect_ray(ray_origin,ray_target)
+		var intersection = space_state.intersect_ray(ray_origin,ray_target,[],0x7FFFFFFF,true,true)
 		if not intersection.empty(): #and intersection.position != intersect_position:
 			intersect_position = intersection.position
 			intersect_object = intersection.collider
@@ -47,11 +47,10 @@ func _input(event):
 	elif event is InputEventMouseMotion:
 		from = camera.project_ray_origin(event.position)
 		to = from + camera.project_ray_normal(event.position) * camera.far
-		var mouse_position = get_viewport().get_mouse_position()
 		var ray_origin = from
 		var ray_target = to
 		var space_state = get_world().direct_space_state
-		var intersection = space_state.intersect_ray(ray_origin,ray_target)
+		var intersection = space_state.intersect_ray(ray_origin,ray_target,[],0x7FFFFFFF,true,true)
 		if not intersection.empty():
 			if hovered_object == null || hovered_object != intersection.collider:
 				if hovered_object != null && weakref(hovered_object).get_ref() != null && hovered_object.has_method("exited"):
@@ -74,8 +73,10 @@ func _physics_process(delta):
 	pass
 
 func _ready():
+	self.collide_with_areas = true
 	self.set_collision_mask_bit(EntityConstants.SERVER_TERRAIN_COLLISION_LAYER,false)
 	self.set_collision_mask_bit(EntityConstants.CLIENT_FIELD_COLLISION_LAYER,true)
+	self.set_collision_mask_bit(EntityConstants.CLIENT_MOUSE_RAYCAST_COLLISION_LAYER,true)
 	pass # Replace with function body.
 
 

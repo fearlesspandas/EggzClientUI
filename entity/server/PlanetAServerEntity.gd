@@ -38,6 +38,7 @@ func _ready():
 	collision_box.ref.set_movement_body(self.body)
 
 
+
 func add_affected(entity_id):
 	pass
 func remove_affected(entity_id):

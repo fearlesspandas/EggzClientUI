@@ -15,6 +15,7 @@ pub struct CollisionBox{
     affected_shape:Ref<SphereShape>,
     movement_body:Option<Ref<KinematicBody>>,
     static_body:Option<Ref<StaticBody>>,
+    is_server:bool,
 }
 impl Instanced<Area> for CollisionBox{
     fn make() -> Self{
@@ -25,6 +26,7 @@ impl Instanced<Area> for CollisionBox{
             affected_shape:SphereShape::new().into_shared(),
             movement_body:None,
             static_body:None,
+            is_server:true,
         }
     }
 }
@@ -35,6 +37,7 @@ impl CollisionBox{
             .signal("slow_to")
             .with_param("id",VariantType::GodotString)
             .with_param("speed",VariantType::F64);
+        let _ = builder.signal("body_clicked").done();
     }
     #[method]
     fn _ready(&self,#[base] owner:TRef<Area>){
@@ -47,7 +50,8 @@ impl CollisionBox{
 
         owner.set_collision_layer_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
         owner.set_collision_mask_bit(collision_layer::SERVER_TERRAIN_COLLISION_LAYER.into(),false);
-
+        if !self.is_server{return ; }
+        //only serverside operations below
         owner.set_collision_mask_bit(collision_layer::SERVER_PLAYER_COLLISION_LAYER.into(),true);
 
         owner.set_collision_mask_bit(collision_layer::SERVER_AREA_COLLISION_LAYER.into(),true);
@@ -59,7 +63,20 @@ impl CollisionBox{
         let _ = owner.connect("area_exited",owner,"stop_tracking_area",VariantArray::new_shared(),0);
     }
     #[method]
+    fn entered(&self){
+    }
+    #[method]
+    fn exited(&self){
+    }
+    #[method]
+    fn clicked(&self,#[base] owner:TRef<Area>,event_position:Vector2,intersect_position:Vector3){
+        owner.emit_signal("body_clicked",&[]);
+
+
+    }
+    #[method]
     fn _physics_process(&mut self,#[base] owner:TRef<Area>,delta:f64){
+        if !self.is_server{return ;}
         for (id,body) in &self.tracked_bodies{
             let body = unsafe{body.assume_safe()};
             let owner_origin = owner.global_transform().origin;
@@ -91,6 +108,10 @@ impl CollisionBox{
                 movement_body.translate(trans);
             }
         }
+    }
+    #[method]
+    fn set_server(&mut self,value:bool){
+        self.is_server = value;
     }
     #[method]
     fn set_movement_body(&mut self,body:Ref<KinematicBody>){

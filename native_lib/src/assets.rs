@@ -192,6 +192,12 @@ impl Assets{
              Assets::planet_a => None,
         }
     }
+    pub fn to_outline_mesh_resource(&self) -> Option<Ref<Mesh>>{
+       self.to_mesh_resource().and_then(|m| {
+           let m = unsafe{m.assume_safe()};
+           m.create_outline(5.0)
+       }) 
+    }
     pub fn to_point_mesh_resource(&self) -> Option<Ref<Mesh>>{
         let res = match self{
              Assets::player => None,

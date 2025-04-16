@@ -24,7 +24,7 @@ func _ready():
 	
 	ScheduledTransforms.ref.set_mass(self.id,300000.0)
 	self.add_child(gravity_box)
-	var size = 512.0 * 16.0
+	var size = 512.0 * 64.0
 	gravity_box.ref.set_unaffected_radius(512.0 * 1.5)
 	gravity_box.ref.set_affected_radius(size)
 	gravity_box.set_id(self.id)

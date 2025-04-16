@@ -64,7 +64,7 @@ impl ChunkMesh{
     fn set_terrain_type(&mut self,terrain_type:TerrainKey){
         self.terrain_type = Some(terrain_type.clone());
         let terrain_type = Assets::from(terrain_type);
-        let mesh = terrain_type.to_mesh_resource().expect("ChunkMeshErr:Resource not found for type");
+        let mesh = terrain_type.to_outline_mesh_resource().expect("ChunkMeshErr:Resource not found for type");
         let point_mesh = terrain_type.to_point_mesh_resource().expect("ChunkMeshErr:Resource not found for type");
         self.mesh = Some(mesh);
         self.point_mesh = Some(point_mesh);
