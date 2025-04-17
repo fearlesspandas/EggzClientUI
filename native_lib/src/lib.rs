@@ -31,6 +31,7 @@ pub mod anti_gravity_tank;
 pub mod chunk;
 pub mod assets;
 pub mod navigation_point_mesh;
+pub mod network;
 mod client_terminal;
 
 #[allow(non_snake_case)]
@@ -88,5 +89,6 @@ fn init(handle:InitHandle){
     handle.add_class::<navigation_point_mesh::NavigationPoints>();
     handle.add_class::<navigation_point_mesh::ChunkNavMesh>();
     handle.add_class::<navigation_point_mesh::Waypoints>();
+    handle.add_class::<network::gd_client_web_socket::ClientWebSocket>();
 }
 godot_init!(init);
