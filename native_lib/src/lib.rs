@@ -32,6 +32,7 @@ pub mod chunk;
 pub mod assets;
 pub mod navigation_point_mesh;
 pub mod network;
+pub mod ability;
 mod client_terminal;
 
 #[allow(non_snake_case)]

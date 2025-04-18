@@ -58,7 +58,9 @@ impl ToAction for AbilityType{
                 }
             }
             AbilityType::slizzard => { }
-            AbilityType::anti_gravity_tank => {}
+            AbilityType::anti_gravity_tank => {
+                let _ = tx.send(FieldCommand::DoAbility(*location,AbilityType::anti_gravity_tank));
+            }
         }
     }
 }

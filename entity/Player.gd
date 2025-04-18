@@ -43,16 +43,6 @@ func change_ability_state(location,op_id):
 		_:
 			assert(false)
 			
-
-func do_ability(location,ability_id):
-	match ability_id:
-		0:
-			socket.ability(client_id,0,Vector2(location[0],location[1]))	
-		1:
-			AbilityAPI.globular_teleport().do(client_id)
-		_:
-			print_debug("AbwiliITES" + str(ability_id))
-
 func add_field_ability(location,ability_id):
 	socket.add_ability(self.client_id,ability_id,Vector2(location[0],location[1]))
 

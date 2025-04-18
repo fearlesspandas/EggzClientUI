@@ -3,6 +3,7 @@ use gdnative::prelude::*;
 use gdnative::api::*;
 use crate::traits::{Instanced};
 use crate::socket_mode::{SocketMode};
+use crate::network::gd_client_web_socket::{ClientWebSocket};
 
 
 macro_rules! mystr {
@@ -29,6 +30,11 @@ trait Entity<T> where Self:Instanced<T>{
     fn set_socket_mode(&mut self, socket_mode:SocketMode);
     fn tick(&self) -> i64;
     fn set_tick(&mut self,value:i64);
+}
+trait Socketed{
+    fn client_id(&self) -> Id;
+    fn set_client_id(&mut self);
+    fn client_socket(&self) -> Instance<ClientWebSocket>;
 }
 trait ClientEntity<T> where Self:Entity<T> {
     fn mesh(&self) -> &Option<Ref<Spatial>>;
@@ -62,9 +68,6 @@ trait ClientEntity<T> where Self:Entity<T> {
     }
 }
 
-trait Socketed<T:NativeClass>{
-    fn socket(&self) -> Ref<T>;
-}
 trait ServerEntity<T> where Self:Entity<T>{
     fn gravity_active(&self) -> bool;
     fn set_gravity_active(&mut self,value:bool);

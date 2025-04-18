@@ -9,6 +9,9 @@ use crate::anti_gravity_tank::{AntiGravityTank};
 pub trait ToMesh{
     fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial>;
 }
+pub trait ToMeshToo{
+    fn to_mesh(length:f32,radius:f32) -> Ref<Spatial>;
+}
 impl ToMesh for AbilityType{
     fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial> {
         match self{

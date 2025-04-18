@@ -1,8 +1,9 @@
 
 use gdnative::prelude::*;
+use serde::{Serialize,Deserialize}; 
 use crate::traits::{Defaulted};
 
-#[derive(Copy,Clone,Eq,Hash,PartialEq,Debug)]
+#[derive(Serialize,Deserialize,Copy,Clone,Eq,Hash,PartialEq,Debug)]
 pub enum AbilityType{
     empty,
     occupied,
@@ -77,6 +78,7 @@ pub enum SubAbilityType{
     empty,
     globular_teleport_anchor,
     globular_teleport_vertex,
+    anti_gravity_tank_toggle,
 }
 impl From<u8> for SubAbilityType{
     fn from(value:u8) -> Self{
@@ -84,6 +86,7 @@ impl From<u8> for SubAbilityType{
             255 => SubAbilityType::empty,
             0 => SubAbilityType::globular_teleport_anchor,
             1 => SubAbilityType::globular_teleport_vertex,
+            3 => SubAbilityType::anti_gravity_tank_toggle,
             _ => todo!(),
         }
     }
@@ -94,6 +97,7 @@ impl Into<u8> for SubAbilityType{
             SubAbilityType::empty => 255,
             SubAbilityType::globular_teleport_anchor => 0,
             SubAbilityType::globular_teleport_vertex => 1,
+            SubAbilityType::anti_gravity_tank_toggle => 3,
         }
     }
 }

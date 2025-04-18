@@ -11,7 +11,7 @@ serde = {version = "1.0.214", features = ["derive"]}
 gdnative = { version = "0.11", features = ["async"]}
 tokio = { version = "1.41.0", features = ["full"] }
 rand = "0.8.5"
-client_physics_socket = {version = "^0" , path = "../../GDNativeSocket"}
+#client_physics_socket = {version = "0.1.0" , path = "../../GDNativeSocket"}
 #web-socket = "0.7"
 #base64 = "0.21"
 #sha-1 = "0.10"

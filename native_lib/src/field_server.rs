@@ -78,6 +78,7 @@ impl FieldZoneServer{
         if entity_id.is_nil(){assert!(false,"entity id is nil")}
         let entity_id = entity_id.try_to::<String>();
         let field_tx = self.field_tx.clone().unwrap();
+        //server_body_entered defined in field_ability_actions
         let _ = entity_id.map(|id| self.typ.server_body_entered(field_tx,&self.location,id));
     }
     #[method]
