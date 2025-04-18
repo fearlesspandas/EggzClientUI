@@ -8,6 +8,12 @@ use crate::collision_layer;
 pub trait ToCollider{
     fn to_collider(&self,extents:Vector3) -> Option<Ref<Area>>;
 }
+pub trait AbilityCollider{
+    fn to_collider(&self,extents:Vector3) -> Option<Ref<Area>>;
+}
+pub trait FieldCollider{
+    fn to_collider(&self,extents:Vector3) -> Option<Ref<Area>>;
+}
 impl ToCollider for AbilityType{
     fn to_collider(&self,extents:Vector3) -> Option<Ref<Area>> {
         match self{

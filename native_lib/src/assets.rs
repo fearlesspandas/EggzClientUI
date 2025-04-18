@@ -142,13 +142,8 @@ impl Assets{
                  vertices.push(Vector3::new(radius/2.0,radius,radius/2.0));
                  vertices.push(Vector3::new(radius,-radius/2.0,0.0));
 
-                 let mesh = ArrayMesh::new().into_shared();
-                 let mesh = unsafe{mesh.assume_safe()};
-                 let arrays = VariantArray::new();
-                 arrays.resize(ArrayMesh::ARRAY_MAX as i32);
-                 arrays.set(ArrayMesh::ARRAY_VERTEX as i32,vertices);
-                 mesh.add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES,arrays.into_shared(),VariantArray::new_shared(),2194432);
-                 Some(mesh.claim().upcast::<Mesh>())
+                 let mesh = array_mesh(vertices,Mesh::PRIMITIVE_TRIANGLES);
+                 Some(mesh.upcast::<Mesh>())
              }, 
              Assets::prowler_anchor => None,
              Assets::monk_garden => None,
@@ -250,7 +245,14 @@ impl Assets{
     //}
 }
 
-fn point_material(size:f64,color:Color) -> Ref<Material>{
+pub fn point_mesh(size:f64,color:Color) -> Ref<Mesh>{
+    let mesh = PointMesh::new().into_shared();
+    let mesh = unsafe{mesh.assume_safe()};
+    let material = point_material(size,color);
+    mesh.set_material(material);
+    mesh.upcast::<Mesh>().claim()
+}
+pub fn point_material(size:f64,color:Color) -> Ref<Material>{
     let material = SpatialMaterial::new().into_shared();
     let material = unsafe{material.assume_safe()};
     let path = "res://textures/vortex.png";
@@ -265,4 +267,13 @@ fn point_material(size:f64,color:Color) -> Ref<Material>{
     material.set_billboard_mode(1);
     material.set_albedo(color);
     material.claim().upcast::<Material>()
+}
+pub fn array_mesh(vertices:PoolArray<Vector3>,primitive_type:i64) -> Ref<ArrayMesh>{
+     let mesh = ArrayMesh::new().into_shared();
+     let mesh = unsafe{mesh.assume_safe()};
+     let arrays = VariantArray::new();
+     arrays.resize(ArrayMesh::ARRAY_MAX as i32);
+     arrays.set(ArrayMesh::ARRAY_VERTEX as i32,vertices);
+     mesh.add_surface_from_arrays(primitive_type,arrays.into_shared(),VariantArray::new_shared(),2194432);
+     mesh.claim()
 }

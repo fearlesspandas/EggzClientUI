@@ -7,15 +7,19 @@ use std::collections::HashMap;
 use crate::traits::{Defaulted,Instanced};
 use crate::field::{Location,FieldCommand,FieldZone};
 use crate::field_abilities::{AbilityType};
-use crate::field_ability_colliders::{ToCollider};
-use crate::field_ability_mesh::{ToMeshToo};
+use crate::field_ability_colliders::{ToCollider,FieldCollider,AbilityCollider};
+use crate::field_ability_mesh::{ToMesh,FieldMesh,AbilityMesh};
 use crate::field_ability_actions::{ToAction};
+use crate::assets::{array_mesh,point_material,point_mesh};
 
 type Sender<T> = mpsc::UnboundedSender<T>;
 
 trait Signals<T>{
     fn command_tx(&self) -> &Sender<T>;
     fn set_command_tx(&mut self,tx:Sender<T>);
+}
+trait ToAbilityType{
+    const TYPE:AbilityType;
 }
 //SERIALIZATION///////
 #[derive(Serialize,Deserialize)]
@@ -29,12 +33,12 @@ pub struct AbilityData{
 ////while on the field;
 ////activation logic,
 ////state representation
-trait FieldAbility:Sized +  Into<AbilityType>{}
-trait ClientFieldAbility:FieldAbility + ToMeshToo + ToAction{
+trait FieldAbility:Sized +  ToAbilityType{}
+trait ClientFieldAbility:FieldAbility + FieldMesh + ToAction{
     fn radius(&self) -> f32;
     fn modify_data(&self,data:AbilityData);
 }
-trait ServerFieldAbility:FieldAbility + ToAction + ToCollider{
+trait ServerFieldAbility:FieldAbility + ToAction + FieldCollider{
     fn radius(&self) -> f32;
     fn modify_data(&self,data:AbilityData);
 }
@@ -42,24 +46,33 @@ trait ServerFieldAbility:FieldAbility + ToAction + ToCollider{
 ////ability activations and affects on the world
 ////collider and mesh handling during ability affects
 
-trait Ability:Sized +  Into<AbilityType>{}
-trait ClientAbility:Ability + ToMeshToo + ToAction{
+type AbilityId = i64;
+trait Ability:Sized +  ToAbilityType{
+    fn id(&self) -> AbilityId;
+}
+trait ClientAbility:Ability + AbilityMesh + ToAction{
     fn mesh(&self) -> Ref<Spatial>;
     fn duration(&self) -> f32;
     fn set_duration(&self , value:f32);
 
-    fn default_mesh(&self) -> Ref<Spatial>{
-        Self::to_mesh(25.0,25.0)
+    fn default_ability_mesh(&self) -> Ref<Spatial>{
+        <Self as AbilityMesh>::to_mesh(self,25.0,25.0)
     }
 }
-trait ServerAbility:Ability + ToCollider{
+trait ServerAbility:Ability + AbilityCollider{
     fn radius(&self) -> f32;
     fn duration(&self) -> f32;
     fn set_duration(&self , value:f32);
 }
 trait TimedAbility:Ability{
     fn duration(&self) -> f32;
-    fn destroy(&self,owner:TRef<Node>);
+    fn destroy(&self,owner:TRef<Node>){
+        owner.get_parent().map(|parent| {
+            let parent = unsafe{parent.assume_safe()};
+            parent.remove_child(owner);
+        });
+        owner.queue_free();
+    }
     fn ready(&self,owner:TRef<Node>){
         assert!(owner.has_method("destroy"),"owner does not have destroy method");
         let timer = Timer::new().into_shared();
@@ -70,6 +83,9 @@ trait TimedAbility:Ability{
     }
 }
 
+pub enum AbilityActions{
+    Destroy(AbilityId),
+}
 ////ABILITY IMPLEMENTATIONS////
 //////////////////////////////
 ////Smack
@@ -78,17 +94,23 @@ trait TimedAbility:Ability{
 pub struct Smack{
     radius:f32,
     cmd_tx:Option<Sender<FieldCommand>>,
+    id:AbilityId,
 }
-impl Into<AbilityType> for Smack{
-    fn into(self) -> AbilityType{
-        AbilityType::smack
+impl FieldAbility for Smack{ }
+impl Ability for Smack{
+    fn id(&self) -> AbilityId {
+        self.id
     }
+}
+impl ToAbilityType for Smack{
+    const TYPE:AbilityType = AbilityType::smack;
 }
 impl Instanced<Node> for Smack{
     fn make() -> Self{
         Smack{
             radius:0.0,
             cmd_tx:None,
+            id:-1,
         }
     }
 }
@@ -96,8 +118,8 @@ impl Instanced<Node> for Smack{
 impl Smack{
     #[method]
     fn _ready(&self,#[base] owner:TRef<Node>){
-        let mesh = Self::to_mesh(25.0,25.0);
-        let collider = self.to_collider(Vector3::new(25.0,25.0,25.0)).expect("ability:No collider found for smack client");
+        let mesh = <Self as FieldMesh>::to_mesh(self,25.0,25.0);
+        let collider = <Self as FieldCollider>::to_collider(self,Vector3::new(25.0,25.0,25.0)).expect("ability:No collider found for smack client");
         owner.add_child(mesh,true);
         owner.add_child(collider,true);
         <Self as TimedAbility>::ready(self,owner);
@@ -112,40 +134,24 @@ impl Signals<FieldCommand> for Smack{
     fn command_tx(&self) -> &Sender<FieldCommand>{&self.cmd_tx.as_ref().expect("SmackErr:No outbound tx found")}
     fn set_command_tx(&mut self,tx:Sender<FieldCommand>){self.cmd_tx = Some(tx)}
 }
-////We can have multiple signal channels like so
-////(uncommenting the following will still compile)
-//impl Signals<i64> for Smack{
-//    fn command_tx(&self) -> &Sender<i64>{todo!()}
-//    fn set_command_tx(&mut self,tx:Sender<i64>){}
-//}
 impl ClientFieldAbility for Smack{
     fn radius(&self) -> f32{self.radius}
     fn modify_data(&self,data:AbilityData){}
 }
-impl ToMeshToo for Smack{
-    fn to_mesh(length:f32,radius:f32) -> Ref<Spatial>{
-        let spatial = Spatial::new();
-        let mesh = MeshInstance::new().into_shared();
-        let mesh_obj = unsafe{mesh.assume_safe()};
-        let sphere_mesh = SphereMesh::new().into_shared();
-        let sphere_mesh = unsafe{sphere_mesh.assume_safe()};
-        sphere_mesh.set_radius(radius.into());
-        sphere_mesh.set_height(radius.into());
-        let box_material = SpatialMaterial::new();
-        box_material.set_albedo(Color{r:100.0,g:100.0,b:0.0,a:1.0});
-        sphere_mesh.set_material(box_material);
-        mesh_obj.set_mesh(sphere_mesh);
-        spatial.add_child(mesh.clone(),true);
-        //mesh
-        spatial.into_shared()
+impl FieldMesh for Smack{
+    fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial>{
+        Self::TYPE.to_mesh(length,radius)
+    }
+}
+impl AbilityMesh for Smack{
+    fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial>{
+        Self::TYPE.to_mesh(length,radius)
     }
 }
 impl ToAction for Smack{
-    fn to_action(&self,tx:Sender<FieldCommand>,location:&Location,field_state:&HashMap<Location,Instance<FieldZone>>){
-
-    }
+    fn to_action(&self,tx:Sender<FieldCommand>,location:&Location,field_state:&HashMap<Location,Instance<FieldZone>>){}
 }
-impl ToCollider for Smack{
+impl AbilityCollider for Smack{
     fn to_collider(&self,extents:Vector3) -> Option<Ref<Area>> {
         let sphere_shape = SphereShape::new().into_shared();
         let sphere_shape = unsafe{sphere_shape.assume_safe()};
@@ -159,20 +165,22 @@ impl ToCollider for Smack{
         Some(area.claim())
     }
 }
+impl FieldCollider for Smack{
+    fn to_collider(&self,extents:Vector3) -> Option<Ref<Area>> {
+        None
+    }
+}
 impl TimedAbility for Smack{
     fn duration(&self) -> f32{
         3.0
     }
-    fn destroy(&self,owner:TRef<Node>){
-
-    }
 }
-impl FieldAbility for Smack{ }
-impl Ability for Smack{}
 ////Globular Teleport////
 pub struct GlobularTeleport{
     radius:f32,
     cmd_tx:Sender<FieldCommand>,
+    base:Vector3,
+    points:PoolArray<Vector3>,
 }
 impl Signals<FieldCommand> for GlobularTeleport{
     fn command_tx(&self) -> &Sender<FieldCommand>{&self.cmd_tx}
@@ -182,15 +190,33 @@ impl ClientFieldAbility for GlobularTeleport{
     fn radius(&self) -> f32{self.radius}
     fn modify_data(&self,data:AbilityData){}
 }
-
-impl Into<AbilityType> for GlobularTeleport{
-    fn into(self) -> AbilityType{
-        AbilityType::smack
+impl ToAbilityType for GlobularTeleport{
+    const TYPE:AbilityType = AbilityType::globular_teleport;
+}
+impl FieldMesh for GlobularTeleport{
+    fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial>{
+        Self::TYPE.to_mesh(length,radius)
     }
 }
-impl ToMeshToo for GlobularTeleport{
-    fn to_mesh(length:f32,radius:f32) -> Ref<Spatial>{
-        todo!()
+impl AbilityMesh for GlobularTeleport{
+    fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial>{
+        let glob_mesh = array_mesh(self.points.clone(),Mesh::PRIMITIVE_LINES);
+        let base_mesh = point_mesh(20.0,Color::from_rgba(0.0,0.0,100.0,1.0));
+        
+        let mesh_instance = MeshInstance::new().into_shared();
+        let mesh_instance = unsafe{mesh_instance.assume_safe()};
+        mesh_instance.set_mesh(glob_mesh);
+
+        let base_mesh_instance = MeshInstance::new().into_shared();
+        let base_mesh_instance = unsafe{base_mesh_instance.assume_safe()};
+        base_mesh_instance.set_mesh(base_mesh);
+
+        let spatial = Spatial::new().into_shared();
+        let spatial = unsafe{spatial.assume_safe()};
+
+        spatial.add_child(mesh_instance,true);
+        spatial.add_child(base_mesh_instance,true);
+        spatial.claim()
     }
 }
 impl ToAction for GlobularTeleport{
@@ -198,7 +224,12 @@ impl ToAction for GlobularTeleport{
 
     }
 }
-impl ToCollider for GlobularTeleport{
+impl AbilityCollider for GlobularTeleport{
+    fn to_collider(&self,extents:Vector3) -> Option<Ref<Area>> {
+        None
+    }
+}
+impl FieldCollider for GlobularTeleport{
     fn to_collider(&self,extents:Vector3) -> Option<Ref<Area>> {
         None
     }
