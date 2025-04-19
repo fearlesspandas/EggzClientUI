@@ -33,12 +33,12 @@ pub struct AbilityData{
 ////while on the field;
 ////activation logic,
 ////state representation
-trait FieldAbility:Sized +  ToAbilityType{}
-trait ClientFieldAbility:FieldAbility + FieldMesh + ToAction{
+pub trait FieldAbility:Sized +  ToAbilityType{}
+pub trait ClientFieldAbility:FieldAbility + FieldMesh + ToAction{
     fn radius(&self) -> f32;
     fn modify_data(&self,data:AbilityData);
 }
-trait ServerFieldAbility:FieldAbility + ToAction + FieldCollider{
+pub trait ServerFieldAbility:FieldAbility + ToAction + FieldCollider{
     fn radius(&self) -> f32;
     fn modify_data(&self,data:AbilityData);
 }
@@ -47,10 +47,10 @@ trait ServerFieldAbility:FieldAbility + ToAction + FieldCollider{
 ////collider and mesh handling during ability affects
 
 type AbilityId = i64;
-trait Ability:Sized +  ToAbilityType{
+pub trait Ability:Sized + ToAbilityType{
     fn id(&self) -> AbilityId;
 }
-trait ClientAbility:Ability + AbilityMesh + ToAction{
+pub trait ClientAbility:Ability + AbilityMesh + ToAction + Sized{
     fn mesh(&self) -> Ref<Spatial>;
     fn duration(&self) -> f32;
     fn set_duration(&self , value:f32);
@@ -59,12 +59,12 @@ trait ClientAbility:Ability + AbilityMesh + ToAction{
         <Self as AbilityMesh>::to_mesh(self,25.0,25.0)
     }
 }
-trait ServerAbility:Ability + AbilityCollider{
+pub trait ServerAbility:Ability + AbilityCollider{
     fn radius(&self) -> f32;
     fn duration(&self) -> f32;
     fn set_duration(&self , value:f32);
 }
-trait TimedAbility:Ability{
+pub trait TimedAbility:Ability{
     fn duration(&self) -> f32;
     fn destroy(&self,owner:TRef<Node>){
         owner.get_parent().map(|parent| {
@@ -83,27 +83,75 @@ trait TimedAbility:Ability{
     }
 }
 
-pub enum AbilityActions{
-    Destroy(AbilityId),
+pub enum Abilities{
+    smack(Instance<Smack>),
+    globular_teleport(Instance<GlobularTeleport>),
+}
+impl From<AbilityType> for Abilities{
+    fn from(item:AbilityType) -> Self{
+        match item{
+            AbilityType::smack => {
+                let smack = Smack::make_instance().into_shared();
+                Abilities::smack(smack)
+            }
+            AbilityType::globular_teleport => {
+                let gt = GlobularTeleport::make_instance().into_shared();
+                Abilities::globular_teleport(gt)
+            }
+            _ => todo!()
+        }
+    }
+}
+impl Abilities{
+    fn update<F,E>(&mut self,f:F) -> Result<&mut Self,E> 
+        where 
+            F:FnOnce(&mut Self) -> Result<(),E>
+    {
+        f(self).map(|_| self)
+    }
+
+}
+pub enum AbilityOps<T>{
+    create(T),
+    update(T),
+}
+impl <T> AbilityOps<T>{
+    fn update<F,E>(&mut self,f:F) -> Result<&mut Self,E> 
+        where 
+            F:FnOnce(&mut Self) -> Result<(),E>
+    {
+        f(self).map(|_| self)
+    }
+
+}
+impl AbilityOps<Instance<Smack>>{
+    fn thing(&mut self) -> Result<&mut Self,String>{
+        self.update(|s| {
+            match s{
+                AbilityOps::<Instance<Smack>>::create(r) => {
+                }
+                _ => {}
+            }
+            Ok::<(),String>(())
+        }).and_then(|s| s.update( |t| {
+            match t{
+                AbilityOps::<Instance<Smack>>::update(r) => {
+                }
+                _ => {}
+            }
+            Ok::<(),String>(())
+        }))
+    }
 }
 ////ABILITY IMPLEMENTATIONS////
 //////////////////////////////
 ////Smack
-#[derive(NativeClass)]
+#[derive(NativeClass,Clone)]
 #[inherit(Node)]
 pub struct Smack{
     radius:f32,
     cmd_tx:Option<Sender<FieldCommand>>,
     id:AbilityId,
-}
-impl FieldAbility for Smack{ }
-impl Ability for Smack{
-    fn id(&self) -> AbilityId {
-        self.id
-    }
-}
-impl ToAbilityType for Smack{
-    const TYPE:AbilityType = AbilityType::smack;
 }
 impl Instanced<Node> for Smack{
     fn make() -> Self{
@@ -130,6 +178,15 @@ impl Smack{
         <Self as TimedAbility>::destroy(self,owner);
     }
 }
+impl FieldAbility for Smack{ }
+impl Ability for Smack{
+    fn id(&self) -> AbilityId {
+        self.id
+    }
+}
+impl ToAbilityType for Smack{
+    const TYPE:AbilityType = AbilityType::smack;
+}
 impl Signals<FieldCommand> for Smack{
     fn command_tx(&self) -> &Sender<FieldCommand>{&self.cmd_tx.as_ref().expect("SmackErr:No outbound tx found")}
     fn set_command_tx(&mut self,tx:Sender<FieldCommand>){self.cmd_tx = Some(tx)}
@@ -149,7 +206,9 @@ impl AbilityMesh for Smack{
     }
 }
 impl ToAction for Smack{
-    fn to_action(&self,tx:Sender<FieldCommand>,location:&Location,field_state:&HashMap<Location,Instance<FieldZone>>){}
+    fn to_action(&self,tx:Sender<FieldCommand>,location:&Location,field_state:&HashMap<Location,Instance<FieldZone>>){
+        let _  = tx.send(FieldCommand::DoAbility(location.clone(),Self::TYPE));
+    }
 }
 impl AbilityCollider for Smack{
     fn to_collider(&self,extents:Vector3) -> Option<Ref<Area>> {
@@ -176,11 +235,23 @@ impl TimedAbility for Smack{
     }
 }
 ////Globular Teleport////
+#[derive(NativeClass)]
+#[inherit(Node)]
 pub struct GlobularTeleport{
     radius:f32,
     cmd_tx:Sender<FieldCommand>,
     base:Vector3,
     points:PoolArray<Vector3>,
+}
+impl Instanced<Node> for GlobularTeleport{
+    fn make() -> Self{
+        GlobularTeleport{
+            radius:0.0,
+            cmd_tx:todo!(),
+            base:todo!(),
+            points:PoolArray::new(),
+        }
+    }
 }
 impl Signals<FieldCommand> for GlobularTeleport{
     fn command_tx(&self) -> &Sender<FieldCommand>{&self.cmd_tx}

@@ -6,6 +6,7 @@ use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_ability_mesh::{FieldAbilityMesh};
 use crate::field_ability_actions::ToAction;
 use crate::field_abilities::{AbilityType,SubAbilityType};
+use crate::ability::{ClientAbility,ClientFieldAbility,Abilities};
 use crate::collision_layer;
 use tokio::sync::mpsc;
 
@@ -47,6 +48,7 @@ pub struct FieldZone{
     proc_mesh:Ref<MeshInstance>,
     op_menu:Instance<FieldOps3D>,
     pub abilities:HashMap<AbilityType,Instance<FieldAbilityMesh>>,
+    ability_instances:HashMap<AbilityType,Abilities>,
     zone_tx:Sender<FieldZoneCommand>,
     zone_rx:Receiver<FieldZoneCommand>,
     field_tx:Option<Sender<FieldCommand>>,
@@ -64,6 +66,7 @@ impl InstancedDefault<StaticBody,Location> for FieldZone{
             proc_mesh:MeshInstance::new().into_shared(),
             op_menu:op_menu,
             abilities:HashMap::new(),
+            ability_instances:HashMap::new(),
             zone_tx: tx,
             zone_rx: rx,
             field_tx:None,
@@ -135,7 +138,7 @@ impl FieldZone{
             Ok(FieldZoneCommand::Selected(typ)) => {
                 let _ = self.field_tx
                     .as_ref()
-                    .expect("field_tx not set for zone")
+                    .expect("FieldZoneErr:field_tx not set for zone")
                     .send(FieldCommand::AddAbility(self.location,typ));
             }
             Ok(FieldZoneCommand::Proc(value)) => {
@@ -159,7 +162,7 @@ impl FieldZone{
     }
     #[method]
     fn clicked(&self,#[base] _owner:TRef<StaticBody>,_event_position:Vector2,_intersect_position:Vector3){
-        godot_print!("Field Area Clicked!");
+        //godot_print!("Field Area Clicked!");
         if self.abilities.len() == 0{
             let op_menu = unsafe{self.op_menu.assume_safe()};
             let _ = op_menu.map(|obj,spatial| obj.toggle(spatial));
@@ -187,7 +190,9 @@ impl FieldZone{
     }
     #[method]
     fn place_ability(&mut self,#[base] owner:TRef<StaticBody>,typ:AbilityType){
-        let typ = AbilityType::from(typ);
+        //let typ = AbilityType::from(typ);
+        //let ability = Abilities::from(typ);
+        //self.ability_instances.insert(typ,ability);
         if self.abilities.contains_key(&typ){return ;}
         let mesh = FieldAbilityMesh::make_instance(&typ).into_shared();
         self.abilities.insert(typ,mesh.clone());
@@ -343,7 +348,7 @@ impl Field{
                         let mut loc:Vec<i64> = Vec::new();
                         loc.push(location.x);
                         loc.push(location.y);
-                        godot_print!("{}",format!("location : {loc:?}"));
+                        godot_print!("{}",format!("Ability Added at location : {loc:?}"));
                         owner.emit_signal(cmd.to_string(),&[Variant::new(loc),Variant::new(Into::<u8>::into(typ))]);
                     }
                     FieldCommand::Trigger(location,typ) => {
