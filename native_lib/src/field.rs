@@ -317,6 +317,7 @@ impl CreateSignal<Field> for FieldCommand{
 #[register_with(Self::register_signals)]
 pub struct Field{
     zones:HashMap<Location,Instance<FieldZone>>,
+    ability_instances:HashMap<AbilityType,Abilities>,
     tx:Sender<FieldCommand>,
     rx:Receiver<FieldCommand>
 }
@@ -325,6 +326,7 @@ impl Instanced<Spatial> for Field{
         let (tx,rx) = mpsc::unbounded_channel::<FieldCommand>();
         Field{
             zones:HashMap::new(),
+            ability_instances:HashMap::new(),
             tx:tx,
             rx:rx,
         }
