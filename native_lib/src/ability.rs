@@ -144,11 +144,13 @@ impl ClientFieldAbility for Abilities{
         match self{
             Abilities::smack(smack) => {
                 let smack = unsafe{smack.assume_safe()};
-                smack.map(|obj,_| <Smack as ClientFieldAbility>::radius(obj)).expect("Abilities:Could not get Smack radius")
+                smack.map(|obj,_| <Smack as ClientFieldAbility>::radius(obj))
+                    .expect("Abilities:Could not get Smack radius")
             }
             Abilities::globular_teleport(globular_teleport) => {
                 let globular_teleport = unsafe{globular_teleport.assume_safe()};
-                globular_teleport.map(|obj,_| <GlobularTeleport as ClientFieldAbility>::radius(obj)).expect("Abilities:Could not get GlobularTeleport radius")
+                globular_teleport.map(|obj,_| <GlobularTeleport as ClientFieldAbility>::radius(obj))
+                    .expect("Abilities:Could not get GlobularTeleport radius")
             }
         }
     }
@@ -163,12 +165,12 @@ impl Signals<FieldCommand> for Abilities{
             Abilities::smack(smack) => {
                 let smack = unsafe{smack.assume_safe()};
                 smack.map(|obj,_| <Smack as Signals<FieldCommand>>::command_tx(obj))
-                    .expect("Abilities:Could not get Smack radius")
+                    .expect("Abilities:Could not get Smack tx")
             }
             Abilities::globular_teleport(globular_teleport) => {
                 let globular_teleport = unsafe{globular_teleport.assume_safe()};
                 globular_teleport.map(|obj,_| <GlobularTeleport as Signals<FieldCommand>>::command_tx(obj))
-                    .expect("Abilities:Could not get GlobularTeleport radius")
+                    .expect("Abilities:Could not get GlobularTeleport tx")
             }
         }
     }
@@ -191,12 +193,12 @@ impl FieldMesh for Abilities{
             Abilities::smack(smack) => {
                 let smack = unsafe{smack.assume_safe()};
                 smack.map(|obj,_| <Smack as FieldMesh>::to_mesh(obj,length,radius))
-                    .expect("Abilities:Could not get Smack radius")
+                    .expect("Abilities:Could not get Smack field mesh")
             }
             Abilities::globular_teleport(globular_teleport) => {
                 let globular_teleport = unsafe{globular_teleport.assume_safe()};
                 globular_teleport.map(|obj,_| <GlobularTeleport as FieldMesh>::to_mesh(obj,length,radius))
-                    .expect("Abilities:Could not get GlobularTeleport radius")
+                    .expect("Abilities:Could not get GlobularTeleport field mesh")
             }
         }
     }
@@ -207,12 +209,12 @@ impl AbilityMesh for Abilities{
             Abilities::smack(smack) => {
                 let smack = unsafe{smack.assume_safe()};
                 smack.map(|obj,_| <Smack as AbilityMesh>::to_mesh(obj,length,radius))
-                    .expect("Abilities:Could not get Smack radius")
+                    .expect("Abilities:Could not get Smack ability mesh")
             }
             Abilities::globular_teleport(globular_teleport) => {
                 let globular_teleport = unsafe{globular_teleport.assume_safe()};
                 globular_teleport.map(|obj,_| <GlobularTeleport as AbilityMesh>::to_mesh(obj,length,radius))
-                    .expect("Abilities:Could not get GlobularTeleport radius")
+                    .expect("Abilities:Could not get GlobularTeleport ability mesh")
             }
         }
     }
@@ -237,12 +239,12 @@ impl AbilityCollider for Abilities{
             Abilities::smack(smack) => {
                 let smack = unsafe{smack.assume_safe()};
                 smack.map(|obj,_| <Smack as AbilityCollider>::to_collider(obj,extents))
-                    .expect("Abilities:Could not get Smack radius")
+                    .expect("Abilities:Could not get Smack ability collider")
             }
             Abilities::globular_teleport(globular_teleport) => {
                 let globular_teleport = unsafe{globular_teleport.assume_safe()};
                 globular_teleport.map(|obj,_| <GlobularTeleport as AbilityCollider>::to_collider(obj,extents))
-                    .expect("Abilities:Could not get GlobularTeleport radius")
+                    .expect("Abilities:Could not get GlobularTeleport ability collider")
             }
         }
     }
@@ -253,12 +255,12 @@ impl FieldCollider for Abilities{
             Abilities::smack(smack) => {
                 let smack = unsafe{smack.assume_safe()};
                 smack.map(|obj,_| <Smack as FieldCollider>::to_collider(obj,extents))
-                    .expect("Abilities:Could not get Smack radius")
+                    .expect("Abilities:Could not get Smack field collider")
             }
             Abilities::globular_teleport(globular_teleport) => {
                 let globular_teleport = unsafe{globular_teleport.assume_safe()};
                 globular_teleport.map(|obj,_| <GlobularTeleport as FieldCollider>::to_collider(obj,extents))
-                    .expect("Abilities:Could not get GlobularTeleport radius")
+                    .expect("Abilities:Could not get GlobularTeleport field collider")
             }
         }
     }
@@ -269,12 +271,12 @@ impl FieldAbility for Abilities{
             Abilities::smack(smack) => {
                 let smack = unsafe{smack.assume_safe()};
                 smack.map(|obj,_| <Smack as FieldAbility>::instance_count(obj))
-                    .expect("Abilities:Could not get Smack radius")
+                    .expect("Abilities:Could not get Smack instance count")
             }
             Abilities::globular_teleport(globular_teleport) => {
                 let globular_teleport = unsafe{globular_teleport.assume_safe()};
                 globular_teleport.map(|obj,_| <GlobularTeleport as FieldAbility>::instance_count(obj))
-                    .expect("Abilities:Could not get GlobularTeleport radius")
+                    .expect("Abilities:Could not get GlobularTeleport instance count")
             }
         }
     }
@@ -295,12 +297,12 @@ impl FieldAbility for Abilities{
             Abilities::smack(smack) => {
                 let smack = unsafe{smack.assume_safe()};
                 smack.map(|obj,_| <Smack as FieldAbility>::proc_count(obj))
-                    .expect("Abilities:Could not get Smack radius")
+                    .expect("Abilities:Could not get Smack proc count")
             }
             Abilities::globular_teleport(globular_teleport) => {
                 let globular_teleport = unsafe{globular_teleport.assume_safe()};
                 globular_teleport.map(|obj,_| <GlobularTeleport as FieldAbility>::proc_count(obj))
-                    .expect("Abilities:Could not get GlobularTeleport radius")
+                    .expect("Abilities:Could not get GlobularTeleport proc count")
             }
         }
     }
