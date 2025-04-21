@@ -6,7 +6,8 @@ use crate::traits::{CreateSignal,Instanced,InstancedDefault,Defaulted};
 use crate::field_ability_mesh::{FieldAbilityMesh};
 use crate::field_ability_actions::ToAction;
 use crate::field_abilities::{AbilityType,SubAbilityType};
-use crate::ability::{ClientAbility,ClientFieldAbility,Abilities};
+use crate::ability::{ClientAbility,ClientFieldAbility};
+use crate::abilities::{Abilities};
 use crate::collision_layer;
 use tokio::sync::mpsc;
 
@@ -193,11 +194,13 @@ impl FieldZone{
         //let typ = AbilityType::from(typ);
         //let ability = Abilities::from(typ);
         //self.ability_instances.insert(typ,ability);
+        //owner.add_child(FieldMesh::to_mesh(ability),true);
         if self.abilities.contains_key(&typ){return ;}
         let mesh = FieldAbilityMesh::make_instance(&typ).into_shared();
         self.abilities.insert(typ,mesh.clone());
         let mesh = unsafe{mesh.assume_safe()};
         owner.add_child(mesh,true);
+        /////////////////////////
         let op_menu = unsafe{self.op_menu.assume_safe()};
         let _ = op_menu.map(|obj,spatial| obj.hide(spatial));
     }

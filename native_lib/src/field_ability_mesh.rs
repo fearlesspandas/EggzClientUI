@@ -13,7 +13,7 @@ pub trait FieldMesh{
     fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial>;
 }
 pub trait AbilityMesh{
-    fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial>;
+    fn to_mesh(&self) -> Ref<Spatial>;
 }
 impl ToMesh for AbilityType{
     fn to_mesh(&self,length:f32,radius:f32) -> Ref<Spatial> {
